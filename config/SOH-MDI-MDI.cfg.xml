@@ -1,0 +1,20 @@
+<config>
+  <observatory NAME = 'SOH'>
+    <instrument NAME = 'MDI'>
+      <detector NAME = 'MDI'>
+	<measurement NAME = 'mag'>
+	  <n_layers TYPE = 'int'>8</n_layers>
+	  <n_levels TYPE = 'int'>8</n_levels>
+	  <bit_ratea TYPE = 'float'>0.5</bit_ratea>
+	  <bit_rateb TYPE = 'float'>0.01</bit_rateb>
+	</measurement>
+	<measurement NAME = 'int'>
+	  <n_layers TYPE = 'int'>8</n_layers>
+	  <n_levels TYPE = 'int'>8</n_levels>
+	  <bit_ratea TYPE = 'float'>0.5</bit_ratea>
+	  <bit_rateb TYPE = 'float'>0.01</bit_rateb>
+	</measurement>
+      </detector>
+    </instrument>
+  </observatory>
+</config>

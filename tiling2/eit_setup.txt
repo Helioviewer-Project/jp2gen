@@ -1,0 +1,7 @@
+in an xterm window type
+
+sudo mount 129.165.40.192:/Volumes/eit /Users/ireland/soho/EIT
+
+
+find /Users/ireland/hv/img/eit/2003/10/*.gif -print > eit_2003_10_list.txt
+

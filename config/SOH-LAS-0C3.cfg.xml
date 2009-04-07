@@ -1,0 +1,14 @@
+<config>
+  <observatory NAME = 'SOH'>
+    <instrument NAME = 'LAS'>
+      <detector NAME = '0C3'>
+	<measurement NAME = '0WL'>
+	  <n_layers TYPE = 'int'>8</n_layers>
+	  <n_levels TYPE = 'int'>8</n_levels>
+	  <bit_ratea TYPE = 'float'>4.0</bit_ratea>
+	  <bit_rateb TYPE = 'float'>0.01</bit_rateb>
+	</measurement>
+      </detector>
+    </instrument>
+  </observatory>
+</config>

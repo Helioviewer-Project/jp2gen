@@ -1,0 +1,6 @@
+<config>
+  <institute>NASA-GSFC</institute>
+  <contact>ADNET Systems/ESA Helioviewer Group (webmaster@helioviewer.org)</contact>
+  <jp2_location>../../../jp2</jp2_location>
+  <hvs_location>../../../hvs</hvs_location>
+</config>
