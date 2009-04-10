@@ -1,7 +1,7 @@
 ;
 ; Write the HVS file for a LASCO C2 image
 ;
-FUNCTION JI_LAS_C2_WRITE_HVS,filename,rootdir,write=write
+FUNCTION JI_LAS_C2_WRITE_HVS,filename,rootdir,write=write,bf_process = bf_process,standard_process = standard_process
 ;
 ;
 ;
@@ -14,9 +14,19 @@ FUNCTION JI_LAS_C2_WRITE_HVS,filename,rootdir,write=write
 ;
   observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
 ;
-; prep the image using standard LASCO software
+; prep the image using LASCO software, either the standard scaling or
+; Bernhard Fleck's scaling
 ;
-  ld = JI_MAKE_IMAGE_C2(filename,/nologo,/nolabel)
+  IF ( keyword_set(standard_process) ) THEN BEGIN
+     ld = JI_MAKE_IMAGE_C2(filename,/nologo,/nolabel)
+  ENDIF
+  IF ( keyword_set(bf_process) ) THEN BEGIN
+     ld = JI_LAS_PROCESS_LIST_BF(filename)
+  ENDIF
+  IF ( NOT(keyword_set(standard_process)) and NOT(keyword_set(bf_process)) ) THEN BEGIN
+     ld = JI_MAKE_IMAGE_C2(filename,/nologo,/nolabel)
+  ENDIF
+
   if is_struct(ld) then begin
      cimg = ld.cimg
      hd = ld.header
@@ -113,14 +123,15 @@ FUNCTION JI_LAS_C2_WRITE_HVS,filename,rootdir,write=write
 ;
 ; save
 ;
-     outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
-     print,progname + ': Writing to ' + outfile
      hvs = {img:image_new, red:r, green:g, blue:b, header:hd,$
             observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss}
      IF (write eq 'direct2jp2') then begin
         JI_WRITE_LIST_JP2,hvs,rootdir
+        outfile = rootdir + obs_time + '_' + observation + '.hvs.jp2'
      ENDIF ELSE BEGIN
+        outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
+        print,progname + ': Writing to ' + outfile
         save,filename = outfile, hvs
      ENDELSE
   endif else begin

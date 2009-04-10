@@ -1,7 +1,7 @@
 ;
 ; Write the HVS file for a LASCO C2 image
 ;
-FUNCTION JI_LAS_C3_WRITE_HVS,filename,rootdir,write = write
+FUNCTION JI_LAS_C3_WRITE_HVS,filename,rootdir,write = write,bf_process = bf_process,standard_process = standard_process
 
   COMMON C3_BLOCK, pylonim, ctr, pylon,pylonima
 ;
@@ -18,7 +18,22 @@ FUNCTION JI_LAS_C3_WRITE_HVS,filename,rootdir,write = write
 ;
 ; prep the image using standard LASCO software
 ;
-  ld = JI_MAKE_IMAGE_C3(filename,/nologo,/nolabel)
+
+;
+; prep the image using LASCO software, either the standard scaling or
+; Bernhard Fleck's scaling
+;
+  IF ( keyword_set(standard_process) ) THEN BEGIN
+     ld = JI_MAKE_IMAGE_C3(filename,/nologo,/nolabel)
+  ENDIF
+  IF ( keyword_set(bf_process) ) THEN BEGIN
+     ld = JI_LAS_PROCESS_LIST_BF(filename)
+  ENDIF
+  IF ( NOT(keyword_set(standard_process)) and NOT(keyword_set(bf_process)) ) THEN BEGIN
+     ld = JI_MAKE_IMAGE_C3(filename,/nologo,/nolabel)
+  ENDIF
+
+;  ld = JI_MAKE_IMAGE_C3(filename,/nologo,/nolabel)
   if is_struct(ld) then begin
      cimg = ld.cimg
      hd = ld.header
@@ -77,6 +92,11 @@ FUNCTION JI_LAS_C3_WRITE_HVS,filename,rootdir,write = write
      zero_index = where(pylonima_rotated ge 2)
      image_new(zero_index) = 0
 ;
+; Pylon is not zero valued, but make it next to zero.
+;
+     pylon_index = where(pylonima_rotated eq 3)
+     image_new(pylon_index) = 1
+;
 ; Mask the Image
 ;
 
@@ -127,14 +147,15 @@ FUNCTION JI_LAS_C3_WRITE_HVS,filename,rootdir,write = write
 ;
 ; save
 ;
-     outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
-     print,progname + ': Writing to ' + outfile
      hvs = {img:image_new, red:r, green:g, blue:b, header:hd,$
             observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss }
      IF (write eq 'direct2jp2') then begin
         JI_WRITE_LIST_JP2,hvs,rootdir
+        outfile = rootdir + obs_time + '_' + observation + '.hvs.jp2'
      ENDIF ELSE BEGIN
+        outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
+        print,progname + ': Writing to ' + outfile
         save,filename = outfile, hvs
      ENDELSE
   endif else begin

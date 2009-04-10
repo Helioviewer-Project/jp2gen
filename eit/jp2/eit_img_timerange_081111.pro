@@ -418,7 +418,7 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
      max_n_eit_files_perday = 150L
      outfile_storage = strarr(max_n_eit_files_perday*n_days)
      outfile_storage(*) = '-1'
-     outfile_count = -1
+     outfile_count = long(-1)
 
 
      while iday.mjd le min([end_date_utc.mjd,today_date_utc.mjd]) do begin
@@ -788,7 +788,7 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
 ;
 ; update the counter
 ;
-                 outfile_count = outfile_count + 1
+                 outfile_count = long(outfile_count) + long(1)
                  print,'JI_EIT_IMG_TIMERANGE: number of files',outfile_count+1
 ;
 ; create the hvs structure and save

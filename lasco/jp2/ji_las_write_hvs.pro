@@ -3,9 +3,10 @@
 ;
 ; Return the filenames
 ;
-FUNCTION JI_LAS_WRITE_HVS,dir,filename,rootdir,c1 = c1,c2 = c2, c3 = c3,write = write
+FUNCTION JI_LAS_WRITE_HVS,dir,filename,rootdir,c1 = c1,c2 = c2, c3 = c3,write = write,bf_process = bf_process,standard_process = standard_process
 
-  list = ji_read_txt_list(dir + filename)
+;  list = ji_read_txt_list(dir + filename)
+  restore,dir + filename
   n = n_elements(list)
   done = strarr(n)
 ;  if keyword_set(c1) then begin
@@ -15,12 +16,12 @@ FUNCTION JI_LAS_WRITE_HVS,dir,filename,rootdir,c1 = c1,c2 = c2, c3 = c3,write = 
 ;  endif
   if keyword_set(c2) then begin
      for i = 0,n-1 do begin
-        done(i) = JI_LAS_C2_WRITE_HVS(list(i),rootdir,write = write)
+        done(i) = JI_LAS_C2_WRITE_HVS(list(i),rootdir,write = write,bf_process = bf_process,standard_process = standard_process)
      endfor
   endif
   if keyword_set(c3) then begin
      for i = 0,n-1 do begin
-        done(i) = JI_LAS_C3_WRITE_HVS(list(i),rootdir,write = write)
+        done(i) = JI_LAS_C3_WRITE_HVS(list(i),rootdir,write = write,bf_process = bf_process,standard_process = standard_process)
      endfor
   endif
 

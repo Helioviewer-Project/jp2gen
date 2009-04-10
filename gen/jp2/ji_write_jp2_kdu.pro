@@ -92,9 +92,9 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
      km_per_pixel_observed = km_per_rsun / header.hv_original_rsun
 ;
-; The observed 
+; The observed arcseconds per pixel
 ;
-     arcsec_per_pixel_observed = header.cdelt1
+     arcsec_per_px_observed = header.cdelt1
 ;
 ; Find which observation we are looking at
 ;
@@ -135,14 +135,14 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Find the qualities of the embedding for the new image
 ;
-        a = JI_HV_FIND_EMBED(km_per_pixel_hierarchy,$
-                             km_per_pixel_observed,$
-                             header.hv_original_naxis1,$
-                             header.hv_original_naxis2)
-;;         b = JI_HV_FIND_EMBED(arcsec_per_px_hierarchy,$
-;;                              arcsec_per_pixel_observed,$
-;;                              header.hv_original_naxis1,$
-;;                              header.hv_original_naxis2)
+;        a = JI_HV_FIND_EMBED(km_per_pixel_hierarchy,$
+;                             km_per_pixel_observed,$
+;                             header.hv_original_naxis1,$
+;                             header.hv_original_naxis2,rescaleby='LOG')
+         a = JI_HV_FIND_EMBED(arcsec_per_px_hierarchy,$
+                              arcsec_per_px_observed,$
+                              header.hv_original_naxis1,$
+                              header.hv_original_naxis2,rescaleby='LOG')
 ;;          a = JI_HV_FIND_EMBED(pprs,$
 ;;                               header.hv_original_rsun,$
 ;;                               header.hv_original_naxis1,$
@@ -166,8 +166,8 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         xpx_new = arcsec_per_px_hierarchy(zoom)
         ypx_new = arcsec_per_px_hierarchy(zoom)
 
-        xpx_new = arcsec_per_pixel/ratio
-        ypx_new = arcsec_per_pixel/ratio
+;        xpx_new = arcsec_per_pixel/ratio
+;        ypx_new = arcsec_per_pixel/ratio
 
 
 ;
@@ -189,8 +189,8 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; The centre of the original image was probably not pointed at the
 ; centre of the Sun.  Calculate this correction in units of the new
 ; pixel size 
-           xr = (header.hv_original_crpix1 - header.hv_original_naxis1/2.0)/ratio
-           yr = (header.hv_original_crpix2 - header.hv_original_naxis2/2.0)/ratio
+           xr = (header.hv_original_crpix1 - header.hv_original_naxis1/2.0 )*ratio
+           yr = (header.hv_original_crpix2 - header.hv_original_naxis2/2.0 )*ratio
 ;
 ; Calculate where the rescaled data should be placed in the larger
 ; embedding. 
@@ -222,23 +222,20 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Recenter the image
 ;
-        if (x1 lt 0.0) then begin
-           x2 = x2-x1
-           x1 = 0.0
-        endif
-        if (y1 lt 0.0) then begin
-           y2 = y2-y1
-           y1 = 0.0
-        endif
         image_new(x1:x2,y1:y2) = image_congrid(*,*)
+
 ;
 ; Extract only the bit with data, plus a small border
 ;
-        mlen = nint(max([abs(xr),abs(yr)]))
-        a0 = max([0,nx_embed/2.0 - hv_xlen/2.0 - mlen])
-        a1 = min([nx_embed-1,nx_embed/2.0 + hv_xlen/2.0 + mlen-1])
-        b0 = max([0,ny_embed/2.0 - hv_ylen/2.0 - mlen])
-        b1 = min([ny_embed-1,ny_embed/2.0 + hv_ylen/2.0 + mlen-1])
+        mlen = 1+nint(max([abs(xr),abs(yr)]))
+;;         a0 = max([0,nx_embed/2.0 - hv_xlen/2.0 - mlen])
+;;         a1 = min([nx_embed-1,nx_embed/2.0 + hv_xlen/2.0 + mlen-1])
+;;         b0 = max([0,ny_embed/2.0 - hv_ylen/2.0 - mlen])
+;;         b1 = min([ny_embed-1,ny_embed/2.0 + hv_ylen/2.0 + mlen-1])
+        a0 = nx_embed/2 - hv_xlen/2 - mlen
+        a1 = nx_embed/2 + hv_xlen/2 + mlen-1
+        b0 = ny_embed/2 - hv_ylen/2 - mlen
+        b1 = ny_embed/2 + hv_ylen/2 + mlen-1
         image_new = image_new( a0:a1,b0:b1 )
 ;
 ; Update
@@ -285,6 +282,8 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         header = add_tag(header,mlen,'hv_mlen')
 ; Size of the Sun in new pixels 
         header = add_tag(header,header.hv_original_rsun*ratio,'hv_rsun')
+; Zoon level 
+        header = add_tag(header,zoom,'hv_zoom')
 ; Create and add an information string
         hv_comment = 'JP2 file created at ' + wby.institute + $
                      ' using '+ progname + $

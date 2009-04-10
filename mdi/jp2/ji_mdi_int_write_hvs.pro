@@ -5,18 +5,18 @@
 ;
 ; 
 ;
-function JI_MDI_INT_WRITE_HVS,infile,rootdir
+function JI_MDI_INT_WRITE_HVS,infile,rootdir,write = write
 ;
 ;
 ;
-progname = 'JI_MDI_INT_WRITE_HVS'
+  progname = 'JI_MDI_INT_WRITE_HVS'
 ;
-observatory = 'SOH'
-instrument = 'MDI'
-detector = 'MDI'
-measurement = 'int'
+  observatory = 'SOH'
+  instrument = 'MDI'
+  detector = 'MDI'
+  measurement = 'int'
 ;
-observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
+  observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
 
 ;
 ;  Read in the file and pertinent image header keywords. 
@@ -85,11 +85,16 @@ observation =  observatory + '_' + instrument + '_' + detector + '_' + measureme
 ; save
 ;
   outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
-  print,progname + ': Writing to ' + outfile
   hvs = {img:image_new, red:r, green:g, blue:b, header:hd,$
          observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss}
-  save,filename = outfile, hvs
+  IF (write eq 'direct2jp2') then begin
+     JI_WRITE_LIST_JP2,hvs,rootdir
+  ENDIF ELSE BEGIN
+     outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
+     print,progname + ': Writing to ' + outfile
+     save,filename = outfile, hvs
+  ENDELSE
 
   return,outfile
 end

@@ -5,7 +5,7 @@
 ;
 ; 
 ;
-function JI_MDI_MAG_WRITE_hvs,infile,rootdir
+function JI_MDI_MAG_WRITE_hvs,infile,rootdir,write = write
 ;
 ;
 ;
@@ -86,11 +86,16 @@ observation =  observatory + '_' + instrument + '_' + detector + '_' + measureme
 ; save
 ;
   outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
-  print,progname + ': Writing to ' + outfile
   hvs = {img:image_new, red:r, green:g, blue:b, header:hd,$
          observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss}
-  save,filename = outfile, hvs
+  IF (write eq 'direct2jp2') then begin
+     JI_WRITE_LIST_JP2,hvs,rootdir
+  ENDIF ELSE BEGIN
+     outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
+     print,progname + ': Writing to ' + outfile
+     save,filename = outfile, hvs
+  ENDELSE
 
   return,outfile
 end

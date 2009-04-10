@@ -116,8 +116,22 @@ help,box_ref,box_avg
 
 	nz = where(cimg GT 0)
 	m = median(cimg(nz))
+;
+; scaling provided by make_image_c2
+;
 	bmin = m - 0.2
 	bmax = m + 0.4
+;
+; Scaling provided by Bernhard Fleck 9 April 09
+;
+;        bmin = 0.95
+;        bmax = 2.00
+;
+; scaling mucked around with by J. Ireland
+;
+;        bmin = m - 0.1
+;	bmax = m + 0.3
+;
       TVLCT, r, g, b, /GET
 
       cimg = BYTSCL(cimg, bmin, bmax)

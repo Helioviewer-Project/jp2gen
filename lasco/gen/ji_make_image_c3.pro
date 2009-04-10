@@ -182,15 +182,28 @@ FUNCTION JI_MAKE_IMAGE_C3, filename, FIXGAPS=fixgaps, VIDEOIMG=videoimg, PICT=pi
            print,'Using whole image for m'
         ENDELSE			;** NBR, 6/21/99
         help,m
+;
+; Scaling provided by Make Image
+;
         bmin = m-0.1
         bmax = m+0.15
+;
+; Bernhard Fleck Scaling 9 April 09
+;
+;        bmin = 0.99
+;        bmax = 1.30
+;
+; Jack Scaling
+;
+;        bmin = m-0.05
+;        bmax = m+0.15
                                 ;print,bmin,bmax
                                 ;** NBR, 10/29/99
         pylgtm = where(cimg GT 1.03*m and pylonim EQ 3) ; NBR, set Jan 2000
         IF pylgtm(0) NE -1 THEN cimg(pylgtm)=m		
      
         TVLCT, r, g, b, /GET
-;stop
+
         cimg = BYTSCL(cimg, bmin, bmax)
         nz = where(cimg GT 0)
                                 ;fillcol=median(cimg(nz))
@@ -217,7 +230,6 @@ FUNCTION JI_MAKE_IMAGE_C3, filename, FIXGAPS=fixgaps, VIDEOIMG=videoimg, PICT=pi
         cimg(*,hsize-3:hsize-1)	= fillcol
      
         TV, cimg
-     
         TVCIRCLE, r_occ*r_sun, sunc.xcen, sunc.ycen, /FILL, COLOR=fillcol
      
                                 ;** draw limb

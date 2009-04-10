@@ -7,16 +7,28 @@
 ; sudo /sbin/mount 129.165.40.191:/Volumes/eit /Users/ireland/SOHO/EIT
 ; from a X11 term
 ;
+; USER - set the start date and end date of the range of EIT data you
+;        are interested in.  The program will then create JP2 files in
+;        the correct directory structure for use with the Helioviewer
+;        project.
+;
+date_start = '2003/01/01'
+date_end   = '2003/12/31'
+
+;
+; ===================================================================================================
+;
+; Setup some defaults - usually there is NO user contribution below here
+;
+progname = 'eit_prep2jp2_v2'
+;
+; Write style
+;
+write      = 'direct2jp2'
+;
 ; Call details of storage locations
 ;
 storage = JI_HV_STORAGE()
-
-;
-; Range of data to look at
-;
-date_start = '2003/01/23'
-date_end   = '2003/12/31'
-write      = 'direct2jp2'
 
 ;
 ; The filename for a file which will contain the locations of the
@@ -29,6 +41,9 @@ filename = ji_txtrep(date_start,'/','_') + '-' + ji_txtrep(date_end,'/','_') + '
 ;
 listname = storage.hvs_location + filename + '.prepped.txt'
 
+;
+; ===================================================================================================
+;
 ;
 ; Write direct to JP2 from FITS
 ;
