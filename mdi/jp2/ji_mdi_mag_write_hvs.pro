@@ -24,22 +24,32 @@ observation =  observatory + '_' + instrument + '_' + detector + '_' + measureme
 ;  *****************************************************
 
   data = rfits(infile,head=hd,/scale)
-  obs_time = strtrim(sxpar(hd, 'T_OBS'),2)
+;  obs_time = strtrim(sxpar(hd, 'T_OBS'),2)
+  obs_time = strtrim(sxpar(hd, 'DATE_OBS'),2)
   pangle = sxpar(hd, 'P_ANGLE')
   radius = sxpar(hd,'R_SUN')
   x0 = sxpar(hd, 'X0')
   y0 = sxpar(hd, 'Y0')
 ;
 ; get the components of the observation time
+; Occasionally the seconds are reported as '60' - we fix this also
 ;
+  ss = strmid(obs_time,17,2)
+  if (ss eq '60') THEN BEGIN
+     obs_time = (ji_hv_fix_time(obs_time,/hvstring)).date_obs
+  endif
   yy = strmid(obs_time,0,4)
   mm = strmid(obs_time,5,2)
   dd = strmid(obs_time,8,2)
   hh = strmid(obs_time,11,2)
   mmm = strmid(obs_time,14,2)
   ss = strmid(obs_time,17,2)
-
-  obs_time = yy + '_' + mm + '_' + dd + '_' + hh + mmm + ss
+;
+; Convert T_OBS into the required date format
+;
+  hv_date_obs = yy + '-' + mm + '-' + dd + 'T' + $
+                hh + ':' + mmm +':' + ss + $
+                '.000Z'
 ;
 ; Crop and rotate the image. 
 ;

@@ -13,6 +13,7 @@
 ;        create JP2 files in the correct directory structure for use
 ;        with the Helioviewer project.
 ;
+;restore,'~/hv/hvs/lasco_c2_prep2jp2_v2_Fri_May__1_17.37.35_2009.sav'
 LASCO_LISTER,list
 
 ;

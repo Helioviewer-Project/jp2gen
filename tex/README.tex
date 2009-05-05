@@ -78,7 +78,7 @@
 
 \begin{opening}
 
-\title{The Helioviewer Suite of FITS to JP2 Programs}
+\title{The Helioviewer Suite of FITS to JP2 Programs - version 20090501}
 
 \author{J.~\surname{Ireland}$^{1}$\sep
         D.~M.~\surname{M\"uller}$^{1}$\sep
@@ -111,9 +111,9 @@ observational data.  We will denote the whole software package by
 \section{Required software NOT provided by \sname}\label{sec:req}
 
 You will need Solarsoft, which can be obtained at
-\url{http://www.lmsal.com/solarsoft}.  Please note that if you want to
-produce JP2 images for a particular instrument, then you should make
-sure your Solarsoft installation contains the necessary code and
+\url{http://www.lmsal.com/ solarsoft}.  Please note that if you want
+to produce JP2 images for a particular instrument, then you should
+make sure your Solarsoft installation contains the necessary code and
 databases in order for you make such an image.  This may mean that you
 need the full calibration software in order to turn a source FITS file
 into a calibrated FITS file.  Or it may be something as simple as
@@ -136,7 +136,6 @@ The suite has the following structure
 \item progs - main directory
 \item progs/gen - programs used by all the instrument processing programs
 \item progs/gen/jp2 - general programs for JP2 creation
-\item progs/gen/tiling - general programs for creating image tiles.
 \end{itemize}
 
 
@@ -145,9 +144,17 @@ instrument:
 \begin{itemize}
 \item progs/\cvar{instrument} -  programs specific to \cvar{instrument} 
 \item progs/\cvar{instrument}/jp2 - FITS to JP2 programs for \cvar{instrument} 
-\item progs/\cvar{instrument}/tiling - FITS to tiles programs for \cvar{instrument} 
 \item progs/\cvar{instrument}/gen - programs used by all \cvar{instrument}  detectors
 \end{itemize}
+
+Running the routines with defaults will create a directory
+\begin{itemize}
+\item jp2/ 
+\end{itemize}
+which the main directory where all the JP2 files will be stored.  The
+JP2 files are ordered by time and then by observatory > instrument >
+detector > measurement.
+
 
 
 \section{Currently supported observers and measurements}
@@ -214,21 +221,57 @@ returns a structure with the follwing two tags:
 This file is located in progs/gen/jp2.  It is a procedure which
 returns a structure with the follwing three tags:
 \begin{itemize}
-\item \cvar{institute} - .
+\item \cvar{institute} - the name of your home institute
 
-\item \cvar{contact} - .
+\item \cvar{contact} - an email address to allow users of your
+  JPEG2000 to contact you
 
-\item \cvar{kdu\_lib\_location} - .
+\item \cvar{kdu\_lib\_location} - where the kakdu library is installed
+  at your home institution.
 
 \end{itemize}
-
+Every JPEG2000 file produced contains a \cvar{institute} and
+\cvar{contact} tag.  In a distributed architecture, it is useful to
+know where a particular file was written and whom someone should
+contact in case of problems.  The variable \cvar{kdu\_lib\_location}
+is also included to allow users to put the KDU code wherever they
+like.  Note also that on OS X you may also have to change the
+environment variable concerning the location of dynamic libraries.
 
 \subsection{JP2 compression parameters as a function of
   \cvar{observer} and \cvar{measurement}- JI\_HV\_OBSERVER\_DETAILS}
 
+This file returns parameter choices for use with the encoding of JP2
+files.  It returns suitable parameter choices for each
+\cvar{observer}-\cvar{measurement} pair.  Currently supported
+\cvar{observer}-\cvar{measurement} partners are given in Table
+\ref{tab:supported}. 
+
+Default choices for encoding of the JP2 files are as follows.
+
+\begin{itemize}
+\item {\it n\_layers = 8}  - the name of your home institute
+
+\item  {\it n\_levels = 8 } - an email address to allow users of your
+  JPEG2000 to contact you
+
+\item  {\it bit\_rate = [0.5,0.01] } - where the kakdu library is installed
+  at your home institution.
+
+\end{itemize}
+For more details as to the meaning of these parameters, please consult
+\url{http://www.helioviewer.org/wiki}. 
+
+Note that we will endeavor to keep JI\_HV\_OBSERVER\_DETAILS as
+up-to-date as possible.  If you have any changes to suggest, or code
+supporting different \cvar{observer}-\cvar{measurement} partners, then
+please let us know, and we will include your code in the main distribution.
 
 
 \subsection{Generating EIT JP2 images from your EIT FITS files}
+
+
+
 
 \subsection{Generating MDI JP2 images from your MDI FITS files}
 

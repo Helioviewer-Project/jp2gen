@@ -23,21 +23,35 @@ function JI_MDI_INT_WRITE_HVS,infile,rootdir,write = write
 ;  *****************************************************
 
   data = rfits(infile,head=hd,/scale)
-  obs_time = strtrim(sxpar(hd, 'T_OBS'),2)
+;  obs_time = strtrim(sxpar(hd, 'T_OBS'),2)
+  obs_time = strtrim(sxpar(hd, 'DATE_OBS'),2)
   pangle = sxpar(hd, 'P_ANGLE')
   radius = sxpar(hd,'R_SUN')
   x0 = sxpar(hd, 'X0')
   y0 = sxpar(hd, 'Y0')
 ;
 ; get the components of the observation time
+; Occasionally the seconds are reported as '60' - we fix this also
 ;
+  ss = strmid(obs_time,17,2)
+  if (ss eq '60') THEN BEGIN
+     obs_time = (ji_hv_fix_time(obs_time,/hvstring)).date_obs
+  endif
   yy = strmid(obs_time,0,4)
   mm = strmid(obs_time,5,2)
   dd = strmid(obs_time,8,2)
   hh = strmid(obs_time,11,2)
   mmm = strmid(obs_time,14,2)
   ss = strmid(obs_time,17,2)
-
+;
+; Convert T_OBS into the required date format
+;
+  hv_date_obs = yy + '-' + mm + '-' + dd + 'T' + $
+                hh + ':' + mmm +':' + ss + $
+                '.000Z'
+;
+; Convert T_OBS into the file format time
+;
   obs_time = yy + '_' + mm + '_' + dd + '_' + hh + mmm + ss
 ;
 ; Crop and rotate the image. 
@@ -70,7 +84,7 @@ function JI_MDI_INT_WRITE_HVS,infile,rootdir,write = write
   hd = add_tag(hd,detector,'hv_detector')
   hd = add_tag(hd,measurement,'hv_measurement')
   hd = add_tag(hd,'wavelength','hv_measurement_type')
-  hd = add_tag(hd,hd.date_obs,'hv_date_obs')
+  hd = add_tag(hd,hv_date_obs,'hv_date_obs')
   hd = add_tag(hd,1,'hv_opacity_group')
   hd = add_tag(hd,hd.cdelt1,'hv_original_cdelt1')
   hd = add_tag(hd,hd.cdelt2,'hv_original_cdelt2')

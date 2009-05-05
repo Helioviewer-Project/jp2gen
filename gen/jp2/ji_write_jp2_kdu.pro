@@ -41,6 +41,8 @@
 ; image basis, as and when is required.
 ; [ji_write_jp2_kdu.pro]
 ;
+; 2009-05-5 JI: included lossless compression of alpha transparency mask
+;
 ;-
 
 PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,_extra=_extra,head2struct=head2struct, keep_tif=keep_tif,keep_xml=keep_xml,quiet=quiet,kdu_lib_location=kdu_lib_location
@@ -458,10 +460,12 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; Create the KDU command and spawn it
 ;
      kdu_command='kdu_compress ' + data_in + data_out + $
+                 ' Creversible:C0=no Creversible:C1=yes' + $
                  ' Clayers=' + strtrim(string(n_layers),2) + $
                  ' Clevels=' + strtrim(string(n_levels),2) + $
                  ' -rate '   + kdu_bit_rate + meta_data + quiet_flag
      spawn,kdu_lib_location + kdu_command
+     print,'Executing '+ kdu_lib_location + kdu_command
 ;
 ; Due to exiftool not being able to read the XML box created by
 ; Kakadu, we re-read the JPEG2000 file using IDL.  IDL is able to
@@ -471,8 +475,8 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
      reloaded = READ_JPEG2000(file + '.jp2')
      oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
                     bit_rate=bit_rate,$
-                    n_layers=n_layers_jp2,$
-                    n_levels=n_levels_jp2,$
+                    n_layers=n_layers,$
+                    n_levels=n_levels,$
                     xml=xh)
      oJP2->SetData,reloaded
      OBJ_DESTROY, oJP2
@@ -501,8 +505,8 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 
      oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
                     bit_rate=bit_rate,$
-                    n_layers=n_layers_jp2,$
-                    n_levels=n_levels_jp2,$
+                    n_layers=n_layers,$
+                    n_levels=n_levels,$
                     xml=xh)
      oJP2->SetData,image_new
      OBJ_DESTROY, oJP2
