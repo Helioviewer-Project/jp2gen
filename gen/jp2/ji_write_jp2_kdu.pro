@@ -41,7 +41,17 @@
 ; image basis, as and when is required.
 ; [ji_write_jp2_kdu.pro]
 ;
-; 2009-05-5 JI: included lossless compression of alpha transparency mask
+; 2009-05-05 JI: included lossless compression of alpha transparency
+; mask
+;
+; 2009-05-07 TODO: remove the intermediate Kakadu step from processing
+; transparency layers.  Apparently IDL can write JP2 files with
+; arbitrary numbers of 'n' components (n,x,y).  Previously kakdu was
+; used to implement this functionality
+;
+; 2009-05-12 JI: implemented the note of 2009-05-07,  IDL is now used
+; to write the transparency mask as the 2nd component in a
+; (2,nx_new,ny_new) image file.
 ;
 ;-
 
@@ -341,6 +351,31 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
               xh+='<'+tagnames[j]+'>'+strtrim(string(header.(j)),2)+'</'+tagnames[j]+'>'+lf
            endif
         endfor
+;
+; FITS history
+;
+        xh+='<history>'+lf
+        j=jhist
+        k=0
+        while (header.(j))[k] ne '' do begin
+           xh+=(header.(j))[k]+lf
+           k=k+1
+        endwhile
+        xh+='</history>'+lf
+;
+; FITS Comments
+;
+        xh+='<comment>'+lf
+        j=jcomm
+        k=0
+        while (header.(j))[k] ne '' do begin
+           xh+=(header.(j))[k]+lf
+           k=k+1
+        endwhile
+        xh+='</comment>'+lf
+;
+; Close the FITS information
+;
         xh+='</fits>'+lf
 ;
 ; Helioviewer XML tags
@@ -356,29 +391,7 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         endfor
         xh+='</Helioviewer>'+lf
 ;
-; FITS history
-;
-        xh+='<history>'+lf
-        j=jhist
-        k=0
-        while (header.(j))[k] ne '' do begin
-           xh+=(header.(j))[k]+lf
-           k=k+1
-        endwhile
-        xh+='</history>'+lf
-;
-; Comments
-;
-        xh+='<comment>'+lf
-        j=jcomm
-        k=0
-        while (header.(j))[k] ne '' do begin
-           xh+=(header.(j))[k]+lf
-           k=k+1
-        endwhile
-        xh+='</comment>'+lf
-;
-; Enclose all the FITS keywords in their own container
+; Enclose all the XML elements in their own container
 ;
         xh+='</meta>'+lf
 ;
@@ -423,77 +436,99 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         ENDIF
      ENDIF
 ;
-; Write the transparency locations as a temporary tiff file.
+; REQUIRED BY KDU: Write the transparency locations as a temporary tiff file.
 ;
-     temp_alpha_filename = observation + '_alpha_temp.tif'
-     write_tiff,temp_alpha_filename,reverse(temp_alpha,2),bits=8
+;     temp_alpha_filename = observation + '_alpha_temp.tif'
+;     write_tiff,temp_alpha_filename,reverse(temp_alpha,2),bits=8
 ;
-; Write temporary image TIFF file
+; REQUIRED BY KDU: Write temporary image TIFF file
 ;
-     temp_image_filename = observation + '_image_temp.tif'
-     write_tiff,temp_image_filename,reverse(image_new,2),bits=8
+;    temp_image_filename = observation + '_image_temp.tif'
+;     write_tiff,temp_image_filename,reverse(image_new,2),bits=8
 ;
-; Create JP2 file by spawning kdu_compress outside of idl.
-; Write meta data into XML file:
+; REQUIRED BY KDU: Create JP2 file by spawning kdu_compress outside of idl.
+; REQUIRED BY KDU: Write meta data into XML file:
 ;
-     IF KEYWORD_SET(fitsheader) THEN BEGIN
-        meta_xml = observation + '_meta.xml'
-        openw,1,meta_xml
-        printf,1,lf+xh
-        close,1
-     ENDIF
+;     IF KEYWORD_SET(fitsheader) THEN BEGIN
+;        meta_xml = observation + '_meta.xml'
+;        openw,1,meta_xml
+;        printf,1,lf+xh
+;        close,1
+;     ENDIF
 ;
+; REQUIRED BY KDU
 ; If alpha channel is provided, pass it on to kdu_compress to create a
 ; 2-component JP2 file
 ;
 ;     IF KEYWORD_SET(alpha) THEN BEGIN 
-     data_in = '-jp2_alpha -i ' + temp_image_filename + ',' + temp_alpha_filename
+;     data_in = '-jp2_alpha -i ' + temp_image_filename + ',' + temp_alpha_filename
 ;     ENDIF ELSE BEGIN
 ;        data_in = '-i ' + temp_image_filename
 ;     ENDELSE
-     data_out=' -o '+file+'.jp2'
+;     data_out=' -o '+file+'.jp2'
 ;
 ; Create the option for including meta data
 ;
-     IF KEYWORD_SET(fitsheader) eq 0 THEN meta_data='' ELSE meta_data=' -jp2_box '+meta_xml
+;     IF KEYWORD_SET(fitsheader) eq 0 THEN meta_data='' ELSE meta_data=' -jp2_box '+meta_xml
 ;
 ; Create the KDU command and spawn it
 ;
-     kdu_command='kdu_compress ' + data_in + data_out + $
-                 ' Creversible:C0=no Creversible:C1=yes' + $
-                 ' Clayers=' + strtrim(string(n_layers),2) + $
-                 ' Clevels=' + strtrim(string(n_levels),2) + $
-                 ' -rate '   + kdu_bit_rate + meta_data + quiet_flag
-     spawn,kdu_lib_location + kdu_command
-     print,'Executing '+ kdu_lib_location + kdu_command
+;     kdu_command='kdu_compress ' + data_in + data_out + $
+;                 ' Creversible:C0=no Creversible:C1=yes' + $
+;                 ' Clayers=' + strtrim(string(n_layers),2) + $
+;                 ' Clevels=' + strtrim(string(n_levels),2) + $
+;                 ' -rate '   + kdu_bit_rate + meta_data + quiet_flag
+;     spawn,kdu_lib_location + kdu_command
+;     print,'Executing '+ kdu_lib_location + kdu_command
 ;
+
+;
+; REQUIRED BY KDU
 ; Due to exiftool not being able to read the XML box created by
 ; Kakadu, we re-read the JPEG2000 file using IDL.  IDL is able to
 ; write out a JPEG200 file with a well formed XML box that exiftool
 ; can read.
 ;
-     reloaded = READ_JPEG2000(file + '.jp2')
+;     reloaded = READ_JPEG2000(file + '.jp2')
+;     oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
+;                    bit_rate=bit_rate,$
+;                    n_layers=n_layers,$
+;                    n_levels=n_levels,$
+;                    xml=xh)
+;     oJP2->SetData,reloaded
+;     OBJ_DESTROY, oJP2
+;     print,' '
+;     print,progname + ' created ' + file + '.jp2'
+;
+; Remove the temporary transparency file
+;
+;     spawn,'rm '+ temp_alpha_filename
+;
+; Remove the temporary tif file as default
+;
+;     IF KEYWORD_SET(keep_tif) eq 0 THEN spawn,'rm '+ temp_image_filename
+;
+; Remove the temporary xml file as default
+;
+;     IF KEYWORD_SET(fitsheader) and (KEYWORD_SET(keep_xml) eq 0) THEN spawn,'rm '+meta_xml
+
+;
+; 2009-05-12:  IDL can write images with an arbitrary number of
+; components.  We put the alpha transparency in as the second component.
+;
+     image_new_with_transparency = bytarr(2,nx_new,ny_new)
+     image_new_with_transparency(0,*,*) = image_new(*,*)
+     image_new_with_transparency(1,*,*) = temp_alpha(*,*)
+
      oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
                     bit_rate=bit_rate,$
                     n_layers=n_layers,$
                     n_levels=n_levels,$
                     xml=xh)
-     oJP2->SetData,reloaded
+     oJP2->SetData,image_new_with_transparency
      OBJ_DESTROY, oJP2
      print,' '
      print,progname + ' created ' + file + '.jp2'
-;
-; Remove the temporary transparency file
-;
-     spawn,'rm '+ temp_alpha_filename
-;
-; Remove the temporary tif file as default
-;
-     IF KEYWORD_SET(keep_tif) eq 0 THEN spawn,'rm '+ temp_image_filename
-;
-; Remove the temporary xml file as default
-;
-     IF KEYWORD_SET(fitsheader) and (KEYWORD_SET(keep_xml) eq 0) THEN spawn,'rm '+meta_xml
 
   ENDIF ELSE BEGIN
 ;

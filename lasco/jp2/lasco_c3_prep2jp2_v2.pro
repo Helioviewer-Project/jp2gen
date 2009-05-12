@@ -13,15 +13,55 @@
 ;        create JP2 files in the correct directory structure for use
 ;        with the Helioviewer project.
 ;
-;restore,'~/hv/hvs/lasco_c3_prep2jp2_v2_Tue_May__5_13.48.16_2009.sav'
-LASCO_LISTER,list
-
 ;
-; ===================================================================================================
+; Instructions on how to use the LASCO software WLISTER for HV
+; purposes
+;
+; 1. Select Instrument: C3
+; 2. Select Filetype and Source: level_05 LZ_IMG
+; 3. Select Observation Date:
+; 4. - press "Go" (takes a few seconds)
+;    a. - in window "LASCO/EIT Image Header Info whdrinfo v.2.1"
+;    b. - press "Query"
+;       i. - in pop-up: ROWS: 1024
+;      ii. - in pop-up: COLS: 1024
+;     iii. - press "Go"
+;    c. press "All" - this selects 1024 x 1024 C3 images in the
+;                     requested time range 
+;    d. - press "Done"
+; 5. - press "Done"
+;
+; The wlister is done, and the program continues
 ;
 ; Setup some defaults - usually there is NO user contribution below here
 ;
 progname = 'lasco_c3_prep2jp2_v2'
+print,' '
+print,progname
+print,'--------------------'
+print,' 1. Select Instrument: C3'
+print,' 2. Select Filetype and Source: level_05 LZ_IMG'
+print,' 3. Select Observation Date:'
+print,' 4. - press "Go" (takes a few seconds)'
+print,'    a. - in window "LASCO/EIT Image Header Info whdrinfo v.2.1"'
+print,'    b. - press "Query"'
+print,'       i. - in pop-up: ROWS: 1024'
+print,'      ii. - in pop-up: COLS: 1024'
+print,'     iii. - press "Go"'
+print,'    c. press "All" - this selects 1024 x 1024 C3 images in the'
+print,'                     requested time range '
+print,'    d. - press "Done"'
+print,' 5. - press "Done"'
+print,' '
+print,' The wlister is done, and the program continues'
+print,' '
+
+
+list = WLISTER()
+
+;
+; ===================================================================================================
+;
 ;
 ; Write style
 ;
