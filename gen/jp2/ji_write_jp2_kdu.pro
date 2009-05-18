@@ -73,9 +73,10 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
   IF keyword_set(fitsheader) EQ 0 THEN BEGIN
      print,'No FITS header provided - no meta information included in JP2 file.'
      image_new=bytscl(image)
-     IF KEYWORD_SET(bit_rate) eq 0 THEN bit_rate=[0.5,0.01]
-     IF KEYWORD_SET(n_layers) eq 0 THEN n_layers=8
-     IF KEYWORD_SET(n_levels) eq 0 THEN n_levels=8
+     obsdet = JI_OBSERVER_DETAILS('unknown_observer','unknown_measurement')
+;     IF KEYWORD_SET(bit_rate) eq 0 THEN bit_rate=[0.5,0.01]
+;     IF KEYWORD_SET(n_layers) eq 0 THEN n_layers=8
+;     IF KEYWORD_SET(n_levels) eq 0 THEN n_levels=8
   ENDIF ELSE BEGIN
      IF keyword_set(head2struct) THEN header = fitshead2struct(fitsheader) ELSE header = fitsheader
 ;
@@ -266,6 +267,7 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
         bit_rate_factor = float(header.hv_original_naxis1)*float(header.hv_original_naxis2)/(float(hv_xlen)*float(hv_ylen))
         bit_rate = bit_rate*bit_rate_factor
+        obsdet.jp2.bit_rate = bit_rate
         kdu_bit_rate = trim(bit_rate[0]) + ',' + trim(bit_rate[1])
 ;
 ; ********************************************************************************************************
@@ -388,6 +390,24 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
                  xh+='<'+reduced+'>'+strtrim(string(header.(j)),2)+'</'+reduced+'>'+lf
               endif
            endif
+        endfor
+;
+; Helioviewer JP2 tags
+;
+        xh+='<SUPPORTED_YN>'+trim(obsdet.supported_yn)+'</SUPPORTED_YN>'+lf
+        xh+='<BIT_RATE_FACTOR>'+trim(bit_rate_factor)+'</BIT_RATE_FACTOR>'+lf
+        jp2_tag_names = tag_names(obsdet.jp2)
+        for i = 0,n_tags(obsdet.jp2)-1 do begin
+           tag_value = trim( gt_tagval(obsdet.jp2,jp2_tag_names[i]) )
+           if isarray(tag_value) then begin
+              xh+='<'+jp2_tag_names[i]+'>'
+              for j = 0,n_elements(tag_value)-1 do begin
+                 xh+='(' + tag_value[j] + ')'
+              endfor
+              xh+='</'+jp2_tag_names[i]+'>'+lf
+           endif else begin
+              xh+='<'+jp2_tag_names[i]+'>' + tag_value    + '</'+jp2_tag_names[i]+'>'+lf
+           endelse
         endfor
         xh+='</Helioviewer>'+lf
 ;
@@ -548,4 +568,5 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
      print,' '
      print,progname + ' created ' + file + '.jp2'
   ENDELSE
+stop
 END
