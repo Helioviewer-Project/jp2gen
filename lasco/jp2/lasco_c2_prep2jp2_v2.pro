@@ -90,7 +90,7 @@ listname = storage.hvs_location + filename + '.prepped.txt'
 ; Write direct to JP2 from FITS
 ;
 if (write eq 'direct2jp2') then begin
-   prepped = JI_LAS_WRITE_HVS(storage.hvs_location,filename,storage.jp2_location,/c2,write = write,/standard_process)
+   prepped = JI_LAS_WRITE_HVS(storage.hvs_location,filename,storage.jp2_location,/c2,write = write,/bf_process)
    save,filename = listname,prepped
 endif
 

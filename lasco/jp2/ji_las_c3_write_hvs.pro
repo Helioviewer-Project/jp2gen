@@ -16,10 +16,6 @@ FUNCTION JI_LAS_C3_WRITE_HVS,filename,rootdir,write = write,bf_process = bf_proc
 ;
   observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
 ;
-; prep the image using standard LASCO software
-;
-
-;
 ; prep the image using LASCO software, either the standard scaling or
 ; Bernhard Fleck's scaling
 ;

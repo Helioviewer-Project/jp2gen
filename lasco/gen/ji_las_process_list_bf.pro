@@ -137,6 +137,7 @@ FUNCTION ji_las_process_list_bf,filename, STAIND=staind, AGAIN=again, GIFS=gifs,
         dhprev = h
         help,boxref
         IF h.detector NE 'EIT' THEN BEGIN
+           set_plot,'x'
            im = mk_img(list1[i],minim,maxim,hstr,ratio=rat,fixgaps=fixg,use_model=model, $
                        dO_BYTSCL=bytes,distort=distort, ref_box=boxref, box=box, norm=norm, $
                        lee_filt=lee, hide_pylon=hide,crem=0, MASK_OCC=mask, /LIST, $

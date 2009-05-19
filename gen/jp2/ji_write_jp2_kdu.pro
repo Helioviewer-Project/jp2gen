@@ -53,6 +53,10 @@
 ; to write the transparency mask as the 2nd component in a
 ; (2,nx_new,ny_new) image file.
 ;
+; 2009-05-19 JI: added new tags to the <helioviewer></helioviewer> XML
+; box. Now also included are details on the JP2 parameters used
+; (bit_rate, etc), and if the image contains a alpha-transparency layer
+;
 ;-
 
 PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,_extra=_extra,head2struct=head2struct, keep_tif=keep_tif,keep_xml=keep_xml,quiet=quiet,kdu_lib_location=kdu_lib_location
@@ -396,6 +400,14 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
         xh+='<SUPPORTED_YN>'+trim(obsdet.supported_yn)+'</SUPPORTED_YN>'+lf
         xh+='<BIT_RATE_FACTOR>'+trim(bit_rate_factor)+'</BIT_RATE_FACTOR>'+lf
+        IF have_tag(header,'hva_alpha_transparency') THEN BEGIN
+           xh+='<ALPHA_TRANSPARENCY_YN>Alpha transparency included.' + $
+               'Two layer image (0,*,*) = image, ' + $
+               '(1,*,*) = alpha transparency layer</ALPHA_TRANSPARENCY_YN>'+lf
+        endif else begin
+           xh+='<ALPHA_TRANSPARENCY_YN>No alpha transparency.' + $
+               'Single layer image.</ALPHA_TRANSPARENCY_YN>'+lf
+        endelse
         jp2_tag_names = tag_names(obsdet.jp2)
         for i = 0,n_tags(obsdet.jp2)-1 do begin
            tag_value = trim( gt_tagval(obsdet.jp2,jp2_tag_names[i]) )
@@ -568,5 +580,4 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
      print,' '
      print,progname + ' created ' + file + '.jp2'
   ENDELSE
-stop
 END
