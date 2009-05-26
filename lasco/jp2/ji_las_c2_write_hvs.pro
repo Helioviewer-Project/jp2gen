@@ -1,6 +1,9 @@
 ;
 ; Write the HVS file for a LASCO C2 image
 ;
+; 2009-05-26.  Added error log file for data files with bad header information
+;
+;
 FUNCTION JI_LAS_C2_WRITE_HVS,filename,rootdir,write=write,bf_process = bf_process,standard_process = standard_process
 ;
 ;
@@ -126,14 +129,30 @@ FUNCTION JI_LAS_C2_WRITE_HVS,filename,rootdir,write=write,bf_process = bf_proces
      hvs = {img:image_new, red:r, green:g, blue:b, header:hd,$
             observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss}
-     IF (write eq 'direct2jp2') then begin
-        JI_WRITE_LIST_JP2,hvs,rootdir
-        outfile = rootdir + obs_time + '_' + observation + '.hvs.jp2'
-     ENDIF ELSE BEGIN
-        outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
-        print,progname + ': Writing to ' + outfile
-        save,filename = outfile, hvs
-     ENDELSE
+;
+; check the tags to make sure we have sufficient information to
+; actually write a JP2 file
+;
+     if( (hd.cdelt1 le 0.0) or (hd.cdelt2 le 0.0) or $
+         (hd.crpix1 le 0.0) or (hd.crpix2 le 0.0) ) then begin
+        outfile = '-1'
+        err_location = ji_write_list_jp2_mkdir(hvs,(ji_hv_storage()).err_location)
+        err_report = 'Incomplete header information: '
+        print,err_report + filename
+        
+        incomplete = err_location + 'err.' + obs_time + '_' + observation + '.log.sav'
+        print,'Writing filename and header information to ' + incomplete
+        save,filename = incomplete,hd,filename,err_report
+     endif else begin
+        IF (write eq 'direct2jp2') then begin
+           JI_WRITE_LIST_JP2,hvs,rootdir
+           outfile = rootdir + obs_time + '_' + observation + '.hvs.jp2'
+        ENDIF ELSE BEGIN
+           outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
+           print,progname + ': Writing to ' + outfile
+           save,filename = outfile, hvs
+        ENDELSE
+     endelse
   endif else begin
      outfile = '-1'
   endelse

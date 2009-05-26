@@ -1,7 +1,15 @@
 ;
-; Take a list of LASCO files and write them out to HVS format
+; Take a list of LASCO files and write them out as JP2s
 ;
-; Return the filenames
+; dir = directory where the file list is
+; filename = the filename containing the list of files
+; rootdir = the root directory where the JP2 files are stored
+;
+; c1 = choose LASCO c1
+; c2 = choose LASCO c2
+; c3 = choose LASCO c3
+;
+;
 ;
 FUNCTION JI_LAS_WRITE_HVS,dir,filename,rootdir,c1 = c1,c2 = c2, c3 = c3,write = write,bf_process = bf_process,standard_process = standard_process
 

@@ -58,6 +58,10 @@ print,' '
 
 
 list = WLISTER()
+;
+; Start a clock
+;
+t0 = systime(1)
 
 ;
 ; ===================================================================================================
@@ -109,6 +113,15 @@ if (write eq 'via_hvs') then begin
       JI_WRITE_LIST_JP2, prepped, storage.jp2_location
    endelse
 endif
+
+;
+; Get the time
+;
+t1 = systime(1)
+;
+;
+;
+print,progname+ ': wrote '+trim(n_elements(list))+' files in '+trim(t1-t0) + ' seconds.'
 
 ;
 ;
