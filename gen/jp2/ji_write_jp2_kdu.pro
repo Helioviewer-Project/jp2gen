@@ -111,7 +111,7 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; The observed arcseconds per pixel
 ;
-     arcsec_per_px_observed = header.cdelt1
+     arcsec_per_px_observed = header.hv_original_cdelt1
 ;
 ; Find which observation we are looking at
 ;
