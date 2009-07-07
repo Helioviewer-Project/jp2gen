@@ -303,12 +303,16 @@ PRO ji_write_jp2_kdu,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; Zoon level 
         header = add_tag(header,zoom,'hv_zoom')
 ; Create and add an information string
-        hv_comment = 'JP2 file created at ' + wby.institute + $
-                     ' using '+ progname + $
-                     ' at ' + systime() + $
-                     '. Contact ' + wby.contact + $
-                     ' for more details/questions/comments.'
-        header = add_tag(header,hv_comment,'hv_comment')
+        if tag_exist(header,'hv_comment') then begin
+           header.hv_comment = header.hv_comment + $
+                               ' JP2 file created at ' + wby.institute + $
+                               ' using '+ progname + $
+                               ' at ' + systime() + $
+                               '. Contact ' + wby.contact + $
+                               ' for more details/questions/comments.'
+        endif else begin
+           header = add_tag(header,hv_comment,'hv_comment')
+        endelse
 ;
 ; If the image is a coronograph then include the inner and outer radii
 ; of the coronagraph in image pixels

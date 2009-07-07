@@ -625,9 +625,10 @@ while iday.mjd le min([end_date_utc.mjd,today_date_utc.mjd]) do begin
 ;
 ; HV - set the observation chain
 ;
-            observatory = 'SOH'
-            instrument = 'EIT'
-            detector = 'EIT'
+            oidm = ji_hv_oidm('eit')
+            observatory = oidm.observatory
+            instrument = oidm.instrument
+            detector = oidm.detector
             measurement = this_wave
 ;
 ; Create a comment string
@@ -677,6 +678,7 @@ while iday.mjd le min([end_date_utc.mjd,today_date_utc.mjd]) do begin
                    yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss}
             save,filename = outfile, hvs
             outfile_storage(outfile_count) = outfile
+            stop
          endif
          
          

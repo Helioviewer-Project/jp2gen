@@ -728,8 +728,6 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
                  OBJ_DESTROY, oJP2
               ENDIF
 
-
-         
               IF KEYWORD_SET(sav) THEN BEGIN
                  im=fltarr(1024,1024,3)
                  tvlct,red,green,blue,/get                            
@@ -748,18 +746,39 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
 ;
 ; HV - set the observation chain
 ;
-                 observatory = 'SOH'
-                 instrument = 'EIT'
-                 detector = 'EIT'
+                 oidm = ji_hv_oidm2('EIT')
+                 observatory = oidm.observatory
+                 instrument = oidm.instrument
+                 detector = oidm.detector
                  measurement = this_wave
 ;
 ; Create a comment string
 ;
 ;
-; update the FITS header 
+; update the FITS header, taking into account that the image may have
+; been resampled up
 ;
                  header = fitshead2struct(h)
-                 header = add_tag(header,header.solar_r,'hv_original_rsun')
+                 if ffhr then begin
+                    hv_original_cdelt1 = header.cdelt1/2.0
+                    hv_original_cdelt2 = header.cdelt2/2.0
+                    hv_original_crpix1 = header.crpix1*2.0
+                    hv_original_crpix2 = header.crpix2*2.0
+                    hv_original_naxis1 = header.naxis1*2.0
+                    hv_original_naxis2 = header.naxis2*2.0
+                    hv_original_rsun   = header.solar_r*2.0
+                    info = 'Original FITS file data was 2x2 summed onboard EIT and has been resampled to standard 1024 x 1024 px by eit_img_timerange_081111.pro.'
+                 endif else begin
+                    hv_original_cdelt1 = header.cdelt1
+                    hv_original_cdelt2 = header.cdelt2
+                    hv_original_crpix1 = header.crpix1
+                    hv_original_crpix2 = header.crpix2
+                    hv_original_naxis1 = header.naxis1
+                    hv_original_naxis2 = header.naxis2
+                    hv_original_rsun   = header.solar_r
+                    info = ''
+                 endelse
+                 header = add_tag(header,hv_original_rsun,'hv_original_rsun')
                  header = add_tag(header,observatory,'hv_observatory')
                  header = add_tag(header,instrument,'hv_instrument')
                  header = add_tag(header,detector,'hv_detector')
@@ -767,12 +786,12 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
                  header = add_tag(header,'wavelength','hv_measurement_type')
                  header = add_tag(header, header.date_obs,'hv_date_obs')
                  header = add_tag(header,1,'hv_opacity_group')
-                 header = add_tag(header,header.cdelt1,'hv_original_cdelt1')
-                 header = add_tag(header,header.cdelt2,'hv_original_cdelt2')
-                 header = add_tag(header,header.crpix1,'hv_original_crpix1')
-                 header = add_tag(header,header.crpix2,'hv_original_crpix2')
-                 header = add_tag(header,header.naxis1,'hv_original_naxis1')
-                 header = add_tag(header,header.naxis2,'hv_original_naxis2')
+                 header = add_tag(header,hv_original_cdelt1,'hv_original_cdelt1')
+                 header = add_tag(header,hv_original_cdelt2,'hv_original_cdelt2')
+                 header = add_tag(header,hv_original_crpix1,'hv_original_crpix1')
+                 header = add_tag(header,hv_original_crpix2,'hv_original_crpix2')
+                 header = add_tag(header,hv_original_naxis1,'hv_original_naxis1')
+                 header = add_tag(header,hv_original_naxis2,'hv_original_naxis2')
                  header = add_tag(header,0.0,'hv_crota1')
                  header = add_tag(header,1,'hv_centering')
                  header = add_tag(header,info,'hv_comment')
@@ -790,6 +809,7 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
 ;
                  outfile_count = long(outfile_count) + long(1)
                  print,'JI_EIT_IMG_TIMERANGE: number of files',outfile_count+1
+                 print,info
 ;
 ; create the hvs structure and save
 ;

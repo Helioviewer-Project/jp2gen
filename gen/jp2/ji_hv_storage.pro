@@ -15,7 +15,7 @@ FUNCTION JI_HV_STORAGE
 ; The subdirectory of <hv_root> where the JP2 are stored
 ;  default = 'jp2/'
 ;
-  jp2_root = 'jp2/'
+  jp2_root = 'jp2_test/'
 ;
 ; The subdirectory of <hv_root> where the JP2 are stored
 ;  default = 'hvs/'

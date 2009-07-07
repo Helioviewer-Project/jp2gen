@@ -6,15 +6,19 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
 ; Supported observers, usually an observatory/instrument/detector
 ; triplet, and their properties
 ;
-  supported = {observer:strarr(4)}
-  supported.observer[0] = 'SOH_EIT_EIT'
-  supported.observer[1] = 'SOH_MDI_MDI'
-  supported.observer[2] = 'SOH_LAS_0C2'
-  supported.observer[3] = 'SOH_LAS_0C3'
+  nicknames = (ji_hv_oidm2('EIT')).nicknames
+  nn = n_elements(nicknames)
+  supported = {observer:strarr(nn)}
+  for i = 0,nn-1 do begin
+     oidm = ji_hv_oidm2(nicknames[i])
+     supported.observer[i] = oidm.observatory + '_' + $
+                             oidm.instrument + '_' + $
+                             oidm.detector
+  endfor
 ;
 ; Default jp2 encoding options
 ;
-  jp2_default = {n_layers:8,n_levels:8,bit_rate:[0.5,0.01]}
+  jp2_default = {n_layers:8,n_levels:8,bit_rate:[0.5,0.01],idl_bitdepth = 256}
 ;
 ; Is the passed observer supported?
 ;
@@ -23,35 +27,36 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
 ; If so, continue
 ;
   if ( observer_index ne -1) then begin
+     name = nicknames[observer_index]
      supported_yn = 1
-     case observer_index of
 ;
-; SOH_EIT_EIT
+; EIT
 ;
-        0: case measurement of
+     case name of
+        'EIT':   case measurement of
            '304': jp2 = jp2_default
            '171': jp2 = jp2_default
            '195': jp2 = jp2_default
            '284': jp2 = jp2_default
         endcase
 ;
-; SOH_MDI_MDI
+; MDI
 ;
-        1: case measurement of
-           'int': jp2 = jp2_default
-           'mag': jp2 = jp2_default
+        'MDI': case measurement of 
+           'INT': jp2 = jp2_default
+           'MAG': jp2 = jp2_default
         endcase
 ;
-; SOH_LAS_0C2  
+; LASCO C2
 ;
-        2:  case measurement of
-           '0WL': jp2 = jp2_default
+        'C2': case measurement of
+           'WL': jp2 = jp2_default
         endcase
 ;
-; SOH_LAS_0C3  
+; LASCO C3
 ;
-        3:  case measurement of
-           '0WL': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01]}
+        'C3': case measurement of
+           'WL': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth = 256}
         endcase
 
      endcase

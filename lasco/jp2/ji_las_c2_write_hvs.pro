@@ -10,10 +10,11 @@ FUNCTION JI_LAS_C2_WRITE_HVS,filename,rootdir,write=write,bf_process = bf_proces
 ;
   progname = 'JI_LAS_C2_WRITE_HVS'
 ;
-  observatory = 'SOH'
-  instrument = 'LAS'
-  detector = '0C2'
-  measurement = '0WL'
+  oidm = ji_hv_oidm2('C2')
+  observatory = oidm.observatory
+  instrument = oidm.instrument
+  detector = oidm.detector
+  measurement = oidm.measurement
 ;
   observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
 ;

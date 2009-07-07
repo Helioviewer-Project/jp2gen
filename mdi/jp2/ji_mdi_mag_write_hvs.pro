@@ -12,10 +12,13 @@ function JI_MDI_MAG_WRITE_hvs,infile,rootdir,write = write
 progname = 'JI_MDI_MAG_WRITE_HVS'
 
 ;
-observatory = 'SOH'
-instrument = 'MDI'
-detector = 'MDI'
-measurement = 'mag'
+; get the observatory, instrument, detector names for MDI
+;
+  oidm = ji_hv_oidm2('MDI')
+  observatory = oidm.observatory
+  instrument = oidm.instrument
+  detector = oidm.detector
+  measurement = 'MAG'
 ;
 observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
 

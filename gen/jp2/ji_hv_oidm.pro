@@ -39,7 +39,7 @@ FUNCTION JI_HV_OIDM,name
 ;
 ; EIT
 ;
-        2: observatory = 'SOH'
+        2: observatory = 'SOHO'
            instrument = 'EIT'
            detector = 'EIT'
            measurement = ['304','171','195','284']
