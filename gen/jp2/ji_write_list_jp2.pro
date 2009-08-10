@@ -1,11 +1,15 @@
 
-
 ;
+;+
 ; Takes a list of input .hvs.sav files, or a single HVS variable,
 ; creates a new subdirectory if need be,
 ; and calls ji_write_jp2 to write the jp2 file
 ; in that directory
 ;
+; 2009/08/07 - change to call ji_write_jp2_lwg.pro (which does no
+;              rescaling or recentering)
+;
+;-
 PRO ji_write_list_jp2,hvs,dir
 ;
 ;
@@ -15,7 +19,8 @@ PRO ji_write_list_jp2,hvs,dir
      filename = hvs.yy + '_' + hvs.mm + '_' + hvs.dd + '_' + $
                 hvs.hh + hvs.mmm + hvs.ss + '_' + $
                 hvs.observatory + '_' + hvs.instrument + '_' + hvs.detector + '_' + hvs.measurement
-     ji_write_jp2_kdu,loc + filename,hvs.img,fitsheader = hvs.header
+;     ji_write_jp2_kdu,loc + filename,hvs.img,fitsheader = hvs.header
+     ji_write_jp2_lwg,loc + filename,hvs.img,fitsheader = hvs.header
   endif else begin
 ;
 ; go through the list 
@@ -43,7 +48,12 @@ PRO ji_write_list_jp2,hvs,dir
 ;
 ; call the program to write the JP2 file
 ;
-           ji_write_jp2_kdu,loc + filename,hvs.img,fitsheader = hvs.header
+;           ji_write_jp2_kdu,loc + filename,hvs.img,fitsheader = hvs.header
+;
+; call the program to write the JP2 file
+;
+           ji_write_jp2_lwg,loc + filename,hvs.img,fitsheader = hvs.header
+
         ENDIF
      ENDFOR
   ENDELSE

@@ -25,12 +25,12 @@ FUNCTION JI_LAS_C2_WRITE_HVS,filename,rootdir,write=write,bf_process = bf_proces
      ld = JI_MAKE_IMAGE_C2(filename,/nologo,/nolabel)
   ENDIF
   IF ( keyword_set(bf_process) ) THEN BEGIN
-     ld = JI_LAS_PROCESS_LIST_BF(filename)
+     ld = JI_LAS_PROCESS_LIST_BF2(filename,rootdir,'c2')
   ENDIF
   IF ( NOT(keyword_set(standard_process)) and NOT(keyword_set(bf_process)) ) THEN BEGIN
      ld = JI_MAKE_IMAGE_C2(filename,/nologo,/nolabel)
   ENDIF
-
+  
   if is_struct(ld) then begin
      cimg = ld.cimg
      hd = ld.header

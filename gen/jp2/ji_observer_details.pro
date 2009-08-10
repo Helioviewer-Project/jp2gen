@@ -18,7 +18,7 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
 ;
 ; Default jp2 encoding options
 ;
-  jp2_default = {n_layers:8,n_levels:8,bit_rate:[0.5,0.01],idl_bitdepth = 256}
+  jp2_default = {n_layers:8,n_levels:8,bit_rate:[0.5,0.01],idl_bitdepth: 8}
 ;
 ; Is the passed observer supported?
 ;
@@ -56,7 +56,7 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
 ; LASCO C3
 ;
         'C3': case measurement of
-           'WL': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth = 256}
+           'WL': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth: 8}
         endcase
 
      endcase

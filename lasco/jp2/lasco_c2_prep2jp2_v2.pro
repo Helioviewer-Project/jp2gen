@@ -35,6 +35,7 @@
 ;
 ; Setup some defaults - usually there is NO user contribution below here
 ;
+
 progname = 'lasco_c2_prep2jp2_v2'
 print,' '
 print,progname
@@ -85,6 +86,7 @@ save,filename = storage.hvs_location + filename, list
 ;
 listname = storage.hvs_location + filename + '.prepped.txt'
 
+prev = fltarr(1024,1024)
 ;
 ; ===================================================================================================
 ;
@@ -93,7 +95,8 @@ listname = storage.hvs_location + filename + '.prepped.txt'
 ; Write direct to JP2 from FITS
 ;
 if (write eq 'direct2jp2') then begin
-   prepped = JI_LAS_WRITE_HVS(storage.hvs_location,filename,storage.jp2_location,/c2,write = write,/bf_process)
+;   prepped = JI_LAS_WRITE_HVS(storage.hvs_location,filename,storage.jp2_location,/c2,write = write,/bf_process)
+   prepped = JI_LAS_WRITE_HVS2(storage.hvs_location,filename,storage.jp2_location,/c2,write = write,/bf_process)
    save,filename = listname,prepped
 endif
 

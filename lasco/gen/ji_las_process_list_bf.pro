@@ -151,6 +151,10 @@ FUNCTION ji_las_process_list_bf,filename, STAIND=staind, AGAIN=again, GIFS=gifs,
                              dO_BYTSCL=bytes,distort=distort, ref_box=boxref, box=box, norm=norm, $
                              lee_filt=lee, hide_pylon=hide,crem=0, MASK_OCC=mask, /LIST, $
                              EXPFAC=efac, times=times) 
+;                 im = mk_img(list1[i],minim,maxim,hstr,ratio=rat,fixgaps=fixg,use_model=model, $
+;                             dO_BYTSCL=bytes,distort=distort, ref_box=boxref, box=box, norm=norm, $
+;                             lee_filt=lee, hide_pylon=hide,crem=0, MASK_OCC=mask, /LIST, $
+;                             EXPFAC=efac, times=times) 
                  
                                 ;hist1 = 'MK_IMG(/RATIO,USE_MODEL='+trim(string(model))+')'
               ENDIF ELSE BEGIN
@@ -200,7 +204,8 @@ FUNCTION ji_las_process_list_bf,filename, STAIND=staind, AGAIN=again, GIFS=gifs,
         ENDFOR
      
         IF datatype(allstarims) NE 'UND' THEN allstars=allstarims
-        
+        prev = im
+        hprev = h
         return,{cimg:imc,header:h}
      endif
   endif else begin

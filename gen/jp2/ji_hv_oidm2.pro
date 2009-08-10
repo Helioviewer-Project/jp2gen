@@ -72,7 +72,7 @@ FUNCTION JI_HV_OIDM2,name
         observatory = 'SOHO'
         instrument = 'MDI'
         detector = 'MDI'
-        measurement = ['INT','MAG']
+        measurement = ['continuum','longitudunal-magnetogram']
      endif
   endif
 ;

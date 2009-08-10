@@ -324,8 +324,13 @@ END
 ;PRO eit_img_timerange,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,jp2=jp2,bitrate_jp2=bitrate_jp2,n_layers_jp2=n_layers_jp2,n_levels_jp2=n_levels_jp2,gray_jp2=gray_jp2,fitsheader=fitsheader,hv_names=hv_names
 ;-
 FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,jp2=jp2,bitrate_jp2=bitrate_jp2,n_layers_jp2=n_layers_jp2,n_levels_jp2=n_levels_jp2,fitsheader=fitsheader,hv_names=hv_names,sav=sav,hvs=hvs, write= write
-
-
+;
+; Load in the HVS observer details
+;
+  hvs_od = ji_observer_details('EIT')
+;
+; Help
+;
   IF KEYWORD_SET(help) THEN BEGIN
      print,'This is eit_img_timerange.pro.'
      print,'Calling sequence:'
@@ -621,13 +626,48 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
 ; if image is half-res, then resample to 1024x1024
               if ffhr then begin
                  a = a > ffhr_min_val(i_wave) & print, minmax(a)
-                 b0 = bytscl(alog10(a(*, *) < 4*t_val(i_wave)), min = alog10(ffhr_min_val(i_wave)), $
-                             max = alog10(4*t_val(i_wave)), top = 255b)  
+                 b1_top = 2^hvs_od.jp2.idl_bitdepth -1
+                 b1_min = alog10(ffhr_min_val(i_wave))
+                 b1_max = alog10(4*t_val(i_wave))
+
+                 if (hvs_od.jp2.idl_bitdepth eq 8) then begin
+                    b0 = bytscl(alog10(a(*, *) < 4*t_val(i_wave)), min = b1_min, max = b1_max, top = 255b) 
+                 endif else begin
+                    b1 = alog10(a(*, *) < 4*t_val(i_wave))
+                    imin = where(b1 le b1_min, count)
+                    if (count gt 0) then begin
+                       b1(imin) = 0.0
+                    endif
+                    imax = where(b1 ge b1_max, count)
+                    if (count gt 0) then begin
+                       b1(imax) = b1_top
+                    endif
+                    b0 = nint( (b1_top + 0.9999)*(x-b1_min)/(b1_max-b1_min) )
+                 endelse
                  b0=rebin(b0,1024,1024)
               endif else begin
                  a = a > min_val(i_wave) & print, minmax(a)
-                 b0 = bytscl(alog10(a(*, *) < t_val(i_wave)), min =  alog10(min_val(i_wave)), $
-                             max = alog10(t_val(i_wave)), top = 255b)                                         
+                 b1_top = byte(255);2^hvs_od.jp2.idl_bitdepth -1
+                 b1_min = alog10(min_val(i_wave))
+                 b1_max = alog10(t_val(i_wave))
+
+                 if (hvs_od.jp2.idl_bitdepth eq 8) then begin
+                    b0 = bytscl(alog10(a(*, *) < t_val(i_wave)), min =  b1_min, max = b1_max, top = 255b)     
+                 endif else begin
+                    b1 = alog10(a(*, *) < t_val(i_wave))
+                    imin = where(b1 le b1_min, mincount)
+                    imax = where(b1 ge b1_max, maxcount)
+                    b0 = floor( (b1_top + 0.99999)*(b1-b1_min)/(b1_max-b1_min) )
+                    if (mincount gt 0) then begin
+                       b0(imin) = 0.0
+                    endif
+                    if (maxcount gt 0) then begin
+                       b0(imax) = b1_top
+                    endif
+
+                    
+;                    print,'!'
+                 endelse
               endelse
               
               IF KEYWORD_SET(gif) THEN BEGIN
@@ -778,7 +818,6 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
                     hv_original_rsun   = header.solar_r
                     info = ''
                  endelse
-                 header = add_tag(header,hv_original_rsun,'hv_original_rsun')
                  header = add_tag(header,observatory,'hv_observatory')
                  header = add_tag(header,instrument,'hv_instrument')
                  header = add_tag(header,detector,'hv_detector')
@@ -786,12 +825,17 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
                  header = add_tag(header,'wavelength','hv_measurement_type')
                  header = add_tag(header, header.date_obs,'hv_date_obs')
                  header = add_tag(header,1,'hv_opacity_group')
-                 header = add_tag(header,hv_original_cdelt1,'hv_original_cdelt1')
-                 header = add_tag(header,hv_original_cdelt2,'hv_original_cdelt2')
-                 header = add_tag(header,hv_original_crpix1,'hv_original_crpix1')
-                 header = add_tag(header,hv_original_crpix2,'hv_original_crpix2')
-                 header = add_tag(header,hv_original_naxis1,'hv_original_naxis1')
-                 header = add_tag(header,hv_original_naxis2,'hv_original_naxis2')
+;
+; The following hv_original_* tags are not required by ji_write_jp2_lwg.pro
+;
+;;                  header = add_tag(header,hv_original_rsun,'hv_original_rsun')
+;;                  header = add_tag(header,hv_original_cdelt1,'hv_original_cdelt1')
+;;                  header = add_tag(header,hv_original_cdelt2,'hv_original_cdelt2')
+;;                  header = add_tag(header,hv_original_crpix1,'hv_original_crpix1')
+;;                  header = add_tag(header,hv_original_crpix2,'hv_original_crpix2')
+;;                  header = add_tag(header,hv_original_naxis1,'hv_original_naxis1')
+;;                  header = add_tag(header,hv_original_naxis2,'hv_original_naxis2')
+
                  header = add_tag(header,0.0,'hv_crota1')
                  header = add_tag(header,1,'hv_centering')
                  header = add_tag(header,info,'hv_comment')
