@@ -17,7 +17,7 @@ function JI_MDI_INT_WRITE_HVS,infile,rootdir,write = write
   observatory = oidm.observatory
   instrument = oidm.instrument
   detector = oidm.detector
-  measurement = 'INT'
+  measurement = oidm.measurement[0]
 ;
   observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
 
@@ -81,7 +81,6 @@ function JI_MDI_INT_WRITE_HVS,infile,rootdir,write = write
 ; change the header to a structure, and add HV tags
 ;
   hd = fitshead2struct(hd)
-  hd = add_tag(hd,hd.r_sun,'hv_original_rsun')
   hd = add_tag(hd,observatory,'hv_observatory')
   hd = add_tag(hd,instrument,'hv_instrument')
   hd = add_tag(hd,detector,'hv_detector')
@@ -89,12 +88,13 @@ function JI_MDI_INT_WRITE_HVS,infile,rootdir,write = write
   hd = add_tag(hd,'wavelength','hv_measurement_type')
   hd = add_tag(hd,hv_date_obs,'hv_date_obs')
   hd = add_tag(hd,1,'hv_opacity_group')
-  hd = add_tag(hd,hd.cdelt1,'hv_original_cdelt1')
-  hd = add_tag(hd,hd.cdelt2,'hv_original_cdelt2')
-  hd = add_tag(hd,hd.crpix1,'hv_original_crpix1')
-  hd = add_tag(hd,hd.crpix2,'hv_original_crpix2')
-  hd = add_tag(hd,hd.naxis1,'hv_original_naxis1')
-  hd = add_tag(hd,hd.naxis2,'hv_original_naxis2')
+;  hd = add_tag(hd,hd.r_sun,'hv_original_rsun')
+;  hd = add_tag(hd,hd.cdelt1,'hv_original_cdelt1')
+;  hd = add_tag(hd,hd.cdelt2,'hv_original_cdelt2')
+;  hd = add_tag(hd,hd.crpix1,'hv_original_crpix1')
+;  hd = add_tag(hd,hd.crpix2,'hv_original_crpix2')
+;  hd = add_tag(hd,hd.naxis1,'hv_original_naxis1')
+;  hd = add_tag(hd,hd.naxis2,'hv_original_naxis2')
   hd = add_tag(hd,0.0,'hv_crota1')
   hd = add_tag(hd,1,'hv_centering')
   hd = add_tag(hd,progname,'hv_source_program')

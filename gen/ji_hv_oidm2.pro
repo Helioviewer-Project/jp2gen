@@ -45,7 +45,7 @@ FUNCTION JI_HV_OIDM2,name
         observatory = 'SOHO'
         instrument = 'LASCO'
         detector = 'C2'
-        measurement = ['WL']
+        measurement = ['orange']
      endif
 ;
 ; LASCO C3
@@ -54,7 +54,7 @@ FUNCTION JI_HV_OIDM2,name
         observatory = 'SOHO'
         instrument = 'LASCO'
         detector = 'C3'
-        measurement = ['WL']
+        measurement = ['clear']
      endif
 ;
 ; EIT
@@ -72,7 +72,7 @@ FUNCTION JI_HV_OIDM2,name
         observatory = 'SOHO'
         instrument = 'MDI'
         detector = 'MDI'
-        measurement = ['continuum','longitudunal-magnetogram']
+        measurement = ['continuum','longitudinal-magnetogram']
      endif
   endif
 ;

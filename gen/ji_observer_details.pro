@@ -45,18 +45,22 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
         'MDI': case measurement of 
            'INT': jp2 = jp2_default
            'MAG': jp2 = jp2_default
+           'continuum': jp2 = jp2_default
+           'longitudinal-magnetogram': jp2 = jp2_default
         endcase
 ;
 ; LASCO C2
 ;
         'C2': case measurement of
            'WL': jp2 = jp2_default
+           'orange': jp2 = jp2_default
         endcase
 ;
 ; LASCO C3
 ;
         'C3': case measurement of
            'WL': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth: 8}
+           'clear': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth: 8}
         endcase
 
      endcase
