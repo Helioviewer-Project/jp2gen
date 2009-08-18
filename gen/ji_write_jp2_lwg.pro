@@ -75,6 +75,10 @@ PRO ji_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; this program name
 ;
   progname = 'ji_write_jp2_lwg'
+;
+; Line feed character:
+;
+        lf=string(10b)
 
 ;
 ; set keyword "quiet" to suppress kdu_compress output
@@ -157,7 +161,7 @@ PRO ji_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Set where the KDU library is, if required
 ;
-     IF KEYWORD_SET(kdu_lib_location) eq 0 THEN kdu_lib_location = wby.kdu_lib_location
+     IF KEYWORD_SET(kdu_lib_location) eq 0 THEN kdu_lib_location = wby.local.kdu_lib_location
 ;
 ; Is this observer supported?
 ;    
@@ -320,17 +324,25 @@ PRO ji_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;        header = add_tag(header,header.hv_original_rsun*ratio,'hv_rsun')
 ; Zoom level 
 ;        header = add_tag(header,zoom,'hv_zoom')
+;
 ; Create and add an information string
-        if tag_exist(header,'hv_comment') then begin
-           header.hv_comment = header.hv_comment + $
-                               ' JP2 file created at ' + wby.institute + $
+;
+        hv_comment = 'JP2 file created locally at ' + wby.local.institute + $
                                ' using '+ progname + $
-                               ' at ' + systime() + $
-                               '. Contact ' + wby.contact + $
-                               ' for more details/questions/comments.'
-        endif else begin
-           header = add_tag(header,hv_comment,'hv_comment')
-        endelse
+                               ' at ' + systime() + '.' + lf + $
+                               'Contact ' + wby.local.contact + $
+                               ' for more details/questions/comments regarding this JP2 file.'+lf
+        hv_comment = hv_comment + $
+                     'FITS to JP2 source code provided by ' + wby.source.contact + $
+                     '[' + wby.source.institute + ']'+ $
+                     ' and is available for download at ' + wby.source.jp2gen_code + '.' + lf + $
+                     'Please contact the source code providers if you suspect an error in the source code.' + lf + $
+                     'Full source code for the entire Helioviewer Project can be found at ' + wby.source.all_code + '.'
+        if tag_exist(header,'hv_comment') then begin
+           hv_comment = header.hv_comment + lf + hv_comment
+        endif; else begin
+             ;header = add_tag(header,hv_comment,'hv_comment')
+             ;endelse
 ;
 ; If the image is a coronograph then include the inner and outer radii
 ; of the coronagraph in image pixels
@@ -402,57 +414,80 @@ PRO ji_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         endwhile
         xh+='</comment>'+lf
 ;
-; Close the FITS information
-;
-        xh+='</fits>'+lf
-;
 ; Helioviewer XML tags
 ;
-        xh+='<Helioviewer>'+lf
-        for j=0,ntags-1 do begin
-           if (where(j eq jhv) ne -1) then begin      
-              if (strmid(tagnames[j],0,3) eq 'HV_') THEN BEGIN
-                 reduced = strmid(tagnames[j],3,strlen(tagnames[j])-3)
-                 xh+='<'+reduced+'>'+strtrim(string(header.(j)),2)+'</'+reduced+'>'+lf
-              endif
-           endif
-        endfor
+;        xh+='<Helioviewer>'+lf
+;        for j=0,ntags-1 do begin
+;           if (where(j eq jhv) ne -1) then begin      
+;              if (strmid(tagnames[j],0,3) eq 'HV_') THEN BEGIN
+;                 reduced = strmid(tagnames[j],3,strlen(tagnames[j])-3)
+;                 reduced = tagnames[j]
+;                 xh+='<'+reduced+'>'+strtrim(string(header.(j)),2)+'</'+reduced+'>'+lf
+;              endif
+;           endif
+;       endfor
+
+
+
 ;
 ; Helioviewer JP2 tags
 ;
+
+;
+; Original rotation state
+;
+        xh+='<HV_ROTATION>'+strtrim(string(header.hv_rotation),2)+'</HV_ROTATION>'+lf
+;
+; JP2GEN version
+;
+        xh+='<HV_JP2GEN_VERSION>'+wby.source.jp2gen_version+'</HV_JP2GEN_VERSION>'+lf
+;
+; JP2 comments
+;
+        xh+='<HV_COMMENT>'+hv_comment+'</HV_COMMENT>'+lf
+;
+; Explicit support from the Helioviewer Project
+;
         if trim(obsdet.supported_yn) THEN BEGIN
-           xh+='<SUPPORTED>TRUE</SUPPORTED>'+lf
+           xh+='<HV_SUPPORTED>TRUE</HV_SUPPORTED>'+lf
 ;           xh+='<SUPPORTED_YN>'+trim(obsdet.supported_yn)+'</SUPPORTED_YN>'+lf
         ENDIF ELSE BEGIN
-           xh+='<SUPPORTED>FALSE</SUPPORTED>'+lf           
+           xh+='<HV_SUPPORTED>FALSE</HV_SUPPORTED>'+lf           
         ENDELSE
 ;
 ;        xh+='<BIT_RATE_FACTOR>'+trim(bit_rate_factor)+'</BIT_RATE_FACTOR>'+lf
 ;
         IF have_tag(header,'hva_alpha_transparency') THEN BEGIN
-           xh+='<ALPHA_TRANSPARENCY>TRUE</ALPHA_TRANSPARENCY>'+lf
+           xh+='<HV_ALPHA_TRANSPARENCY>TRUE</HV_ALPHA_TRANSPARENCY>'+lf
 ;           xh+='<ALPHA_TRANSPARENCY_YN>Alpha transparency included.' + $
 ;               'Two layer image (0,*,*) = image, ' + $
 ;               '(1,*,*) = alpha transparency layer</ALPHA_TRANSPARENCY_YN>'+lf
         endif else begin
-           xh+='<ALPHA_TRANSPARENCY>FALSE</ALPHA_TRANSPARENCY>'+lf
+           xh+='<HV_ALPHA_TRANSPARENCY>FALSE</HV_ALPHA_TRANSPARENCY>'+lf
 ;           xh+='<ALPHA_TRANSPARENCY_YN>No alpha transparency.' + $
 ;               'Single layer image.</ALPHA_TRANSPARENCY_YN>'+lf
         endelse
-        jp2_tag_names = tag_names(obsdet.jp2)
-        for i = 0,n_tags(obsdet.jp2)-1 do begin
-           tag_value = trim( gt_tagval(obsdet.jp2,jp2_tag_names[i]) )
-           if isarray(tag_value) then begin
-              xh+='<'+jp2_tag_names[i]+'>'
-              for j = 0,n_elements(tag_value)-1 do begin
-                 xh+='(' + tag_value[j] + ')'
-              endfor
-              xh+='</'+jp2_tag_names[i]+'>'+lf
-           endif else begin
-              xh+='<'+jp2_tag_names[i]+'>' + tag_value    + '</'+jp2_tag_names[i]+'>'+lf
-           endelse
-        endfor
-        xh+='</Helioviewer>'+lf
+;
+; JP2 specific tag names - number of layers, bit depth, etc
+;
+;        jp2_tag_names = tag_names(obsdet.jp2)
+;        for i = 0,n_tags(obsdet.jp2)-1 do begin
+;           tag_value = trim( gt_tagval(obsdet.jp2,jp2_tag_names[i]) )
+;           if isarray(tag_value) then begin
+;              xh+='<'+jp2_tag_names[i]+'>'
+;              for j = 0,n_elements(tag_value)-1 do begin
+;                 xh+='(' + tag_value[j] + ')'
+;              endfor
+;              xh+='</'+jp2_tag_names[i]+'>'+lf
+;           endif else begin
+;              xh+='<'+jp2_tag_names[i]+'>' + tag_value    + '</'+jp2_tag_names[i]+'>'+lf
+;           endelse
+;        endfor
+;        xh+='</Helioviewer>'+lf
+;
+; Close the FITS information
+;
+        xh+='</fits>'+lf
 ;
 ; Enclose all the XML elements in their own container
 ;

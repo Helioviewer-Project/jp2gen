@@ -822,9 +822,9 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
                  header = add_tag(header,instrument,'hv_instrument')
                  header = add_tag(header,detector,'hv_detector')
                  header = add_tag(header,measurement,'hv_measurement')
-                 header = add_tag(header,'wavelength','hv_measurement_type')
+;                 header = add_tag(header,'wavelength','hv_measurement_type')
                  header = add_tag(header, header.date_obs,'hv_date_obs')
-                 header = add_tag(header,1,'hv_opacity_group')
+;                 header = add_tag(header,1,'hv_opacity_group')
 ;
 ; The following hv_original_* tags are not required by ji_write_jp2_lwg.pro
 ;
@@ -836,9 +836,9 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
 ;;                  header = add_tag(header,hv_original_naxis1,'hv_original_naxis1')
 ;;                  header = add_tag(header,hv_original_naxis2,'hv_original_naxis2')
 
-                 header = add_tag(header,0.0,'hv_crota1')
-                 header = add_tag(header,1,'hv_centering')
-                 header = add_tag(header,info,'hv_comment')
+                 header = add_tag(header,-header.SC_ROLL,'hv_rotation')
+;                 header = add_tag(header,1,'hv_centering')
+;                 header = add_tag(header,info,'hv_comment')
 ;
 ; HV - get the components to the observation time and date
 ;
