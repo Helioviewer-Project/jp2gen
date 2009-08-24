@@ -10,7 +10,7 @@
 ;              rescaling or recentering)
 ;
 ;-
-PRO ji_write_list_jp2,hvs,dir
+PRO ji_write_list_jp2,hvs,dir, loc = loc, filename = filename
 ;
 ;
 ;

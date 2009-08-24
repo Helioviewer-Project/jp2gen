@@ -12,7 +12,7 @@ FUNCTION JI_HV_OIDM2,name
 ; **********************************************************
 ; * Edit the "nicknames" array to include a new instrument *
 ; **********************************************************
-  nicknames = ['C2','C3','EIT','MDI']
+  nicknames = ['LASCO-C2','LASCO-C3','EIT','MDI','EUVI-A','EUVI-B']
 ;
 ;
 ;
@@ -41,7 +41,7 @@ FUNCTION JI_HV_OIDM2,name
 ;
 ; LASCO C2
 ;
-     If name eq 'C2' then begin
+     If name eq 'LASCO-C2' then begin
         observatory = 'SOHO'
         instrument = 'LASCO'
         detector = 'C2'
@@ -50,7 +50,7 @@ FUNCTION JI_HV_OIDM2,name
 ;
 ; LASCO C3
 ;
-     if name eq 'C3' then begin
+     if name eq 'LASCO-C3' then begin
         observatory = 'SOHO'
         instrument = 'LASCO'
         detector = 'C3'
@@ -74,6 +74,25 @@ FUNCTION JI_HV_OIDM2,name
         detector = 'MDI'
         measurement = ['continuum','magnetogram']
      endif
+;
+; EUVI-A
+;
+     if name eq 'EUVI-A' then begin
+        observatory = 'STEREO-A'
+        instrument = 'SECCHI'
+        detector = 'EUVI'
+        measurement = ['304','171','195','284']
+     endif
+;
+; EUVI-B
+;
+     if name eq 'EUVI-B' then begin
+        observatory = 'STEREO-B'
+        instrument = 'SECCHI'
+        detector = 'EUVI'
+        measurement = ['304','171','195','284']
+     endif
+
   endif
 ;
 ; return the answer

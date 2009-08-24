@@ -51,16 +51,34 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
 ;
 ; LASCO C2
 ;
-        'C2': case measurement of
+        'LASCO-C2': case measurement of
            'WL': jp2 = jp2_default
            'orange': jp2 = jp2_default
         endcase
 ;
 ; LASCO C3
 ;
-        'C3': case measurement of
+        'LASCO-C3': case measurement of
            'WL': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth: 8}
            'clear': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth: 8}
+        endcase
+;
+; EUVI-A
+;
+        'EUVI-A':   case measurement of
+           '304': jp2 = jp2_default
+           '171': jp2 = jp2_default
+           '195': jp2 = jp2_default
+           '284': jp2 = jp2_default
+        endcase
+;
+; EUVI-B
+;
+        'EUVI-B':   case measurement of
+           '304': jp2 = jp2_default
+           '171': jp2 = jp2_default
+           '195': jp2 = jp2_default
+           '284': jp2 = jp2_default
         endcase
 
      endcase
