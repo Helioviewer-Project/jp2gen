@@ -12,7 +12,9 @@ FUNCTION JI_HV_OIDM2,name
 ; **********************************************************
 ; * Edit the "nicknames" array to include a new instrument *
 ; **********************************************************
-  nicknames = ['LASCO-C2','LASCO-C3','EIT','MDI','EUVI-A','EUVI-B']
+  nicknames = ['LASCO-C2','LASCO-C3','EIT','MDI',$ ; SOHO
+               'EUVI-A','COR1-A','COR2-A',$ ; STEREO-A
+               'EUVI-B','COR1-B','COR2-B'] ; STEREO-B
 ;
 ;
 ;
@@ -84,6 +86,24 @@ FUNCTION JI_HV_OIDM2,name
         measurement = ['304','171','195','284']
      endif
 ;
+; COR1-A
+;
+     if name eq 'COR1-A' then begin
+        observatory = 'STEREO-A'
+        instrument = 'SECCHI'
+        detector = 'COR1'
+        measurement = ['white-light']
+     endif
+;
+; COR2-A
+;
+     if name eq 'COR2-A' then begin
+        observatory = 'STEREO-A'
+        instrument = 'SECCHI'
+        detector = 'COR2'
+        measurement = ['white-light']
+     endif
+;
 ; EUVI-B
 ;
      if name eq 'EUVI-B' then begin
@@ -91,6 +111,24 @@ FUNCTION JI_HV_OIDM2,name
         instrument = 'SECCHI'
         detector = 'EUVI'
         measurement = ['304','171','195','284']
+     endif
+;
+; COR1-B
+;
+     if name eq 'COR1-B' then begin
+        observatory = 'STEREO-B'
+        instrument = 'SECCHI'
+        detector = 'COR1'
+        measurement = ['white-light']
+     endif
+;
+; COR2-B
+;
+     if name eq 'COR2-B' then begin
+        observatory = 'STEREO-B'
+        instrument = 'SECCHI'
+        detector = 'COR2'
+        measurement = ['white-light']
      endif
 
   endif

@@ -76,7 +76,6 @@ if (write eq 'via_hvs') then begin
       JI_WRITE_LIST_JP2, prepped, storage.jp2_location
    endelse
 endif
-stop
 ;
 ; ======================================================================================================
 ;

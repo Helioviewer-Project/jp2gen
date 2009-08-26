@@ -92,7 +92,7 @@ observation =  observatory + '_' + instrument + '_' + detector + '_' + measureme
 ;  hd = add_tag(hd,hd.crpix2,'hv_original_crpix2')
 ;  hd = add_tag(hd,hd.naxis1,'hv_original_naxis1')
 ;  hd = add_tag(hd,hd.naxis2,'hv_original_naxis2')
-  hd = add_tag(hd,0.0,'hv_crota1')
+  hd = add_tag(hd,0.0,'hv_rotation')
   hd = add_tag(hd,1,'hv_centering')
   hd = add_tag(hd,progname,'hv_source_program')
 ;

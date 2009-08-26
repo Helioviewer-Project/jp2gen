@@ -27,9 +27,11 @@ FUNCTION JI_HV_EUVI_PREP,list,observer
 ;
   if observer eq 'EUVI-A' then begin
      list_sc = list.sc_a
+     stereo = 'ahead'
   endif
   if observer eq 'EUVI-B' then begin
      list_sc = list.sc_b
+     stereo = 'behind'
   endif
 ;
 ; Number of elements
@@ -46,14 +48,10 @@ FUNCTION JI_HV_EUVI_PREP,list,observer
 ;
 ; Run SECCHI_PREP
 ;
-     secchi_prep, list_sc[i], header, image
-     img = image
+     JI_SSC_BROWSE_SECCHI_JPEG,list_sc[i],'',stereo,'/service',hv_answer
 
-     yloc = 0
-     startind = 0
-     ftimes = strarr(1)
-     img=scc_mk_image(list_sc[i],yloc,startind,ftimes,outsize=2048,/nodatetime,outhdr=outhdr,/nopop,/full,/nologo,_EXTRA=_extra)
-
+     img = hv_answer.temp
+     header = hv_answer.header
 ;
 ; Get the wavelength
 ;

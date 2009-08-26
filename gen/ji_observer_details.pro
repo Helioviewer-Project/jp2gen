@@ -46,21 +46,21 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
            'INT': jp2 = jp2_default
            'MAG': jp2 = jp2_default
            'continuum': jp2 = jp2_default
-           'longitudinal-magnetogram': jp2 = jp2_default
+           'magnetogram': jp2 = jp2_default
         endcase
 ;
 ; LASCO C2
 ;
         'LASCO-C2': case measurement of
            'WL': jp2 = jp2_default
-           'orange': jp2 = jp2_default
+           'white-light': jp2 = jp2_default
         endcase
 ;
 ; LASCO C3
 ;
         'LASCO-C3': case measurement of
            'WL': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth: 8}
-           'clear': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth: 8}
+           'white-light': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth: 8}
         endcase
 ;
 ; EUVI-A
@@ -72,6 +72,18 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
            '284': jp2 = jp2_default
         endcase
 ;
+; COR1-A
+;
+        'COR1-A': case measurement of
+           'white-light': jp2 = jp2_default
+        endcase
+;
+; COR2-A
+;
+        'COR2-A': case measurement of
+           'white-light': jp2 = jp2_default
+        endcase
+;
 ; EUVI-B
 ;
         'EUVI-B':   case measurement of
@@ -80,6 +92,19 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
            '195': jp2 = jp2_default
            '284': jp2 = jp2_default
         endcase
+;
+; COR1-B
+;
+        'COR1-B': case measurement of
+           'white-light': jp2 = jp2_default
+        endcase
+;
+; COR2-B
+;
+        'COR2-B': case measurement of
+           'white-light': jp2 = jp2_default
+        endcase
+
 
      endcase
   endif else begin
