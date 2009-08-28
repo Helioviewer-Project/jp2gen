@@ -50,45 +50,48 @@ FUNCTION JI_HV_EUVI_PREP,list,observer
 ;
      JI_SSC_BROWSE_SECCHI_JPEG,list_sc[i],'',stereo,'/service',hv_answer
 
-     img = hv_answer.temp
-     header = hv_answer.header
+     if is_struct(hv_answer) then begin
+        img = hv_answer.temp
+        header = hv_answer.header
 ;
 ; Get the wavelength
 ;
-     measurement = trim(header.wavelnth)
+        measurement = trim(header.wavelnth)
 ;
 ; Update the FITS header with HV tags
 ;
-     header = add_tag(header,observatory,'hv_observatory')
-     header = add_tag(header,instrument,'hv_instrument')
-     header = add_tag(header,detector,'hv_detector')
-     header = add_tag(header,measurement,'hv_measurement')
-     header = add_tag(header, header.date_obs,'hv_date_obs')
-     header = add_tag(header, header.crota,'hv_rotation')
+        header = add_tag(header,observatory,'hv_observatory')
+        header = add_tag(header,instrument,'hv_instrument')
+        header = add_tag(header,detector,'hv_detector')
+        header = add_tag(header,measurement,'hv_measurement')
+        header = add_tag(header, header.crota,'hv_rotation')
 ;
 ; HV - get the components to the observation time and date
 ;
-     yy = strmid(header.date_obs,0,4)
-     mm = strmid(header.date_obs,5,2)
-     dd = strmid(header.date_obs,8,2)
-     hh = strmid(header.date_obs,11,2)
-     mmm = strmid(header.date_obs,14,2)
-     ss = strmid(header.date_obs,17,2)
+        yy = strmid(header.date_obs,0,4)
+        mm = strmid(header.date_obs,5,2)
+        dd = strmid(header.date_obs,8,2)
+        hh = strmid(header.date_obs,11,2)
+        mmm = strmid(header.date_obs,14,2)
+        ss = strmid(header.date_obs,17,2)
 ;
 ; create the hvs structure
 ;
-     hvs = {img:img,$
-            header:header,$
-            observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
-            yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss}
+        hvs = {img:img,$
+               header:header,$
+               observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
+               yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss}
 ;
 ; write the JP2 file
 ;
-     JI_WRITE_LIST_JP2,hvs,storage.jp2_location, loc = loc,filename = filename
+        JI_WRITE_LIST_JP2,hvs,storage.jp2_location, loc = loc,filename = filename
 ;
 ;
 ;
-     outfile[i] = loc + filename + '.jp2'
+        outfile[i] = loc + filename + '.jp2'
+     endif else begin
+        outfile[i] = '-1'
+     endelse
   endfor
   return, outfile
 end

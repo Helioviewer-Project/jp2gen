@@ -4,14 +4,29 @@
 ; EUVI prep 2 JP2
 ;
 list = scclister()
+n1 = n_elements(list)
+t0 = systime(1)
 
 if tag_exist(list,'sc_a') then begin
-   outfile = JI_HV_EUVI_PREP(list,'EUVI-A')
-endif
+   outfile_a = JI_HV_EUVI_PREP(list,'EUVI-A')
+endif else begin
+   outfile_a = '-1'
+endelse
 
 if tag_exist(list,'sc_b') then begin
-   outfile = JI_HV_EUVI_PREP(list,'EUVI-B')
-endif
+   outfile_b = JI_HV_EUVI_PREP(list,'EUVI-B')
+endif else begin
+   outfile_b = '-1'
+endelse
+t1 = systime(1)
+;
+;
+;
+print,'Total number of files ',n1
+print,'Total time taken ',t1-t0
+print,'Average time taken ',(t1-t0)/float(n1)
+
+
 
 ;
 ; Call details of storage locations
@@ -32,7 +47,7 @@ listname = storage.hvs_location + filename + '.prepped.txt'
 ;
 ; Save the prepped data list
 ;
-save,filename = listname,prepped
+save,filename = listname,outfile_a,outfile_b
 
 ;
 ;

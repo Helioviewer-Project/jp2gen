@@ -10,7 +10,7 @@ FUNCTION JI_LAS_C2_WRITE_HVS2,filename,rootdir,ld
 ;
   progname = 'JI_LAS_C2_WRITE_HVS2'
 ;
-  oidm = ji_hv_oidm2('C2')
+  oidm = ji_hv_oidm2('LASCO-C2')
   observatory = oidm.observatory
   instrument = oidm.instrument
   detector = oidm.detector
@@ -93,9 +93,9 @@ FUNCTION JI_LAS_C2_WRITE_HVS2,filename,rootdir,ld
      hd = add_tag(hd,instrument,'hv_instrument')
      hd = add_tag(hd,detector,'hv_detector')
      hd = add_tag(hd,measurement,'hv_measurement')
-     hd = add_tag(hd,'wavelength','hv_measurement_type')
-     hd = add_tag(hd,yy + '-' + mm + '-' + dd + 'T' + hd.time_obs + 'Z','hv_date_obs')
-     hd = add_tag(hd,2,'hv_opacity_group')
+;     hd = add_tag(hd,'wavelength','hv_measurement_type')
+;     hd = add_tag(hd,yy + '-' + mm + '-' + dd + 'T' + hd.time_obs + 'Z','hv_date_obs')
+;     hd = add_tag(hd,2,'hv_opacity_group')
 ;     hd = add_tag(hd,r_sun,'hv_original_rsun')
 ;     hd = add_tag(hd,hd.cdelt1,'hv_original_cdelt1')
 ;     hd = add_tag(hd,hd.cdelt2,'hv_original_cdelt2')
@@ -103,11 +103,11 @@ FUNCTION JI_LAS_C2_WRITE_HVS2,filename,rootdir,ld
 ;     hd = add_tag(hd,hd.crpix2,'hv_original_crpix2')
 ;     hd = add_tag(hd,hd.naxis1,'hv_original_naxis1')
 ;     hd = add_tag(hd,hd.naxis2,'hv_original_naxis2')
-     hd = add_tag(hd,hd.crota1,'hv_crota1')
-     hd = add_tag(hd,1,'hv_centering')
-     hd = add_tag(hd,r_occ,'hv_rocc_inner')
-     hd = add_tag(hd,r_occ_out,'hv_rocc_outer')
-     hd = add_tag(hd,progname,'hv_source_program')
+     hd = add_tag(hd,hd.crota1,'hv_rotation')
+;;      hd = add_tag(hd,1,'hv_centering')
+;;      hd = add_tag(hd,r_occ,'hv_rocc_inner')
+;;      hd = add_tag(hd,r_occ_out,'hv_rocc_outer')
+      hd = add_tag(hd,progname,'hv_source_program')
 ;
 ; Active Helioviewer tags have a "hva_" tag, change the nature of the
 ; final output, and are not stored in the final JP2 file

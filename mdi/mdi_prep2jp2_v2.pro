@@ -33,6 +33,10 @@ write    = 'direct2jp2'
 ; Call details of storage locations
 ;
 storage = JI_HV_STORAGE()
+;
+; Start timing
+;
+s0 = systime(1)
 
 ;
 ; ===================================================================================================
@@ -76,6 +80,8 @@ if (write eq 'via_hvs') then begin
       JI_WRITE_LIST_JP2, prepped, storage.jp2_location
    endelse
 endif
+n1 = n_elements(list)
+
 ;
 ; ======================================================================================================
 ;
@@ -118,7 +124,11 @@ if (write eq 'via_hvs') then begin
       JI_WRITE_LIST_JP2, prepped, storage.jp2_location
    endelse
 endif
-
+n2 = n_elements(list)
+s1 = systime(1)
+print,'Total number of files ',n1+n2
+print,'Total time taken ',s1-s0
+print,'Average time taken ',(s1-s0)/float(n1+n2)
 
 ;
 ;
