@@ -1,0 +1,103 @@
+function get_smask, hdr, ignorestructname=ignorestructname
+;+
+; $Id: get_smask.pro,v 1.5 2008/01/16 23:05:50 thompson Exp $
+;
+; Project   : STEREO SECCHI
+;                   
+; Name      : get_smask
+;               
+; Purpose   : returns smooth mask array 
+;               
+; Explanation: checks common block before opening mask file
+;	       saves mask file to common block and re-scales the 
+;              mask array for summing 
+;               
+; Use       : IDL> mask = get_smask(hdr)
+;    
+; Inputs    : hdr -image header, FITS or SECCHI header structure
+;             /ignorestructname - don't check if the structure has the name of a secchi structure
+;               
+; Outputs   : mask - binary array values 1 or 0  
+;
+; Calls     : SCC_FITSHDR2STRUCT, READFITS
+;
+; Common    : SECCHI_SMASK
+;               
+; Category    : Calibration
+;               
+; Prev. Hist. : None.
+;
+; Written     : Robin C Colaninno NRL/GMU Dec 2006
+;               
+; $Log: get_smask.pro,v $
+; Revision 1.5  2008/01/16 23:05:50  thompson
+; Added /smask support for HI2
+;
+; Revision 1.4  2007/11/28 15:45:49  thernis
+; Implement ignorestructname keyword to allow crazy people to use the program with non standard secchi headers.
+;
+; Revision 1.3  2007/07/10 21:17:35  colaninn
+; added A and B mask for COR2
+;
+; Revision 1.2  2007/01/31 18:31:57  colaninn
+; added comments and corrected header
+;
+; Revision 1.1  2006/12/07 21:12:50  colaninn
+; added to CVS 06/12/07
+;
+;-     
+
+common secchi_smask,smask, smask_name
+
+IF(DATATYPE(hdr) NE 'STC') THEN hdr=SCC_FITSHDR2STRUCT(hdr)
+if ~keyword_set(ignorestructname) then IF (TAG_NAMES(hdr, /STRUCTURE_NAME) NE 'SECCHI_HDR_STRUCT') THEN $
+message,'ONLY SECCHI HEADER STRUCTURE ALLOWED'
+
+IF (hdr.DETECTOR EQ 'HI1') THEN message,'Not implemented for H1'
+
+path = getenv_slash('SECCHI_CAL')
+
+CASE hdr.DETECTOR OF
+  'EUVI': BEGIN
+    IF hdr.OBSRVTRY EQ 'STEREO_A' THEN filename = 'euvi_mask.fts'
+    IF hdr.OBSRVTRY EQ 'STEREO_B' THEN filename = 'euvi_mask.fts'
+   END
+
+  'COR1': BEGIN
+    IF hdr.OBSRVTRY EQ 'STEREO_A' THEN filename = 'cor1_mask.fts'
+    IF hdr.OBSRVTRY EQ 'STEREO_B' THEN filename = 'cor1_mask.fts'
+  END
+
+  'COR2': BEGIN
+    IF hdr.OBSRVTRY EQ 'STEREO_A' THEN filename = 'cor2A_mask.fts'
+    IF hdr.OBSRVTRY EQ 'STEREO_B' THEN filename = 'cor2B_mask.fts'
+  END  
+
+  'HI2': BEGIN
+    IF hdr.OBSRVTRY EQ 'STEREO_A' THEN filename = 'hi2A_mask.fts'
+    IF hdr.OBSRVTRY EQ 'STEREO_B' THEN filename = 'hi2B_mask.fts'
+  END
+ENDCASE
+
+filename = path+filename
+
+new_flag =1
+
+;--Check common block for mask 
+IF datatype(smask) NE 'UND' THEN BEGIN
+  IF(filename EQ smask_name) THEN new_flag = 0
+ENDIF 
+
+;--Open mask from file
+IF new_flag THEN BEGIN
+  check = file_search(filename,count=count)
+  IF count GT 0 THEN BEGIN
+    smask = READFITS(filename,/silent)  
+    smask_name = filename 
+  ENDIF ELSE message,'CANNOT FIND SMOOTH MASK: '+filename
+ENDIF
+  
+mask = rebin(smask, hdr.NAXIS1,hdr.NAXIS2,/sample)
+
+RETURN, mask
+END

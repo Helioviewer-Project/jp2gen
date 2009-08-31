@@ -74,13 +74,14 @@ FUNCTION JI_HV_EUVI_PREP,list,observer
         hh = strmid(header.date_obs,11,2)
         mmm = strmid(header.date_obs,14,2)
         ss = strmid(header.date_obs,17,2)
+        milli = strmid(header.date_obs,20,3)
 ;
 ; create the hvs structure
 ;
         hvs = {img:img,$
                header:header,$
                observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
-               yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss}
+               yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
 ;
 ; write the JP2 file
 ;

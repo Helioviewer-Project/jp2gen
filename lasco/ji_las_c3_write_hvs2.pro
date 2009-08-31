@@ -41,8 +41,8 @@ FUNCTION JI_LAS_C3_WRITE_HVS2,filename,rootdir,ld
      hh = strmid(time_obs,0,2)
      mmm = strmid(time_obs,3,2)
      ss = strmid(time_obs,6,2)
-
-     obs_time = yy + '_' + mm + '_' + dd + '_' + hh + mmm + ss
+     milli = strmid(time_obs,9,3)
+     obs_time = yy + '_' + mm + '_' + dd + '_' + hh + mmm + ss + '.' + milli
 ;
 ; shift the byte values so zero may be reserved for transparency
 ;
@@ -118,7 +118,18 @@ FUNCTION JI_LAS_C3_WRITE_HVS2,filename,rootdir,ld
      hd = add_tag(hd,instrument,'hv_instrument')
      hd = add_tag(hd,detector,'hv_detector')
      hd = add_tag(hd,measurement,'hv_measurement')
-;     hd = add_tag(hd,'wavelength','hv_measurement_type')
+     hd = add_tag(hd,hd.crota1,'hv_rotation')
+     hd = add_tag(hd,r_occ,'hv_rocc_inner')
+     hd = add_tag(hd,r_occ_out,'hv_rocc_outer')
+     hd = add_tag(hd,progname,'hv_source_program')
+;
+; Active Helioviewer tags have a "hva_" tag, change the nature of the
+; final output, and are not stored in the final JP2 file
+;
+     hd = add_tag(hd,alpha_mask,'hva_alpha_transparency')
+;
+; Old tags, no longer required.
+;
 ;     hd = add_tag(hd,yy + '-' + mm + '-' + dd + 'T' + hd.time_obs + 'Z','hv_date_obs')
 ;     hd = add_tag(hd,3,'hv_opacity_group')
 ;     hd = add_tag(hd,r_sun,'hv_original_rsun')
@@ -128,16 +139,9 @@ FUNCTION JI_LAS_C3_WRITE_HVS2,filename,rootdir,ld
 ;     hd = add_tag(hd,hd.crpix2,'hv_original_crpix2')
 ;     hd = add_tag(hd,hd.naxis1,'hv_original_naxis1')
 ;     hd = add_tag(hd,hd.naxis2,'hv_original_naxis2')
-     hd = add_tag(hd,hd.crota1,'hv_rotation')
 ;     hd = add_tag(hd,1,'hv_centering')
-;     hd = add_tag(hd,r_occ,'hv_rocc_inner')
-;     hd = add_tag(hd,r_occ_out,'hv_rocc_outer')
-     hd = add_tag(hd,progname,'hv_source_program')
-;
-; Active Helioviewer tags have a "hva_" tag, change the nature of the
-; final output, and are not stored in the final JP2 file
-;
-     hd = add_tag(hd,alpha_mask,'hva_alpha_transparency')
+;     hd = add_tag(hd,'wavelength','hv_measurement_type')
+
 ;
 ; check the tags to make sure we have sufficient information to
 ; actually write a JP2 file
@@ -172,7 +176,7 @@ FUNCTION JI_LAS_C3_WRITE_HVS2,filename,rootdir,ld
 ;
      hvs = {img:image_new, red:r, green:g, blue:b, header:hd,$
             observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
-            yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss}
+            yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
 ;
 ; Write an error file if required.
 ;

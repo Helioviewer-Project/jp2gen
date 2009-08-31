@@ -47,12 +47,13 @@ observation =  observatory + '_' + instrument + '_' + detector + '_' + measureme
   hh = strmid(obs_time,11,2)
   mmm = strmid(obs_time,14,2)
   ss = strmid(obs_time,17,2)
+  milli = strmid(header.date_obs,20,3)
 ;
 ; Convert T_OBS into the required date format
 ;
   hv_date_obs = yy + '-' + mm + '-' + dd + 'T' + $
                 hh + ':' + mmm +':' + ss + $
-                '.000Z'
+                '.' + milli + 'Z'
 ;
 ; Crop and rotate the image. 
 ;
@@ -83,8 +84,10 @@ observation =  observatory + '_' + instrument + '_' + detector + '_' + measureme
   hd = add_tag(hd,detector,'hv_detector')
   hd = add_tag(hd,measurement,'hv_measurement')
   hd = add_tag(hd,'longitudinal magnetic flux density','hv_measurement_type')
-  hd = add_tag(hd,hd.date_obs,'hv_date_obs')
-  hd = add_tag(hd,1,'hv_opacity_group')
+  hd = add_tag(hd,0.0,'hv_rotation')
+  hd = add_tag(hd,progname,'hv_source_program')
+;  hd = add_tag(hd,hd.date_obs,'hv_date_obs')
+;  hd = add_tag(hd,1,'hv_opacity_group')
 ;  hd = add_tag(hd,hd.r_sun,'hv_original_rsun')
 ;  hd = add_tag(hd,hd.cdelt1,'hv_original_cdelt1')
 ;  hd = add_tag(hd,hd.cdelt2,'hv_original_cdelt2')
@@ -92,16 +95,14 @@ observation =  observatory + '_' + instrument + '_' + detector + '_' + measureme
 ;  hd = add_tag(hd,hd.crpix2,'hv_original_crpix2')
 ;  hd = add_tag(hd,hd.naxis1,'hv_original_naxis1')
 ;  hd = add_tag(hd,hd.naxis2,'hv_original_naxis2')
-  hd = add_tag(hd,0.0,'hv_rotation')
-  hd = add_tag(hd,1,'hv_centering')
-  hd = add_tag(hd,progname,'hv_source_program')
+;  hd = add_tag(hd,1,'hv_centering')
 ;
 ; save
 ;
   outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
   hvs = {img:image_new, red:r, green:g, blue:b, header:hd,$
          observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
-         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss}
+         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
   IF (write eq 'direct2jp2') then begin
      JI_WRITE_LIST_JP2,hvs,rootdir
   ENDIF ELSE BEGIN

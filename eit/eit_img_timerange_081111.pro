@@ -848,6 +848,7 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
                  hh = strmid(header.date_obs,11,2)
                  mmm = strmid(header.date_obs,14,2)
                  ss = strmid(header.date_obs,17,2)
+                 milli = strmid(header.date_obs,20,3)
 ;
 ; update the counter
 ;
@@ -861,7 +862,7 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
                  hvs = {img:b0, red:red, green:green, blue:blue, $
                         header:header,$
                         observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
-                        yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss}
+                        yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
                  IF (write eq 'direct2jp2') then begin
                     JI_WRITE_LIST_JP2,hvs,dir_im
                  ENDIF ELSE BEGIN

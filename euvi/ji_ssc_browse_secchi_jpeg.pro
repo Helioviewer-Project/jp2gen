@@ -99,8 +99,10 @@ PRO ji_ssc_browse_secchi_jpeg, file, name, sc, stereo_browse, hv_answer, $
                             cor2_replace=cor2_replace, $
                             cor2b_replace=cor2b_replace, $
                             hi2_replace=hi2_replace, euvi_replace=euvi_replace
+progname = 'ji_ssc_browse_secchi_jpeg'
+
 ;
-; By default, there is no image/header pair returned
+; HV: By default, there is no image/header pair returned
 ;
 hv_answer = -1
 
@@ -109,7 +111,7 @@ hv_answer = -1
 ;
 sdate = ''
 ;res = [2048,1024,512,256,128] ; original range of resolutions available
-res = [2048] ; HV only requires the top resolution
+res = [2048] ; HV only requires the top resolution for EUVI images
 ;;charsize = [8,4,2,1,0.5]
 ;;charthick = [4,2,1,1,1]
 charsize = [4,2,2,1,0.5]
@@ -119,6 +121,7 @@ ires0 = 0
 ;  Get the modification date of the file.  Also, make sure that the file has
 ;  data in it, and extract some minimal information from the header.
 ;
+print,progname + ' - examining ' + file
 if not is_fits(file) then return
 openr, unit, file, /get_lun
 mtime0 = (fstat(unit)).mtime
@@ -129,8 +132,10 @@ if fxpar(textheader, 'nmissing') gt 0 then return       ;Incomplete image.
 date_obs = fxpar(textheader, 'date-obs')
 detector = strlowcase(strtrim(fxpar(textheader, 'detector'),2))
 if (detector eq 'euvi') and keyword_set(no_euvi) then return
+;if (detector eq 'cor1') or (detector eq 'hi1') or (detector eq 'hi2') then $
+;  ires0 = 1                     ;No 2048x2048 version
 if (detector eq 'cor1') or (detector eq 'hi1') or (detector eq 'hi2') then $
-  ires0 = 1                     ;No 2048x2048 version
+  res0 = [1024]                     ;HV - set top resolution to 1024x1024 version
 wavelnth = fxpar(textheader, 'wavelnth')
 if wavelnth eq 175 then wavelnth = 171
 file_read = 0
@@ -243,23 +248,23 @@ for ires = ires0,n_elements(res)-1 do begin
 ;
 ;  Filter out early images known to be bad.
 ;
-                    if (sc eq 'ahead') and (header.date_obs lt '2007-01-05') $
+                   if (sc eq 'ahead') and (header.date_obs lt '2007-01-05') $
                       and (header.naxis1 lt 1000) then return
 ;
 ;  Find the three files leading up to this image.
 ;
-                    break_file, file, disk0, dir0, name0
-                    files = '*' + strmid(name0,strlen(name0)-6,6) + '.fts'
-                    files = file_search(concat_dir(disk0+dir0,files))
-                    w = (where(files eq file))[0]
-                    if w lt 2 then return
-                    files = files[w-2:w]
-                    break_file, files, disk1, dir1, name1
-                    if total(scc_check_bad(name1)) gt 0 then return
-                    time = strmid(name1,13,2) + strmid(name1,11,2)*60 + $
-                      strmid(name1,9,2)*3600
-                    delta = max(time,min=tmin) - tmin
-                    if delta gt 120 then return
+                   break_file, file, disk0, dir0, name0
+                   files = '*' + strmid(name0,strlen(name0)-6,6) + '.fts'
+                   files = file_search(concat_dir(disk0+dir0,files))
+                   w = (where(files eq file))[0]
+                   if w lt 2 then return
+                   files = files[w-2:w]
+                   break_file, files, disk1, dir1, name1
+                   if total(scc_check_bad(name1)) gt 0 then return
+                   time = strmid(name1,13,2) + strmid(name1,11,2)*60 + $
+                          strmid(name1,9,2)*3600
+                   delta = max(time,min=tmin) - tmin
+                   if delta gt 120 then return
 ;
 ;  Read in the three files, and use COR_PREP to prepare the image for display.
 ;

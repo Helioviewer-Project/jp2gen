@@ -343,14 +343,7 @@ PRO ji_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         endif; else begin
              ;header = add_tag(header,hv_comment,'hv_comment')
              ;endelse
-;
-; If the image is a coronograph then include the inner and outer radii
-; of the coronagraph in image pixels
-;
-;        if have_tag(header,'hv_rocc_inner') then begin
-;           header.hv_rocc_inner = header.hv_rocc_inner*header.hv_rsun
-;           header.hv_rocc_outer = header.hv_rocc_outer*header.hv_rsun
-;      endif
+
 ;
 ; ********************************************************************************************************
 ;
@@ -467,6 +460,16 @@ PRO ji_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;           xh+='<ALPHA_TRANSPARENCY_YN>No alpha transparency.' + $
 ;               'Single layer image.</ALPHA_TRANSPARENCY_YN>'+lf
         endelse
+;
+; If the image is a coronograph then include the inner and outer radii
+; of the coronagraph in solar radii
+;
+        if have_tag(header,'hv_rocc_inner') then begin
+           xh+='<HV_ROCC_INNER>'+trim(header.hv_rocc_inner)+'</HV_ROCC_INNER>'+lf
+        endif
+        if have_tag(header,'hv_rocc_outer') then begin
+           xh+='<HV_ROCC_OUTER>'+trim(header.hv_rocc_outer)+'</HV_ROCC_OUTER>'+lf
+        endif
 ;
 ; JP2 specific tag names - number of layers, bit depth, etc
 ;

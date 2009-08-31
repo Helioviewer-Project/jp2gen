@@ -30,6 +30,10 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
      name = nicknames[observer_index]
      supported_yn = 1
 ;
+; ##############################################################################
+;
+;                            SOHO
+;
 ; EIT
 ;
      case name of
@@ -63,6 +67,10 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
            'white-light': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth: 8}
         endcase
 ;
+; ##############################################################################
+;
+;                            STEREO-A
+;
 ; EUVI-A
 ;
         'EUVI-A':   case measurement of
@@ -83,6 +91,10 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
         'COR2-A': case measurement of
            'white-light': jp2 = jp2_default
         endcase
+;
+; ##############################################################################
+;
+;                            STEREO-B
 ;
 ; EUVI-B
 ;

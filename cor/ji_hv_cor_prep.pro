@@ -48,13 +48,36 @@ FUNCTION JI_HV_COR_PREP,list,observer
         img = hv_answer.temp
         header = hv_answer.header
         if header.obsrvtry eq 'STEREO_A'  then begin  
-           if header.detector eq 'COR1' then observer = 'COR1-A'
-           if header.detector eq 'COR2' then observer = 'COR2-A'
+           if header.detector eq 'COR1' then begin
+              observer = 'COR1-A'
+              rocc_inner = 1.2 ; in units of R_sun, taken from scc_mkmovie.pro
+              rocc_outer = 4.0 ; in units of R_sun, taken from scc_mkmovie.pro
+           endif
+           if header.detector eq 'COR2' then begin 
+              observer = 'COR2-A'
+              rocc_inner = 2.4 ; in units of R_sun, taken from scc_mkmovie.pro
+              rocc_outer = 15.0 ; approximate size of outer radius
+           endif
         endif
         if header.obsrvtry eq 'STEREO_B'  then begin
-           if header.detector eq 'COR1' then observer = 'COR1-B'
-           if header.detector eq 'COR2' then observer = 'COR2-B'
+           if header.detector eq 'COR1' then begin
+              observer = 'COR1-B'
+              rocc_inner = 1.2 ; in units of R_sun, taken from scc_mkmovie.pro
+              rocc_outer = 4.0 ; in units of R_sun, taken from scc_mkmovie.pro
+           endif
+           if header.detector eq 'COR2' then begin
+              observer = 'COR2-B'
+              rocc_inner = 2.6 ; in units of R_sun, taken from scc_mkmovie.pro
+              rocc_outer = 15.0 ; approximate size of outer radius
+           endif
         endif
+;
+; Get the transparency mask
+;
+; "smask" is the full mask for COR1 and COR2.  These are more accurate
+; than simply giving the inner and outer radius of the coronagraphs
+;
+        smask = get_smask(header)
 ;
 ; Load in the HVS observer details
 ;
@@ -79,6 +102,12 @@ FUNCTION JI_HV_COR_PREP,list,observer
         header = add_tag(header,measurement,'hv_measurement')
         header = add_tag(header, header.date_obs,'hv_date_obs')
         header = add_tag(header, header.crota,'hv_rotation')
+        header = add_tag(header, rocc_inner,'hv_rocc_inner')
+        header = add_tag(header, rocc_outer,'hv_rocc_outer')
+;
+; Active Helioviewer tags have a HVA_ to begin with
+;
+        hd = add_tag(hd,smask,'hva_alpha_transparency')
 ;
 ; HV - get the components to the observation time and date
 ;
@@ -88,13 +117,14 @@ FUNCTION JI_HV_COR_PREP,list,observer
         hh = strmid(header.date_obs,11,2)
         mmm = strmid(header.date_obs,14,2)
         ss = strmid(header.date_obs,17,2)
+        milli = strmid(header.date_obs,20,3)
 ;
 ; create the hvs structure
 ;
         hvs = {img:img,$
                header:header,$
                observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
-               yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss}
+               yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
 ;
 ; write the JP2 file
 ;
