@@ -53,7 +53,6 @@ function JI_MDI_INT_WRITE_HVS,infile,rootdir,write = write
   hv_date_obs = yy + '-' + mm + '-' + dd + 'T' + $
                 hh + ':' + mmm +':' + ss + $
                 '.' + milli + 'Z'
-  stop
 ;
 ; Convert T_OBS into the file format time
 ;
