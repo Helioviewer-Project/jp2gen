@@ -47,23 +47,23 @@ s0 = systime(1)
 ; A file containing the absolute locations of the
 ; MDI intensity fits files to be processed
 
-;; list = file_search(mdidir,'*Ic*.00*.fits')
-;; filename = progname + '_' + ji_txtrep(ji_systime(),':','_') + 'int.sav'
-;; save,filename = storage.hvs_location + filename, list
+list = file_search(mdidir,'*Ic*.00*.fits')
+filename = progname + '_' + ji_txtrep(ji_systime(),':','_') + 'int.sav'
+save,filename = storage.hvs_location + filename, list
 
 ;
 ; Create the location of the listname
 ;
-;; listname = storage.hvs_location + filename + '.int.prepped.txt'
+listname = storage.hvs_location + filename + '.int.prepped.txt'
 ;
 ; Write direct to JP2 from FITS
 ;
-;; if (write eq 'direct2jp2') then begin
-;;    prepped = JI_MDI_WRITE_HVS(storage.hvs_location,filename,storage.jp2_location,/int,write = write)
-;;    save,filename = listname,prepped
-;; endif
+if (write eq 'direct2jp2') then begin
+   prepped = JI_MDI_WRITE_HVS(storage.hvs_location,filename,storage.jp2_location,/int,write = write)
+   save,filename = listname,prepped
+endif
 
-;; n1 = n_elements(list)
+n1 = n_elements(list)
 
 ;
 ; ======================================================================================================
