@@ -16,9 +16,13 @@ PRO ji_write_list_jp2,hvs,dir, loc = loc, filename = filename
 ;
   if is_struct(hvs) then begin
      loc = JI_WRITE_LIST_JP2_MKDIR(hvs,dir)
-     filename = hvs.yy + '_' + hvs.mm + '_' + hvs.dd + '_' + $
-                hvs.hh + hvs.mmm + hvs.ss + hvs.milli + '_' + $
-                hvs.observatory + '_' + hvs.instrument + '_' + hvs.detector + '_' + hvs.measurement
+     date = hvs.yy + '_' + hvs.mm + '_' + hvs.dd
+     time = hvs.hh + '_' + hvs.mmm + '_' +  hvs.ss + '_' + hvs.milli
+     observation =  hvs.observatory + '_' + hvs.instrument + '_' + hvs.detector + '_' + hvs.measurement
+     filename = date + '__' + time + '__' + observation
+;     filename = hvs.yy + '_' + hvs.mm + '_' + hvs.dd + '_' + $
+;                hvs.hh + hvs.mmm + hvs.ss + hvs.milli + '_' + $
+;                hvs.observatory + '_' + hvs.instrument + '_' + hvs.detector + '_' + hvs.measurement
 ;     ji_write_jp2_kdu,loc + filename,hvs.img,fitsheader = hvs.header
      ji_write_jp2_lwg,loc + filename,hvs.img,fitsheader = hvs.header
   endif else begin

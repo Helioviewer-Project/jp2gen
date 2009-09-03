@@ -47,7 +47,7 @@ observation =  observatory + '_' + instrument + '_' + detector + '_' + measureme
   hh = strmid(obs_time,11,2)
   mmm = strmid(obs_time,14,2)
   ss = strmid(obs_time,17,2)
-  milli = strmid(header.date_obs,20,3)
+  milli = strmid(obs_time,20,3)
 ;
 ; Convert T_OBS into the required date format
 ;

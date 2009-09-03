@@ -47,40 +47,23 @@ s0 = systime(1)
 ; A file containing the absolute locations of the
 ; MDI intensity fits files to be processed
 
-list = file_search(mdidir,'*Ic*.00*.fits')
-filename = progname + '_' + ji_txtrep(ji_systime(),':','_') + 'int.sav'
-save,filename = storage.hvs_location + filename, list
+;; list = file_search(mdidir,'*Ic*.00*.fits')
+;; filename = progname + '_' + ji_txtrep(ji_systime(),':','_') + 'int.sav'
+;; save,filename = storage.hvs_location + filename, list
 
 ;
 ; Create the location of the listname
 ;
-listname = storage.hvs_location + filename + '.int.prepped.txt'
+;; listname = storage.hvs_location + filename + '.int.prepped.txt'
 ;
 ; Write direct to JP2 from FITS
 ;
-if (write eq 'direct2jp2') then begin
-   prepped = JI_MDI_WRITE_HVS(storage.hvs_location,filename,storage.jp2_location,/int,write = write)
-   save,filename = listname,prepped
-endif
+;; if (write eq 'direct2jp2') then begin
+;;    prepped = JI_MDI_WRITE_HVS(storage.hvs_location,filename,storage.jp2_location,/int,write = write)
+;;    save,filename = listname,prepped
+;; endif
 
-;
-; Write an intermediate HVS file.  Can be useful in testing.
-;
-if (write eq 'via_hvs') then begin
-;
-; Does the prep file already exist? If so, restore it and write jp2
-; files.  If not, prep the data first and then
-;
-   if (file_exist(listname)) then begin
-      restore,listname
-      JI_WRITE_LIST_JP2, prepped, storage.jp2_location
-   endif else begin
-      prepped = JI_MDI_WRITE_HVS(storage.hvs_location,filename,storage.hvs_location,/int,write = write)
-      save,filename = listname
-      JI_WRITE_LIST_JP2, prepped, storage.jp2_location
-   endelse
-endif
-n1 = n_elements(list)
+;; n1 = n_elements(list)
 
 ;
 ; ======================================================================================================
