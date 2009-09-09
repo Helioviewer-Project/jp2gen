@@ -10,7 +10,7 @@
 ;              rescaling or recentering)
 ;
 ;-
-PRO ji_write_list_jp2,hvs,dir, loc = loc, filename = filename
+PRO ji_write_list_jp2,hvs,dir, loc = loc, filename = filename, outf = outf
 ;
 ;
 ;
@@ -25,6 +25,7 @@ PRO ji_write_list_jp2,hvs,dir, loc = loc, filename = filename
 ;                hvs.observatory + '_' + hvs.instrument + '_' + hvs.detector + '_' + hvs.measurement
 ;     ji_write_jp2_kdu,loc + filename,hvs.img,fitsheader = hvs.header
      ji_write_jp2_lwg,loc + filename,hvs.img,fitsheader = hvs.header
+     outf = loc + filename
   endif else begin
 ;
 ; go through the list 

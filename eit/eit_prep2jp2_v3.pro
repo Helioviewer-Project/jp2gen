@@ -22,11 +22,7 @@ date_end   = '2009/09/09'
 ;
 ; Setup some defaults - usually there is NO user contribution below here
 ;
-progname = 'eit_prep2jp2_v2'
-;
-; Write style
-;
-write      = 'direct2jp2'
+progname = 'eit_prep2jp2_v3'
 ;
 ; Call details of storage locations
 ;
@@ -38,14 +34,14 @@ s0 = systime(1)
 
 ;
 ; The filename for a file which will contain the locations of the
-; hvs EIT files.
+; JP2 log files
 ;
 filename = ji_txtrep(date_start,'/','_') + '-' + ji_txtrep(date_end,'/','_') + '.txt'
 
 ;
 ; Create the location of the listname
 ;
-listname = storage.hvs_location + filename + '.prepped.txt'
+listname = storage.hvs_location + filename + '.prepped.log'
 
 ;
 ; ===================================================================================================
@@ -53,35 +49,13 @@ listname = storage.hvs_location + filename + '.prepped.txt'
 ;
 ; Write direct to JP2 from FITS
 ;
-if (write eq 'direct2jp2') then begin
-   prepped = JI_EIT_WRITE_HVS(date_start,$
-                              date_end,  $
-                              storage.jp2_location,$
-                              write = write)
-   save,filename = listname,prepped
-endif
-n1 = n_elements(prepped)
+prepped = JI_EIT_WRITE_HVS(date_start,date_end,storage.jp2_location)
+;
+; 
+;
+save,filename = listname,prepped
 
-;
-; Write an intermediate HVS file.  Can be useful in testing.
-;
-if (write eq 'via_hvs') then begin
-;
-; Does the prep file already exist? If so, restore it and write jp2
-; files.  If not, prep the data first and then
-;
-   if (file_exist(listname)) then begin
-      restore,listname
-      JI_WRITE_LIST_JP2, prepped, storage.jp2_location
-   endif else begin
-      prepped = JI_EIT_WRITE_HVS(date_start,$
-                                 date_end,  $
-                                 storage.hvs_location,$
-                                 write = write)
-      save,filename = listname
-      JI_WRITE_LIST_JP2, prepped, storage.jp2_location
-   endelse
-endif
+n1 = n_elements(prepped)
 s1 = systime(1)
 print,'Total number of files ',n1
 print,'Total time taken ',s1-s0

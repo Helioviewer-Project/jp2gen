@@ -323,7 +323,7 @@ END
 ;+
 ;PRO eit_img_timerange,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,jp2=jp2,bitrate_jp2=bitrate_jp2,n_layers_jp2=n_layers_jp2,n_levels_jp2=n_levels_jp2,gray_jp2=gray_jp2,fitsheader=fitsheader,hv_names=hv_names
 ;-
-FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,jp2=jp2,bitrate_jp2=bitrate_jp2,n_layers_jp2=n_layers_jp2,n_levels_jp2=n_levels_jp2,fitsheader=fitsheader,hv_names=hv_names,sav=sav,hvs=hvs, write= write
+FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,jp2=jp2,bitrate_jp2=bitrate_jp2,n_layers_jp2=n_layers_jp2,n_levels_jp2=n_levels_jp2,fitsheader=fitsheader,hv_names=hv_names,sav=sav,hvs=hvs
 ;
 ; Load in the HVS observer details
 ;
@@ -378,10 +378,10 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
 ; set JPEG quality factor
   IF KEYWORD_SET(quality_jpg) eq 0 THEN quality_jpg=75
 
-  IF KEYWORD_SET(gif) eq 0 and KEYWORD_SET(jpg) eq 0 and KEYWORD_SET(write) eq 0 THEN BEGIN
-     gif=1
-     print,'No image type set. Creating .gif images.'
-  ENDIF
+;  IF KEYWORD_SET(gif) eq 0 and KEYWORD_SET(jpg) eq 0 and KEYWORD_SET(write) eq 0 THEN BEGIN
+;     gif=1
+;     print,'No image type set. Creating .gif images.'
+;  ENDIF
 
 ; set dafaults for JPEG2000 options
   IF KEYWORD_SET(bitrate_jp2) eq 0 THEN bitrate_jp2=[0.5,0.01]
@@ -670,9 +670,9 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
                  endelse
               endelse
               
-              IF KEYWORD_SET(gif) THEN BEGIN
-                 write_gif,dir_im+datetime_string+'_eit'+this_wave+'_1024.gif',b0
-              ENDIF 
+;              IF KEYWORD_SET(gif) THEN BEGIN
+;                 write_gif,dir_im+datetime_string+'_eit'+this_wave+'_1024.gif',b0
+;              ENDIF 
               
               
               
@@ -858,17 +858,13 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
 ;
 ; create the hvs structure and save
 ;
-                 outfile = dir_im + datetime_string + '_eit'+this_wave+'_1024.hvs.sav'
+;                 outfile = dir_im + datetime_string +'_eit'+this_wave+'_1024.hvs.sav'
                  hvs = {img:b0, red:red, green:green, blue:blue, $
                         header:header,$
                         observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
                         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-                 IF (write eq 'direct2jp2') then begin
-                    JI_WRITE_LIST_JP2,hvs,dir_im
-                 ENDIF ELSE BEGIN
-                    save,filename = outfile, hvs
-                 ENDELSE
-                 outfile_storage(outfile_count) = outfile
+                 JI_WRITE_LIST_JP2,hvs,dir_im,outf = outf
+                 outfile_storage(outfile_count) = 'read ' + s(i_file) + '; wrote ' + outf
               endif
 
 
