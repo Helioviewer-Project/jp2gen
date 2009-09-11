@@ -1,5 +1,9 @@
 ;
-; Prep a set of EIT images between a given time range
+; 9 September 2009.
+;
+; Prep Quicklook EIT images for use with the Helioviewer Project
+;
+; Gets today's date (UTC) and looks for new EIT files once every 15 minutes.
 ;
 ; Steps taken: Load FITS data, prep + calibrate image, write JP2
 ; file.  No intermediate data written
@@ -12,8 +16,9 @@
 ;        the correct directory structure for use with the Helioviewer
 ;        project.
 ;
-progname = 'eit_prep2jp2_auto1'
-nickname = 'EIT'
+;
+progname = 'eit_prep2jp2_auto1' ; the program name
+nickname = 'EIT' ; instrument nickname
 ;
 ; Get the observer details
 ;

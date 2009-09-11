@@ -361,8 +361,9 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
      print,'No end date given, assumed end date: today'
   ENDIF ELSE BEGIN
      end_date_utc=anytim2utc(end_date)
-     IF end_date_utc.mjd gt today_date_utc.mjd THEN $
+     IF end_date_utc.mjd gt today_date_utc.mjd THEN begin
         print,'chosen end date > today - will stop at date of today.'
+     endif
   ENDELSE
 
   IF KEYWORD_SET(start_date) eq 0 THEN BEGIN
@@ -425,8 +426,19 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
      outfile_storage(*) = '-1'
      outfile_count = long(-1)
 
-
-     while iday.mjd le min([end_date_utc.mjd,today_date_utc.mjd]) do begin
+;
+; This picks whether the specified end date or today's LOCAL date is
+; the last date on which EIT data is looked for. Since UTC is ahead of
+; GSFC, there will be a period of 4 hrs where even although data might
+; be coming in, the routine will not write anything.
+;
+;     while iday.mjd le min([end_date_utc.mjd,today_date_utc.mjd]) do begin
+;
+; The routine has been changed to look for data up to the specified
+; end date, which is passed to the routine with the understanding that
+; it is a UTC time.
+;
+     while iday.mjd le end_date_utc.mjd do begin
         iday_str=utc2str(iday)
 
 ;loop over wavelengths
