@@ -21,8 +21,6 @@ FUNCTION JI_HV_STORAGE
 ;  default = 'hvs/'
 ;
   hvs_root = 'hvs/'
-
-
 ;
 ; ----------- No user changes required below here ----------------
 ;

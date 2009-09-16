@@ -14,15 +14,13 @@ FUNCTION JI_HV_CHECK_PROCESSED_LOGS,log,nickname
    nd = n_elements(dirs)
    sdirs = strarr(nd)
    len0 = strlen(dirs[0])
-   keep_infil = '' ; keep the most recent log file and its index
-   keep_index = 0
+   keep_index = 0 ; keep the index of the most recent file
    for i = 0,nd-1 do begin
       sdirs[i] = strmid(dirs[i],len0,strlen(dirs[i])-1) ; remove the root filename to get the date sub-directories
       z = strsplit(sdirs[i],'/',count = count)
       if (count eq 3) then begin
          infil = file_list(dirs[i],nickname + '*')
-         if infil ne '' then begin
-            keep_infil = infil
+         if infil[n_elements(infil)-1] ne '' then begin
             keep_index = i
          endif
       endif

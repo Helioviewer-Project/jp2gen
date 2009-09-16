@@ -1,3 +1,9 @@
+;
+; 16 September 2009
+;
+; Function to create a JP2 file name from its source HVS file, and to
+; split up an input filename into its component parts
+;
 FUNCTION JI_HV_FILENAME_CONVENTION, hvs, create = create, split = split
 ;
 ; Take the HVS header and create a filename
