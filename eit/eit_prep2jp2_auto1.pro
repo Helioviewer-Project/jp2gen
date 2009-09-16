@@ -32,13 +32,17 @@ storage = JI_HV_STORAGE()
 ;
 repeat begin
 ;
+; Look in the log directory to get the last run data: look for log files from the instrument 'nickname'
+;
+   date_most_recent = (JI_HV_CHECK_PROCESSED_LOGS(storage.log_location,nickname)).date_most_recent
+;
 ; Get today's date in UT
 ;
    get_utc,utc,/ecs,/date_only
-   date_start = utc
+   date_start = date_most_recent
    date_end   = utc
    print,' '
-   print,progname + ': Processing... ' + utc
+   print,progname + ': Processing... ' + date_start + ' to ' + date_end
 ;
 ; Create a simple hvs structure that carries date information
 ;
@@ -47,7 +51,7 @@ repeat begin
 ;
 ; Create the subdirectory for the log file
 ;
-   logfile_directory = JI_WRITE_LIST_JP2_MKDIR(hvs,storage.hvs_location)
+   logfile_directory = JI_WRITE_LIST_JP2_MKDIR(hvs,storage.log_location)
 ;
 ; ===================================================================================================
 ;

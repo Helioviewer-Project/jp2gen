@@ -43,6 +43,11 @@ FUNCTION JI_HV_STORAGE
      spawn,'mkdir '+ err_location
   endif
 
+  log_location = hvs_location + 'log/'
+  if not(is_dir(log_location)) then begin
+     spawn,'mkdir '+ log_location
+  endif
+
 ;
 ; Return the structure
 ;
@@ -51,5 +56,6 @@ FUNCTION JI_HV_STORAGE
           hvs_root:hvs_root,$
           jp2_location:jp2_location,$
           hvs_location:hvs_location,$
-          err_location:err_location}
+          err_location:err_location,$
+          log_location:log_location}
 END
