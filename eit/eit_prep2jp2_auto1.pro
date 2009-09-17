@@ -86,10 +86,38 @@ repeat begin
    print,'Total time taken ',s1-s0
    print,'Average time taken ',(s1-s0)/float(n1)
    print,'Last run completed at ',systime(0)
-   print,'Fixed wait time of 15 minutes now progressing.'
+;
+; Move the data one day at a time
+;
+   date_start_dmy = nint(strsplit(date_start,'/',/extract))
+   date_end_dmy = nint(strsplit(date_end,'/',/extract))
+   current_date = date2mjd(date_start_dmy[0],date_start_dmy[1],date_start_dmy[2])
+   while current_date le date2mjd(date_end_dmy[0],date_end_dmy[1],date_end_dmy[2]) do begin
+      mjd2date,current_date,yy,mm,dd
+      yy = trim(yy)
+      if mm le 9 then begin
+         mm = '0' + trim(mm)
+      endif else begin
+         mm = trim(mm)
+      endelse
+      if dd le 9 then begin
+         dd = '0' + trim(dd)
+      endif else begin
+         dd = trim(dd)
+      endelse
+      hvs = {observatory:oidm.observatory,$
+             instrument:oidm.instrument,$
+             detector:oidm.detector,$
+             measurement:'',$
+             yy:yy, mm:mm, dd:dd}
+      source = JI_WRITE_LIST_JP2_MKDIR(hvs,storage.jp2_location)
+      JI_HV_JP2_MOVE_SCRIPT,nickname, source, '/Users/ireland/hv/incoming',hvs
+      current_date = current_date + 1
+   endwhile
 ;
 ; Wait 15 minutes before looking for more data
 ;
+   print,'Fixed wait time of 15 minutes now progressing.'
    wait,15*60
 
 endrep until 1 eq 0

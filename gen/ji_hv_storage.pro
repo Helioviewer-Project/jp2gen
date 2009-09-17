@@ -21,6 +21,7 @@ FUNCTION JI_HV_STORAGE
 ;  default = 'hvs/'
 ;
   hvs_root = 'hvs/'
+
 ;
 ; ----------- No user changes required below here ----------------
 ;
@@ -46,6 +47,16 @@ FUNCTION JI_HV_STORAGE
      spawn,'mkdir '+ log_location
   endif
 
+  incoming_location = hvs_location + 'incoming/'
+  if not(is_dir(incoming_location)) then begin
+     spawn,'mkdir '+ incoming_location
+  endif
+
+  outgoing_location = hvs_location + 'outgoing/'
+  if not(is_dir(outgoing_location)) then begin
+     spawn,'mkdir '+ outgoing_location
+  endif
+
 ;
 ; Return the structure
 ;
@@ -55,5 +66,8 @@ FUNCTION JI_HV_STORAGE
           jp2_location:jp2_location,$
           hvs_location:hvs_location,$
           err_location:err_location,$
-          log_location:log_location}
+          log_location:log_location,$
+          incoming_location:incoming_location,$
+          outgoing_location:outgoing_location,$
+          NotGiven:'NotGiven'}
 END
