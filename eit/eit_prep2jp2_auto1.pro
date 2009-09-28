@@ -75,20 +75,13 @@ repeat begin
 ; Save the log file
 ;
    wrt_ascii,prepped,listname
-;
-; Timing stats
-;
    n1 = n_elements(prepped)
    s1 = systime(1)
-   print,' '
-   print,progname + ': most recent file processed = '+prepped[n_elements(prepped)-1]   
-   print,'Total number of files ',n1
-   print,'Total time taken ',s1-s0
-   print,'Average time taken ',(s1-s0)/float(n1)
-   print,'Last run completed at ',systime(0)
+   s1_time = systime(0)
 ;
 ; Move the data one day at a time
 ;
+   s2 = systime(1)
    date_start_dmy = nint(strsplit(date_start,'/',/extract))
    date_end_dmy = nint(strsplit(date_end,'/',/extract))
    current_date = date2mjd(date_start_dmy[0],date_start_dmy[1],date_start_dmy[2])
@@ -114,6 +107,18 @@ repeat begin
       JI_HV_JP2_MOVE_SCRIPT,nickname, source, '/Users/ireland/hv/incoming',hvs
       current_date = current_date + 1
    endwhile
+   s3 = systime(1)
+;
+; Timing stats
+;
+   print,' '
+   print,progname + ': most recent file processed = '+prepped[n_elements(prepped)-1]   
+   print,'Total number of files ',n1
+   print,'Total time taken ',s1-s0
+   print,'Average time taken ',(s1-s0)/float(n1)
+   print,'Last JP2 written at ',s1_time
+   print,'File transfer completed at ',systime(0)
+   print,'File transfer time ',s3-s2
 ;
 ; Wait 15 minutes before looking for more data
 ;

@@ -14,8 +14,8 @@
 ;
 ;date_start = '1997/10/05'
 ;date_end   = '1997/10/05'
-date_start = '2009/09/09'
-date_end   = '2009/09/09'
+date_start = '2008/01/01'
+date_end   = '2008/12/31'
 
 ;
 ; ===================================================================================================
@@ -61,6 +61,6 @@ print,'Total number of files ',n1
 print,'Total time taken ',s1-s0
 print,'Average time taken ',(s1-s0)/float(n1)
 
-
+JI_HV_JP2_MOVE_DAYS,'EIT',date_start,date_end
 
 end
