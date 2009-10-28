@@ -6,7 +6,7 @@ FUNCTION JI_OBSERVER_DETAILS,observer,measurement
 ; Supported observers, usually an observatory/instrument/detector
 ; triplet, and their properties
 ;
-  nicknames = (ji_hv_oidm2('EIT')).nicknames
+  nicknames = (JI_HV_OIDM2('EIT')).nicknames
   nn = n_elements(nicknames)
   supported = {observer:strarr(nn)}
   for i = 0,nn-1 do begin

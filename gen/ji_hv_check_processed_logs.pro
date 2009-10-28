@@ -10,7 +10,10 @@
 ;
 FUNCTION JI_HV_CHECK_PROCESSED_LOGS,log,nickname
 
-   dirs = expand_dirs(log) ; get the log file subdirectories
+   dirs1 = expand_dirs(log) ; get the log file subdirectories
+   dirs2 = find_all_dir('+' + log) ; get the log file subdirectories
+   if n_elements(dirs1) gt n_elements(dirs2) then dirs = dirs1 else dirs = dirs2
+
    nd = n_elements(dirs)
    sdirs = strarr(nd)
    len0 = strlen(dirs[0])

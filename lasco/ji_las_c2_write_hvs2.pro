@@ -60,7 +60,7 @@ FUNCTION JI_LAS_C2_WRITE_HVS2,filename,rootdir,ld
      r_sun = asolr/arcs
      r_occ = 2.3                ; C2 occulter inner radius in solar radii
      r_occ_out = 8.0            ; C2 occulter outer radius in solar radii
-     alpha_mask = 1.0 + 0.0*image_new  ; transparency mask: 0 = transparent, 1 = not transparent
+;     alpha_mask = 1.0 + 0.0*image_new  ; transparency mask: 0 = transparent, 1 = not transparent
 ;
 ; block out the inner occulting disk
 ;
@@ -71,20 +71,20 @@ FUNCTION JI_LAS_C2_WRITE_HVS2,filename,rootdir,ld
      b = yim - sunc.ycen
      if (abs(hd.crota1) ge 170.0) then begin
         image_new = circle_mask(image_new, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
-        alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
+;        alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
      endif else begin
         image_new = circle_mask(image_new, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
-        alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
+;        alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
      endelse
 ;
 ; remove the outer corner areas which have no data
 ;
      if (abs(hd.crota1) ge 170.0) then begin
         image_new = circle_mask(image_new, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
-        alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
+;        alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
      endif else begin
         image_new = circle_mask(image_new, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
-        alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
+;        alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
      endelse       
 ;
 ; add the tag_name 'R_SUN' to the header information
@@ -101,7 +101,7 @@ FUNCTION JI_LAS_C2_WRITE_HVS2,filename,rootdir,ld
 ; Active Helioviewer tags have a "hva_" tag, change the nature of the
 ; final output, and are not stored in the final JP2 file
 ;
-     hd = add_tag(hd,alpha_mask,'hva_alpha_transparency')
+;     hd = add_tag(hd,alpha_mask,'hva_alpha_transparency')
 
 ;
 ; Old tags

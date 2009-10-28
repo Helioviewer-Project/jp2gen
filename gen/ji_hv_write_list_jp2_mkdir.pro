@@ -2,7 +2,7 @@
 ; Create the subdirectory structure as required
 ;
 ;
-FUNCTION JI_WRITE_LIST_JP2_MKDIR,hvs,dir,observer_subdir = observer_subdir
+FUNCTION JI_HV_WRITE_LIST_JP2_MKDIR,hvs,dir,observer_subdir = observer_subdir
   loc = dir
 
   if keyword_set(observer_subdir) then begin

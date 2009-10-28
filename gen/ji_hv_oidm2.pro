@@ -10,7 +10,7 @@ FUNCTION JI_HV_OIDM2,name
 ; Must be all uppercase.
 ;
 ; **********************************************************
-; * Edit the "nicknames" array to include a new instrument *
+; * Edit the "nicknames" array to include a new observer *
 ; **********************************************************
   nicknames = ['LASCO-C2','LASCO-C3','EIT','MDI',$ ; SOHO
                'EUVI-A','COR1-A','COR2-A',$ ; STEREO-A
@@ -30,7 +30,7 @@ FUNCTION JI_HV_OIDM2,name
 ; 
 ; ZAP
 ;     If name eq 'ZAP' then begin
-;        observatory = 'MAXWELL_C'
+;        observatory = 'MAXWELL-C'
 ;        instrument = 'CONKER'
 ;        detector = 'ZAP'
 ;        measurement = ['1600','WL','195','MAG']

@@ -66,7 +66,7 @@ FUNCTION JI_LAS_C3_WRITE_HVS2,filename,rootdir,ld
      r_sun = asolr/arcs
      r_occ = 4.4                ; C3 occulter inner radius in solar radii
      r_occ_out = 31.5            ; C3 occulter outer radius in solar radii
-     alpha_mask = 1.0 + 0.0*image_new  ; transparency mask: 0 = transparent, 1 = not transparent
+;     alpha_mask = 1.0 + 0.0*image_new  ; transparency mask: 0 = transparent, 1 = not transparent
 ;
 ; block out the inner occulting disk
 ;
@@ -81,7 +81,7 @@ FUNCTION JI_LAS_C3_WRITE_HVS2,filename,rootdir,ld
 ;     pylonima_rotated = rot(pylonima, hd.crota1, 1, xim,yim)
      pylonima_rotated = rot(pylonima, hd.crota1, 1, sunc.xcen,sunc.ycen,/pivot)
      transparent_index = where(pylonima_rotated eq 2)
-     alpha_mask(transparent_index) = 0
+;     alpha_mask(transparent_index) = 0
      zero_index = where(pylonima_rotated ge 2)
      image_new(zero_index) = 0
 ;
@@ -126,7 +126,7 @@ FUNCTION JI_LAS_C3_WRITE_HVS2,filename,rootdir,ld
 ; Active Helioviewer tags have a "hva_" tag, change the nature of the
 ; final output, and are not stored in the final JP2 file
 ;
-     hd = add_tag(hd,alpha_mask,'hva_alpha_transparency')
+;     hd = add_tag(hd,alpha_mask,'hva_alpha_transparency')
 ;
 ; Old tags, no longer required.
 ;

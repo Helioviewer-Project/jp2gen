@@ -44,14 +44,13 @@ repeat begin
    print,' '
    print,progname + ': Processing... ' + date_start + ' to ' + date_end
 ;
-; Create a simple hvs structure that carries date information
+; Create the subdirectory for the log file.  First we create an hvs
+; structure that encodes the date, and use a directory creation
+; function to create the logfile directory
 ;
    hvs = {observatory:'',instrument:'',detector:'',measurement:'',$
           yy:strmid(utc,0,4),mm:strmid(utc,5,2),dd:strmid(utc,8,2)}
-;
-; Create the subdirectory for the log file
-;
-   logfile_directory = JI_WRITE_LIST_JP2_MKDIR(hvs,storage.log_location)
+   logfile_directory = JI_HV_WRITE_LIST_JP2_MKDIR(hvs,storage.log_location)
 ;
 ; ===================================================================================================
 ;
@@ -71,16 +70,17 @@ repeat begin
 ; Write direct to JP2 from FITS
 ;
    prepped = JI_EIT_WRITE_HVS(date_start,date_end,storage.jp2_location)
-;
-; Save the log file
-;
-   wrt_ascii,prepped,listname
-   n1 = n_elements(prepped)
    s1 = systime(1)
    s1_time = systime(0)
 ;
+; Save the log file
+;
+   JI_HV_WRITE_LOGFILE,listname,prepped
+
+;
 ; Move the data one day at a time
 ;
+   n1 = n_elements(prepped)
    s2 = systime(1)
    date_start_dmy = nint(strsplit(date_start,'/',/extract))
    date_end_dmy = nint(strsplit(date_end,'/',/extract))
@@ -103,8 +103,8 @@ repeat begin
              detector:oidm.detector,$
              measurement:'',$
              yy:yy, mm:mm, dd:dd}
-      source = JI_WRITE_LIST_JP2_MKDIR(hvs,storage.jp2_location)
-      JI_HV_JP2_MOVE_SCRIPT,nickname, source, '/Users/ireland/hv/incoming',hvs
+      source = JI_HV_WRITE_LIST_JP2_MKDIR(hvs,storage.jp2_location)
+;      JI_HV_JP2_MOVE_SCRIPT,nickname, source, '/Users/ireland/hv/incoming',hvs
       current_date = current_date + 1
    endwhile
    s3 = systime(1)
@@ -122,8 +122,8 @@ repeat begin
 ;
 ; Wait 15 minutes before looking for more data
 ;
-   print,'Fixed wait time of 15 minutes now progressing.'
-   wait,15*60
+   print,'Fixed wait time of 1 hour now progressing.'
+   wait,60*60
 
 endrep until 1 eq 0
 

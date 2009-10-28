@@ -10,14 +10,14 @@
 ;              rescaling or recentering)
 ;
 ;-
-PRO ji_write_list_jp2,hvs,dir, loc = loc, filename = filename, outf = outf
+PRO ji_hv_write_list_jp2,hvs,dir, loc = loc, filename = filename, outf = outf
 ;
 ;
 ;
   if is_struct(hvs) then begin
-     loc = JI_WRITE_LIST_JP2_MKDIR(hvs,dir)
+     loc = JI_HV_WRITE_LIST_JP2_MKDIR(hvs,dir)
      filename = JI_HV_FILENAME_CONVENTION(hvs,/create)
-     ji_write_jp2_lwg,loc + filename,hvs.img,fitsheader = hvs.header
+     JI_HV_WRITE_JP2_LWG,loc + filename,hvs.img,fitsheader = hvs.header
      outf = loc + filename
   endif else begin
 ;
@@ -36,7 +36,7 @@ PRO ji_write_list_jp2,hvs,dir, loc = loc, filename = filename, outf = outf
 ;
 ; create a directory if need be
 ;
-           loc = JI_WRITE_LIST_JP2_MKDIR(hvs,dir)
+           loc = JI_HV_WRITE_LIST_JP2_MKDIR(hvs,dir)
 ;
 ; create the filename
 ;
@@ -50,7 +50,7 @@ PRO ji_write_list_jp2,hvs,dir, loc = loc, filename = filename, outf = outf
 ;
 ; call the program to write the JP2 file
 ;
-           ji_write_jp2_lwg,loc + filename,hvs.img,fitsheader = hvs.header
+           JI_HV_WRITE_JP2_LWG,loc + filename,hvs.img,fitsheader = hvs.header
 
         ENDIF
      ENDFOR

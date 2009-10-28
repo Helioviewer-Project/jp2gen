@@ -69,7 +69,7 @@
 ;
 ;-
 
-PRO ji_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,_extra=_extra,head2struct=head2struct, keep_tif=keep_tif,keep_xml=keep_xml,quiet=quiet,kdu_lib_location=kdu_lib_location
+PRO ji_hv_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,_extra=_extra,head2struct=head2struct, keep_tif=keep_tif,keep_xml=keep_xml,quiet=quiet,kdu_lib_location=kdu_lib_location
 
 ;
 ; this program name
@@ -94,7 +94,7 @@ PRO ji_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
      sz = size(image_new,/dim)
      nx = sz[0]
      ny = sz[1]
-     obsdet = JI_OBSERVER_DETAILS('unknown_observer','unknown_measurement')
+     obsdet = JI_HV_OBSERVER_DETAILS('unknown_observer','unknown_measurement')
 ;     IF KEYWORD_SET(bit_rate) eq 0 THEN bit_rate=[0.5,0.01]
 ;     IF KEYWORD_SET(n_layers) eq 0 THEN n_layers=8
 ;     IF KEYWORD_SET(n_levels) eq 0 THEN n_levels=8
@@ -146,7 +146,7 @@ PRO ji_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Get details on the observer, JP2 compression details, etc
 ;
-     obsdet = JI_OBSERVER_DETAILS(observer,measurement)
+     obsdet = JI_HV_OBSERVER_DETAILS(observer,measurement)
 ;
 ; Get contact details
 ;
