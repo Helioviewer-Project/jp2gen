@@ -35,7 +35,7 @@
 ;
 ; Setup some defaults - usually there is NO user contribution below here
 ;
-
+nickname = 'LASCO-C2'
 progname = 'lasco_c2_prep2jp2_v3'
 print,' '
 print,progname
@@ -56,50 +56,44 @@ print,' 5. - press "Done"'
 print,' '
 print,' The wlister is done, and the program continues'
 print,' '
-
-
 list = WLISTER() 
-;
-; Start a clock
-;
-t0 = systime(1)
 ;
 ; ===================================================================================================
 ;
 ; Setup some defaults - usually there is NO user contribution below here
 ;
+; Start a clock
+;
+t0 = systime(1)
+;
 ; Call details of storage locations
 ;
 storage = JI_HV_STORAGE()
 ;
-; A file containing the absolute locations of the
-; LASCO fits files to be processed
+; Create the subdirectory for the log file.
 ;
-filename = progname + '_' + ji_txtrep(ji_systime(),':','_') + '.sav'
-save,filename = storage.hvs_location + filename, list
+dummy = readfits(list[0],h1)
+JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = (fitshead2struct(h1)).obt_time,subdir = subdir
 ;
-; Create the location of the listname
+; The filename for a file which will contain the locations of the
+; JP2 log files
 ;
-listname = storage.hvs_location + filename + '.prepped.txt'
-
-prev = fltarr(1024,1024)
-;
-; ===================================================================================================
-;
-;
+dummy = readfits(list[n_elements(list)-1],h2)
+filename = JI_HV_LOG_FILENAME_CONVENTION(nickname,(fitshead2struct(h1)).obt_time,(fitshead2struct(h2)).obt_time)
 ;
 ; Write direct to JP2 from FITS
+;
+prev = fltarr(1024,1024)
 prepped = JI_LAS_WRITE_HVS3(list,storage.jp2_location,/c2,write = write,/bf_process)
-save,filename = listname,prepped
+; 
+; Save the log file
 ;
-; Get the time
+JI_HV_LOG_WRITE,subdir,filename,prepped,/verbose
 ;
-t1 = systime(1)
+; Report time taken
 ;
+JI_HV_REPORT_WRITE_TIME,progname,t0,prepped
 ;
-;
-print,progname+ ': wrote '+trim(n_elements(list))+' files in '+trim(t1-t0) + ' seconds.'
-
 ;
 ;
 end

@@ -12,8 +12,8 @@
 ;        the correct directory structure for use with the Helioviewer
 ;        project.
 ;
-date_start = '2009/10/08'
-date_end   = '2009/10/09'
+date_start = '2003/01/01'
+date_end   = '2003/12/31'
 
 ;
 ; ===================================================================================================
@@ -27,19 +27,18 @@ nickname = 'EIT' ; instrument nickname
 ;
 storage = JI_HV_STORAGE()
 ;
-; Create the subdirectory for the log file.  First we create an hvs
+; Create the subdirectory for the log file.
 ;
-   JI_HV_LOG_CREATE_SUBDIRECTORY,storage.log_location,nickname,date = strmid(date_start,0,4) + strmid(date_start,5,2) + strmid(date_start,8,2),subdir = subdir
+JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
 ;
 ; Start timing
 ;
-s0 = systime(1)
+t0 = systime(1)
 ;
 ; The filename for a file which will contain the locations of the
 ; JP2 log files
 ;
-filename = nickname + '__' + strmid(date_start,0,4) + strmid(date_start,5,2) + strmid(date_start,8,2) + '-' + $
-           strmid(date_end,0,4) + strmid(date_end,5,2) + strmid(date_end,8,2) + '.txt'
+filename = JI_HV_LOG_FILENAME_CONVENTION(nickname,date_start,date_end)
 ;
 ; Write direct to JP2 from FITS
 ;
@@ -47,16 +46,11 @@ prepped = JI_EIT_WRITE_HVS(date_start,date_end,storage.jp2_location)
 ; 
 ; Save the log file
 ;
-JI_HV_LOG_WRITE,subdir,filename + '.prepped.log',prepped,/verbose
+JI_HV_LOG_WRITE,subdir,filename,prepped,/verbose
 ;
 ; Report time taken
 ;
-n1 = n_elements(prepped)
-s1 = systime(1)
-print,'Total number of files ',n1
-print,'Total time taken ',s1-s0
-print,'Average time taken ',(s1-s0)/float(n1)
+JI_HV_REPORT_WRITE_TIME,progname,t0,prepped
 
-;JI_HV_JP2_MOVE_DAYS,'EIT',date_start,date_end
 
 end

@@ -432,14 +432,14 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
 ; GSFC, there will be a period of 4 hrs where even although data might
 ; be coming in, the routine will not write anything.
 ;
-     while iday.mjd le min([end_date_utc.mjd,today_date_utc.mjd]) do begin
+;     while iday.mjd le min([end_date_utc.mjd,today_date_utc.mjd]) do begin
 ;
 ; The routine has been changed to look for data up to the specified
 ; end date, which is passed to the routine with the understanding that
 ; it is a UTC time.
 ;
-;     while iday.mjd le end_date_utc.mjd do begin
-;        iday_str=utc2str(iday)
+     while iday.mjd le end_date_utc.mjd do begin
+        iday_str=utc2str(iday)
 
 ;loop over wavelengths
 ; Image must be: {synoptic (PW) or take normal (N)} and {fffr or ffhr}

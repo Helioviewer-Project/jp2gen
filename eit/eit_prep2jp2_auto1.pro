@@ -30,7 +30,7 @@ storage = JI_HV_STORAGE()
 ;
 ; Create the log subdirectory for this nickname
 ;
-JI_HV_LOG_CREATE_SUBDIRECTORY,storage.log_location,nickname,subdir = subdir
+JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,subdir = subdir
 ;
 ; Infinite loop
 ;
@@ -38,7 +38,7 @@ repeat begin
 ;
 ; Look in the log directory to get the last run data: look for log files from the instrument 'nickname'
 ;
-   date_most_recent = (JI_HV_LOG_CHECK_PROCESSED(storage.log_location,nickname)).date_most_recent
+   date_most_recent = (JI_HV_LOG_CHECK_PROCESSED(nickname)).most_recent
    if (date_most_recent eq -1) then begin
       get_utc,utc,/ecs,/date_only
       date_most_recent = utc
@@ -54,7 +54,7 @@ repeat begin
 ;
 ; Create the subdirectory for the log file.  First we create an hvs
 ;
-   JI_HV_LOG_CREATE_SUBDIRECTORY,storage.log_location,nickname,date = strmid(utc,0,4) + strmid(utc,5,2) + strmid(utc,8,2),subdir = subdir
+   JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
 ;
 ; ===================================================================================================
 ;
@@ -65,8 +65,7 @@ repeat begin
 ; The filename for a file which will contain the locations of the
 ; JP2 log files
 ;
-   filename = nickname + '__' + strmid(date_start,0,4) + strmid(date_start,5,2) + strmid(date_start,8,2) + '-' + $
-              strmid(date_end,0,4) + strmid(date_end,5,2) + strmid(date_end,8,2) + '.txt'
+   filename = JI_HV_LOG_FILENAME_CONVENTION(nickname,date_start,date_end)
 ;
 ; Create the location of the listname
 ;
@@ -80,7 +79,7 @@ repeat begin
 ;
 ; Save the log file
 ;
-   JI_HV_LOG_WRITE,listname,prepped,/verbose 
+   JI_HV_LOG_WRITE,listname,prepped,/verbose
 ;
 ; Move the data one day at a time
 ;

@@ -187,8 +187,8 @@ FUNCTION JI_LAS_C3_WRITE_HVS2,filename,rootdir,ld
 ; Write a JP2
 ;
 ;     IF (write eq 'direct2jp2') then begin
-        JI_WRITE_LIST_JP2,hvs,rootdir
-        outfile = rootdir + obs_time + '_' + observation + '.hvs.jp2'
+        JI_HV_WRITE_LIST_JP2,hvs,rootdir
+        outfile = progname + '; source ; ' +hd.filename + ' ; ' + rootdir + obs_time + '_' + observation + '.hvs.jp2' + ' ; ' + JI_HV_JP2GEN_CURRENT(/verbose)
 ;     ENDIF ELSE BEGIN
 ;        outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
 ;        print,progname + ': Writing to ' + outfile
