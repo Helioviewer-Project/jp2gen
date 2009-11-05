@@ -19,7 +19,8 @@ FUNCTION JI_HV_STORAGE
 ;
 ; ----------- No user changes required below here ----------------
 ;
-
+  hv_root = '~/hv/sandbox/v' + trim((JI_HV_WRITTENBY()).source.jp2gen_version)+ '/'
+  if not(is_dir(hv_root)) then spawn,'mkdir -p '+ hv_root
 ;
 ; Create the necessary subdirectory locations
 ;

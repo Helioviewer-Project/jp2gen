@@ -27,7 +27,7 @@ PRO JI_HV_JP2_MOVE_DAYS,nickname,date_start,date_end
             measurement:'',$
             yy:yy, mm:mm, dd:dd}
      source = JI_WRITE_LIST_JP2_MKDIR(hvs,storage.jp2_location)
-     JI_HV_JP2_MOVE_SCRIPT,nickname, source, '/Users/ireland/hv/incoming',hvs
+     JI_HV_JP2_MOVE_SCRIPT,nickname, source, '~/ireland/hv/incoming',hvs
      current_date = current_date + 1
   endwhile
   return

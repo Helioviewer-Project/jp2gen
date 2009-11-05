@@ -29,7 +29,11 @@ FUNCTION JI_HV_CHECK_PROCESSED_LOGS,log,nickname
       endif
    endfor
    z = strsplit(sdirs[keep_index],'/',/extract)
-   date_most_recent = z[0] + '/' + z[1] + '/' + z[2] ; calculate the date of the most recently processed data
+   if zz ne '' eq -1 then begin
+      date_most_recent = z[0] + '/' + z[1] + '/' + z[2] ; calculate the date of the most recently processed data
+   endif else begin
+      date_most_recent = -1
+   endelse
 
    return,{date_most_recent:date_most_recent}
 end

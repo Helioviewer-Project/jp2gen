@@ -433,7 +433,11 @@ PRO ji_hv_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=
 ;
 ; JP2GEN version
 ;
-        xh+='<HV_JP2GEN_VERSION>'+wby.source.jp2gen_version+'</HV_JP2GEN_VERSION>'+lf
+        xh+='<HV_JP2GEN_VERSION>'+trim(wby.source.jp2gen_version)+'</HV_JP2GEN_VERSION>'+lf
+;
+; JP2GEN branch revision
+;
+        xh+='<HV_JP2GEN_BRANCH_REVISION>'+trim(wby.source.jp2gen_branch_revision)+'</HV_JP2GEN_BRANCH_REVISION>'+lf
 ;
 ; JP2 comments
 ;
@@ -450,16 +454,16 @@ PRO ji_hv_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=
 ;
 ;        xh+='<BIT_RATE_FACTOR>'+trim(bit_rate_factor)+'</BIT_RATE_FACTOR>'+lf
 ;
-        IF have_tag(header,'hva_alpha_transparency') THEN BEGIN
-           xh+='<HV_ALPHA_TRANSPARENCY>TRUE</HV_ALPHA_TRANSPARENCY>'+lf
+;        IF have_tag(header,'hva_alpha_transparency') THEN BEGIN
+;           xh+='<HV_ALPHA_TRANSPARENCY>TRUE</HV_ALPHA_TRANSPARENCY>'+lf
 ;           xh+='<ALPHA_TRANSPARENCY_YN>Alpha transparency included.' + $
 ;               'Two layer image (0,*,*) = image, ' + $
 ;               '(1,*,*) = alpha transparency layer</ALPHA_TRANSPARENCY_YN>'+lf
-        endif else begin
-           xh+='<HV_ALPHA_TRANSPARENCY>FALSE</HV_ALPHA_TRANSPARENCY>'+lf
+;        endif else begin
+;           xh+='<HV_ALPHA_TRANSPARENCY>FALSE</HV_ALPHA_TRANSPARENCY>'+lf
 ;           xh+='<ALPHA_TRANSPARENCY_YN>No alpha transparency.' + $
 ;               'Single layer image.</ALPHA_TRANSPARENCY_YN>'+lf
-        endelse
+;        endelse
 ;
 ; If the image is a coronograph then include the inner and outer radii
 ; of the coronagraph in solar radii

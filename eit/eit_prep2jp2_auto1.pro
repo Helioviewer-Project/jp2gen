@@ -28,13 +28,21 @@ oidm = JI_HV_OIDM2(nickname)
 ;
 storage = JI_HV_STORAGE()
 ;
+; Create the log subdirectory for this nickname
+;
+JI_HV_LOG_CREATE_SUBDIRECTORY,storage.log_location,nickname,subdir = subdir
+;
 ; Infinite loop
 ;
 repeat begin
 ;
 ; Look in the log directory to get the last run data: look for log files from the instrument 'nickname'
 ;
-   date_most_recent = (JI_HV_CHECK_PROCESSED_LOGS(storage.log_location,nickname)).date_most_recent
+   date_most_recent = (JI_HV_LOG_CHECK_PROCESSED(storage.log_location,nickname)).date_most_recent
+   if (date_most_recent eq -1) then begin
+      get_utc,utc,/ecs,/date_only
+      date_most_recent = utc
+   endif
 ;
 ; Get today's date in UT
 ;
@@ -45,12 +53,8 @@ repeat begin
    print,progname + ': Processing... ' + date_start + ' to ' + date_end
 ;
 ; Create the subdirectory for the log file.  First we create an hvs
-; structure that encodes the date, and use a directory creation
-; function to create the logfile directory
 ;
-   hvs = {observatory:'',instrument:'',detector:'',measurement:'',$
-          yy:strmid(utc,0,4),mm:strmid(utc,5,2),dd:strmid(utc,8,2)}
-   logfile_directory = JI_HV_WRITE_LIST_JP2_MKDIR(hvs,storage.log_location)
+   JI_HV_LOG_CREATE_SUBDIRECTORY,storage.log_location,nickname,date = strmid(utc,0,4) + strmid(utc,5,2) + strmid(utc,8,2),subdir = subdir
 ;
 ; ===================================================================================================
 ;
@@ -61,11 +65,12 @@ repeat begin
 ; The filename for a file which will contain the locations of the
 ; JP2 log files
 ;
-   filename = nickname + '_' + ji_txtrep(date_start,'/','_') + '-' + ji_txtrep(date_end,'/','_') + '.log'
+   filename = nickname + '__' + strmid(date_start,0,4) + strmid(date_start,5,2) + strmid(date_start,8,2) + '-' + $
+              strmid(date_end,0,4) + strmid(date_end,5,2) + strmid(date_end,8,2) + '.txt'
 ;
 ; Create the location of the listname
 ;
-   listname = logfile_directory + filename + '.prepped.txt'
+   listname = subdir + filename + '.prepped.log'
 ;
 ; Write direct to JP2 from FITS
 ;
@@ -75,8 +80,7 @@ repeat begin
 ;
 ; Save the log file
 ;
-   JI_HV_WRITE_LOGFILE,listname,prepped
-
+   JI_HV_LOG_WRITE,listname,prepped,/verbose 
 ;
 ; Move the data one day at a time
 ;
