@@ -5,6 +5,12 @@
 ;
 FUNCTION JI_HV_LOG_CHECK_PROCESSED,nickname
 ;
+; Get some details on how the log file name is constructed.  Pass in a
+; dummy time, in this case, UTC
+;
+  get_utc,utc
+  c = JI_HV_LOG_FILENAME_CONVENTION(nickname,utc2str(utc),utc2str(utc),/components)
+;
 ; Get the log file directories
 ;
   log = (JI_HV_STORAGE()).log_location
@@ -35,7 +41,7 @@ FUNCTION JI_HV_LOG_CHECK_PROCESSED,nickname
         files[0] = '-1'
      endif else begin
         for j = 0,n_elements(files)-1 do begin
-           split = strsplit(files[j],'_',/regex,/extract)
+           split = strsplit(files[j],c.separator,/regex,/extract)
            logged[i-1,j,0] = split[1]
            logged[i-1,j,1] = strmid(split[2],0,strlen(split[2])-4)
            logtime[i-1,j,0] = anytim2tai(logged[i-1,j,0])

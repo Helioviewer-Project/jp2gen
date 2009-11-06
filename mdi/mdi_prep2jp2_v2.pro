@@ -25,6 +25,7 @@ mdidir = '/Users/ireland/hv/dat/mdi/2003/'
 ; Setup some defaults - usually there is NO user contribution below here
 ;
 progname = 'mdi_prep2jp2_v2'
+nickname = 'MDI'
 ;
 ; Write style
 ;

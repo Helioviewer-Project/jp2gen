@@ -876,7 +876,7 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
                            observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
                            yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
                     JI_HV_WRITE_LIST_JP2,hvs,dir_im,outf = outf
-                    outfile_storage(outfile_count) = 'read ' + s(i_file) + '; wrote ' + outf + ' ; ' +JI_HV_JP2GEN_CURRENT(/verbose)
+                    outfile_storage(outfile_count) = 'read ' + s(i_file) + '; wrote ' + outf + ' ; ' +JI_HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
                  endif
 
                  

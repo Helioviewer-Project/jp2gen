@@ -102,12 +102,16 @@ function JI_MDI_INT_WRITE_HVS,infile,rootdir,write = write
 ;
 ; save
 ;
-  outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
   hvs = {img:image_new, red:r, green:g, blue:b, header:hd,$
          observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
   IF (write eq 'direct2jp2') then begin
      JI_WRITE_LIST_JP2,hvs,rootdir
+     outfile = 'read ' + infile + $
+               ' ; wrote ' + rootdir + obs_time + '_' + observation  + $
+               ' ; ' +JI_HV_JP2GEN_CURRENT(/verbose) + $
+               ' ; at ' + systime(0)
+     
   ENDIF ELSE BEGIN
      outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
      print,progname + ': Writing to ' + outfile

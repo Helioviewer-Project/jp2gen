@@ -12,8 +12,8 @@
 ;        the correct directory structure for use with the Helioviewer
 ;        project.
 ;
-date_start = '2003/01/01'
-date_end   = '2003/12/31'
+date_start = '1999/01/01' + 'T00:00:00.000'
+date_end   = '1999/12/31' + 'T23:59:59.000'
 
 ;
 ; ===================================================================================================

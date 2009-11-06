@@ -163,7 +163,7 @@ FUNCTION JI_LAS_C2_WRITE_HVS2,filename,rootdir,ld
 ; Write a JP2 or HVS file
 ;
         JI_HV_WRITE_LIST_JP2,hvs,rootdir
-        outfile = progname + '; source ; ' +hd.filename + ' ; ' + rootdir + obs_time + '_' + observation + '.hvs.jp2' + ' ; ' + JI_HV_JP2GEN_CURRENT(/verbose)
+        outfile = progname + '; source ; ' +hd.filename + ' ; ' + rootdir + obs_time + '_' + observation + '.hvs.jp2' + ' ; ' + JI_HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
         print,outfile
   endif else begin
      outfile = JI_HV_ERR_REPORT('JP2 file not written due to problem with FITS file: ',filename,name = 'lasco_c2')
