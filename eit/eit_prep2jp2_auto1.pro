@@ -30,10 +30,11 @@ storage = JI_HV_STORAGE()
 ;
 ; Create the log subdirectory for this nickname
 ;
-JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,subdir = subdir
+JI_HV_LOG_CREATE_SUBDIRECTORY,nickname
 ;
 ; Infinite loop
 ;
+nwrite = long(0)
 repeat begin
 ;
 ; Look in the log directory to get the last run data: look for log files from the instrument 'nickname'
@@ -42,13 +43,15 @@ repeat begin
    if (date_most_recent eq -1) then begin
       get_utc,utc,/ecs,/date_only
       date_most_recent = utc
-   endif
+   endif else begin
+      date_most_recent = strmid(date_most_recent,0,10) + 'T00:00:00.000'
+   endelse
 ;
 ; Get today's date in UT
 ;
-   get_utc,utc,/ecs,/date_only
    date_start = date_most_recent
-   date_end   = utc
+   get_utc,utc,/ecs,/date_only
+   date_end   = utc + 'T23:59:59.000'
    print,' '
    print,progname + ': Processing... ' + date_start + ' to ' + date_end
 ;
@@ -60,7 +63,7 @@ repeat begin
 ;
 ; Start timing
 ;
-   s0 = systime(1)
+   t0 = systime(1)
 ;
 ; The filename for a file which will contain the locations of the
 ; JP2 log files
@@ -69,65 +72,58 @@ repeat begin
 ;
 ; Create the location of the listname
 ;
-   listname = subdir + filename + '.prepped.log'
+   listname = filename + '.prepped.log'
 ;
 ; Write direct to JP2 from FITS
 ;
    prepped = JI_EIT_WRITE_HVS(date_start,date_end,storage.jp2_location)
-   s1 = systime(1)
-   s1_time = systime(0)
+   nwrite = nwrite + long(1)
+   tMostRecent = systime(0)
 ;
 ; Save the log file
 ;
-   JI_HV_LOG_WRITE,listname,prepped,/verbose
-;
-; Move the data one day at a time
-;
-   n1 = n_elements(prepped)
-   s2 = systime(1)
-   date_start_dmy = nint(strsplit(date_start,'/',/extract))
-   date_end_dmy = nint(strsplit(date_end,'/',/extract))
-   current_date = date2mjd(date_start_dmy[0],date_start_dmy[1],date_start_dmy[2])
-   while current_date le date2mjd(date_end_dmy[0],date_end_dmy[1],date_end_dmy[2]) do begin
-      mjd2date,current_date,yy,mm,dd
-      yy = trim(yy)
-      if mm le 9 then begin
-         mm = '0' + trim(mm)
-      endif else begin
-         mm = trim(mm)
-      endelse
-      if dd le 9 then begin
-         dd = '0' + trim(dd)
-      endif else begin
-         dd = trim(dd)
-      endelse
-      hvs = {observatory:oidm.observatory,$
-             instrument:oidm.instrument,$
-             detector:oidm.detector,$
-             measurement:'',$
-             yy:yy, mm:mm, dd:dd}
-      source = JI_HV_WRITE_LIST_JP2_MKDIR(hvs,storage.jp2_location)
-;      JI_HV_JP2_MOVE_SCRIPT,nickname, source, '/Users/ireland/hv/incoming',hvs
-      current_date = current_date + 1
-   endwhile
-   s3 = systime(1)
+;   JI_HV_LOG_WRITE,subdir,listname,prepped,/verbose
 ;
 ; Timing stats
 ;
-   print,' '
-   print,progname + ': most recent file processed = '+prepped[n_elements(prepped)-1]   
-   print,'Total number of files ',n1
-   print,'Total time taken ',s1-s0
-   print,'Average time taken ',(s1-s0)/float(n1)
-   print,'Last JP2 written at ',s1_time
-   print,'File transfer completed at ',systime(0)
-   print,'File transfer time ',s3-s2
+   JI_HV_REPORT_WRITE_TIME,progname,t0,prepped
+   print,'Last file written at approximately ',tMostRecent
+   print,'Number of successful FITS to JP2 preparation script executions since this program was launched ',nwrite
 ;
 ; Wait 15 minutes before looking for more data
 ;
-   print,'Fixed wait time of 1 hour now progressing.'
-   wait,60*60
+   print,'Fixed wait time of 15 minutes now progressing.'
+   wait,60*15.0
 
 endrep until 1 eq 0
 
 end
+
+;   n1 = n_elements(prepped)
+;   s2 = systime(1)
+;   date_start_dmy = nint(strsplit(date_start,'/',/extract))
+;   date_end_dmy = nint(strsplit(date_end,'/',/extract))
+;   current_date = date2mjd(date_start_dmy[0],date_start_dmy[1],date_start_dmy[2])
+;   while current_date le date2mjd(date_end_dmy[0],date_end_dmy[1],date_end_dmy[2]) do begin
+;      mjd2date,current_date,yy,mm,dd
+;      yy = trim(yy)
+;      if mm le 9 then begin
+;         mm = '0' + trim(mm)
+;      endif else begin
+;         mm = trim(mm)
+;      endelse
+;      if dd le 9 then begin
+;         dd = '0' + trim(dd)
+;      endif else begin
+;         dd = trim(dd)
+;      endelse
+;      hvs = {observatory:oidm.observatory,$
+;             instrument:oidm.instrument,$
+;             detector:oidm.detector,$
+;             measurement:'',$
+;             yy:yy, mm:mm, dd:dd}
+;      source = JI_HV_WRITE_LIST_JP2_MKDIR(hvs,storage.jp2_location)
+;      JI_HV_JP2_MOVE_SCRIPT,nickname, source, '/Users/ireland/hv/incoming',hvs
+;      current_date = current_date + 1
+;   endwhile
+;   s3 = systime(1)

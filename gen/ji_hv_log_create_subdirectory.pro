@@ -13,6 +13,7 @@ PRO JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date,subdir = subdir
            spawn,'mkdir ' + subdir
         endif
      endif
+     subdir = subdir + '/'
   endif else begin
      if keyword_set(date) then begin
         answer = JI_HV_LOG_FILENAME_CONVENTION(nickname,date,date,/components)
@@ -20,8 +21,8 @@ PRO JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date,subdir = subdir
         if not(is_dir(subdir)) then begin
            spawn,'mkdir ' + subdir
         endif
+        subdir = subdir + '/'
      endif
   endelse
-  subdir = subdir + '/'
 return
 end
