@@ -80,7 +80,7 @@ filename = 'mag.' + JI_HV_LOG_FILENAME_CONVENTION(nickname,date_start,date_end)
 ;
 ; Create the subdirectory for the log file.
 ;
-JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
+;JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
 ;
 ; Write direct to JP2 from FITS
 ;
@@ -88,7 +88,7 @@ prepped = JI_MDI_WRITE_HVS(list,storage.jp2_location,/mag)
 ; 
 ; Save the log file
 ;
-JI_HV_LOG_WRITE,subdir,filename,prepped,/verbose
+;JI_HV_LOG_WRITE,subdir,filename,prepped,/verbose
 ;
 ; Report time taken
 ;
