@@ -17,7 +17,7 @@
 ;        the correct directory structure for use with the Helioviewer
 ;        project.
 ;
-mdidir = '~/hv/dat/mdi/2001/'
+mdidir = '~/hv/dat/mdi/2002/'
 
 ;
 ; ===================================================================================================
