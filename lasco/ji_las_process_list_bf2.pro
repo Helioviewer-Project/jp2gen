@@ -3,7 +3,7 @@
 ; the input file is not a LASCO FITS file.  Processing is aborted for
 ; the file
 ;
-FUNCTION ji_las_process_list_bf2,listfile, rootdir,which_inst ,STAIND=staind, AGAIN=again, GIFS=gifs, $
+FUNCTION ji_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAIND=staind, AGAIN=again, GIFS=gifs, $
 		ALLSTARS=allstars, ROOT=root
 ;
 ; set this for proper scaling
@@ -217,11 +217,11 @@ FUNCTION ji_las_process_list_bf2,listfile, rootdir,which_inst ,STAIND=staind, AG
 ;
 ; 
 ;
-           if (which_inst eq 'c2') then begin
-              outfile(i) = JI_LAS_C2_WRITE_HVS2(this_filename,rootdir,{cimg:imc,header:h})
+           if (nickname eq 'LASCO-C2') then begin
+              outfile(i) = JI_LAS_C2_WRITE_HVS2(this_filename,rootdir,{cimg:imc,header:h},logfilename)
            endif
-           if (which_inst eq 'c3') then begin
-              outfile(i) = JI_LAS_C3_WRITE_HVS2(this_filename,rootdir,{cimg:imc,header:h})
+           if (nickname eq 'LASCO-C3') then begin
+              outfile(i) = JI_LAS_C3_WRITE_HVS2(this_filename,rootdir,{cimg:imc,header:h},logfilename)
            endif
 
         ENDFOR

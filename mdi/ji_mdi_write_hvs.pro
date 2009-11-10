@@ -3,8 +3,7 @@
 ;
 ; Return the filenames
 ;
-FUNCTION JI_MDI_WRITE_HVS,dir,filename,rootdir,int = int, mag = mag
-  restore,dir + filename
+FUNCTION JI_MDI_WRITE_HVS,list,rootdir,int = int, mag = mag
   n = n_elements(list)
   done = strarr(n)
   if keyword_set(int) then begin

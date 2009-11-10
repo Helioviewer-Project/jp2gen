@@ -323,7 +323,7 @@ END
 ;+
 ;PRO eit_img_timerange,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,jp2=jp2,bitrate_jp2=bitrate_jp2,n_layers_jp2=n_layers_jp2,n_levels_jp2=n_levels_jp2,gray_jp2=gray_jp2,fitsheader=fitsheader,hv_names=hv_names
 ;-
-FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,jp2=jp2,bitrate_jp2=bitrate_jp2,n_layers_jp2=n_layers_jp2,n_levels_jp2=n_levels_jp2,fitsheader=fitsheader,hv_names=hv_names,sav=sav,hvs=hvs
+FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,jp2=jp2,bitrate_jp2=bitrate_jp2,n_layers_jp2=n_layers_jp2,n_levels_jp2=n_levels_jp2,fitsheader=fitsheader,hv_names=hv_names,sav=sav,hvs=hvs,logfilename = logfilename
 ;
 ; Load in the HVS observer details
 ;
@@ -877,6 +877,7 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
                            yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
                     JI_HV_WRITE_LIST_JP2,hvs,dir_im,outf = outf
                     outfile_storage(outfile_count) = 'read ' + s(i_file) + '; wrote ' + outf + ' ; ' +JI_HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
+                    JI_HV_WRT_ASCII,outfile_storage(outfile_count),logfilename,/append
                  endif
 
                  

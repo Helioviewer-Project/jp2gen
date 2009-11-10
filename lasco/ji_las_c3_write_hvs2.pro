@@ -1,12 +1,8 @@
 ;
 ; Write the HVS file for a LASCO C2 image
 ;
-FUNCTION JI_LAS_C3_WRITE_HVS2,filename,rootdir,ld
-
+FUNCTION JI_LAS_C3_WRITE_HVS2,filename,rootdir,ld,logfilename
   COMMON C3_BLOCK, pylonim, ctr, pylon,pylonima
-;
-;
-;
   progname = 'JI_LAS_C3_WRITE_HVS2'
 ;
   oidm = ji_hv_oidm2('LASCO-C3')
@@ -189,6 +185,7 @@ FUNCTION JI_LAS_C3_WRITE_HVS2,filename,rootdir,ld
 ;     IF (write eq 'direct2jp2') then begin
         JI_HV_WRITE_LIST_JP2,hvs,rootdir
         outfile = progname + '; source ; ' +hd.filename + ' ; ' + rootdir + obs_time + '_' + observation + '.hvs.jp2' + ' ; ' + JI_HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
+        JI_HV_WRT_ASCII,outfile,logfilename,/append
 ;     ENDIF ELSE BEGIN
 ;        outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
 ;        print,progname + ': Writing to ' + outfile

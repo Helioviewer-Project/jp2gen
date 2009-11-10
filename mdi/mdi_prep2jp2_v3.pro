@@ -17,7 +17,7 @@
 ;        the correct directory structure for use with the Helioviewer
 ;        project.
 ;
-mdidir = '~/hv/dat/mdi/2003/'
+mdidir = '~/hv/dat/mdi/2001/'
 
 ;
 ; ===================================================================================================
@@ -36,16 +36,23 @@ storage = JI_HV_STORAGE()
 ;
 t0 = systime(1)
 list = file_search(mdidir,'*Ic*.00*.fits')
-
+dummy = rfits(list[0],head=h1)
+date_start = (fitshead2struct(h1)).date_obs
+dummy = rfits(list[n_elements(list)-1],head=h2)
+date_end = (fitshead2struct(h2)).date_obs
 ;
 ; The filename for a file which will contain the locations of the
 ; JP2 log files
 ;
-filename = JI_HV_LOG_FILENAME_CONVENTION(nickname,date_start,date_end)
+filename = 'int.' + JI_HV_LOG_FILENAME_CONVENTION(nickname,date_start,date_end)
+;
+; Create the subdirectory for the log file.
+;
+JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
 ;
 ; Write direct to JP2 from FITS
 ;
-prepped = JI_MDI_WRITE_HVS(storage.hvs_location,filename,storage.jp2_location,/int)
+prepped = JI_MDI_WRITE_HVS(list,storage.jp2_location,/int)
 ; 
 ; Save the log file
 ;
@@ -61,16 +68,23 @@ JI_HV_REPORT_WRITE_TIME,progname,t0,prepped
 ;
 t0 = systime(1)
 list = file_search(mdidir,'*M*.00*.fits')
-
+dummy = rfits(list[0],head=h1)
+date_start = (fitshead2struct(h1)).date_obs
+dummy = rfits(list[n_elements(list)-1],head=h2)
+date_end = (fitshead2struct(h2)).date_obs
 ;
 ; The filename for a file which will contain the locations of the
 ; JP2 log files
 ;
-filename = JI_HV_LOG_FILENAME_CONVENTION(nickname,date_start,date_end)
+filename = 'mag.' + JI_HV_LOG_FILENAME_CONVENTION(nickname,date_start,date_end)
+;
+; Create the subdirectory for the log file.
+;
+JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
 ;
 ; Write direct to JP2 from FITS
 ;
-prepped = JI_MDI_WRITE_HVS(storage.hvs_location,filename,storage.jp2_location,/mag)
+prepped = JI_MDI_WRITE_HVS(list,storage.jp2_location,/mag)
 ; 
 ; Save the log file
 ;

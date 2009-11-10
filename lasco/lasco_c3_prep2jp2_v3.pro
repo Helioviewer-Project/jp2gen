@@ -70,23 +70,23 @@ storage = JI_HV_STORAGE()
 ;
 ; Create the subdirectory for the log file.
 ;
-dummy = readfits(list[0],h1)
-JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = (fitshead2struct(h1)).obt_time,subdir = subdir
+;dummy = readfits(list[0],h1)
+;JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = (fitshead2struct(h1)).obt_time,subdir = subdir
 ;
 ; The filename for a file which will contain the locations of the
 ; JP2 log files
 ;
-dummy = readfits(list[n_elements(list)-1],h2)
-filename = JI_HV_LOG_FILENAME_CONVENTION(nickname,(fitshead2struct(h1)).obt_time,(fitshead2struct(h2)).obt_time)
+;dummy = readfits(list[n_elements(list)-1],h2)
+;filename = JI_HV_LOG_FILENAME_CONVENTION(nickname,(fitshead2struct(h1)).obt_time,(fitshead2struct(h2)).obt_time)
 ;
 ; Write direct to JP2 from FITS
 ;
 prev = fltarr(1024,1024)
-prepped = JI_LAS_WRITE_HVS3(list,storage.jp2_location,/c3,write = write,/bf_process)
+prepped = JI_LAS_WRITE_HVS3(list,storage.jp2_location,nickname,/bf_process)
 ; 
 ; Save the log file
 ;
-JI_HV_LOG_WRITE,subdir,filename,prepped,/verbose
+;JI_HV_LOG_WRITE,subdir,filename,prepped,/verbose
 ;
 ; Report time taken
 ;

@@ -101,7 +101,7 @@ FUNCTION JI_MDI_INT_WRITE_HVS2,infile,rootdir
   hvs = {img:image_new, header:hd,$
          observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-  JI_WRITE_LIST_JP2,hvs,rootdir
+  JI_HV_WRITE_LIST_JP2,hvs,rootdir
   outfile = 'read ' + infile + $
             ' ; wrote ' + rootdir + obs_time + '_' + observation  + $
             ' ; ' +JI_HV_JP2GEN_CURRENT(/verbose) + $
