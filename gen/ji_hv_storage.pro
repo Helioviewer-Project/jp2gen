@@ -10,7 +10,7 @@ FUNCTION JI_HV_STORAGE,nickname = nickname
 ; The root location where the programs and the jp2 files are stored
 ;  default = '~hv/'.  Change as appropriate.
 ;
-  hv_root = '~/hv/'
+  hv_root = getenv("HV_JP2GEN") + '/'
 ;
 ; ----------- No user changes required below here ----------------
 ; The subdirectory of <hv_root> where the JP2 are stored
