@@ -5,7 +5,6 @@
 ; and the location of the Kakadu library
 ;
 FUNCTION JI_HV_WRITTENBY
-;  print,getenv("HV_JP2GEN")
   spawn,'bzr revno ' + getenv("HV_JP2GEN") + '/progs',bzr_revno
   return,{local:{institute:'NASA-GSFC',$
                  contact:'ADNET Systems/ESA Helioviewer Group (webmaster@helioviewer.org)',$

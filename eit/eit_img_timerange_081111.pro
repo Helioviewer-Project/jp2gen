@@ -539,272 +539,275 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
            max_color = 255b
 
 ; loop over images on given day
-           print,'elements of "s" ', s
-           wrt_ascii,s,'s.' + systime(0)
-           for is=0,n_elements(s)-1 do begin
-              i_file=is                  
+           if isarray(s) then begin
+              if( (n_elements(s) eq 1) and s[0] eq '' ) then begin
+                 print,'No valid EIT data at this wavelength.  Returning'
+              endif else begin
+                 for is=0,n_elements(s)-1 do begin
+                    i_file=is                  
 ;		full_frame = fffr or ffhr
-                 fffr = strpos(s(i_file), '32,32') gt 0
-                 ffhr = strpos(s(i_file), '2x(16,16)') gt 0              
-                 print,'processing image no. '+string(i_file)+' of '+string(n_elements(s))
-                 eit_prep, s(i_file), h, a, cosmic=cosmic, n_block = n_block & nmb(i_file) = n_block
+                    fffr = strpos(s(i_file), '32,32') gt 0
+                    ffhr = strpos(s(i_file), '2x(16,16)') gt 0              
+                    print,'processing image no. '+string(i_file)+' of '+string(n_elements(s))
+                    eit_prep, s(i_file), h, a, cosmic=cosmic, n_block = n_block & nmb(i_file) = n_block
 
 ; if blocks are missing, replace them by an adjacent image from the same day
 ; (unless keyword /no_bock_fill is set)
-                 IF KEYWORD_SET(no_block_fill) eq 0 THEN BEGIN 
-                    if (n_block gt 0) and (n_block le 15) and n_elements(s) ge 2 then begin
-                       case i_file of
-                          0: begin
-                             if ffhr then a=rebin(a,1024,1024)
-                             ix=where(a lt 0)
-                             eit_prep, s(i_file+1), h1, a1,cosmic=cosmic
-                             a1=rebin(a1,1024,1024)
-                             a(ix)=a1(ix)
-                             if ffhr then a=rebin(a,512,512)
-                          end
-         
-                          else: begin
-                             if ffhr then a=rebin(a,1024,1024)
-                             ix=where(a lt 0)
-                             eit_prep, s(i_file-1), h1, a1,cosmic=cosmic
-                             a1=rebin(a1,1024,1024)
-                             a(ix)=a1(ix)
-                             if ffhr then a=rebin(a,512,512)
-                          end
-                          
-                       endcase
-                    endif
-                 ENDIF
-                 
+                    IF KEYWORD_SET(no_block_fill) eq 0 THEN BEGIN 
+                       if (n_block gt 0) and (n_block le 15) and n_elements(s) ge 2 then begin
+                          case i_file of
+                             0: begin
+                                if ffhr then a=rebin(a,1024,1024)
+                                ix=where(a lt 0)
+                                eit_prep, s(i_file+1), h1, a1,cosmic=cosmic
+                                a1=rebin(a1,1024,1024)
+                                a(ix)=a1(ix)
+                                if ffhr then a=rebin(a,512,512)
+                             end
+                             
+                             else: begin
+                                if ffhr then a=rebin(a,1024,1024)
+                                ix=where(a lt 0)
+                                eit_prep, s(i_file-1), h1, a1,cosmic=cosmic
+                                a1=rebin(a1,1024,1024)
+                                a(ix)=a1(ix)
+                                if ffhr then a=rebin(a,512,512)
+                             end
+                             
+                          endcase
+                       endif
+                    ENDIF
+                    
 ; if too many blocks are missing, pass the missing block flag to
 ; eit_prep              
-                 if (n_block gt 15) and (i_file ge 1) then begin
-                    i_file = i_file - 1
-                    eit_prep, s(i_file), h, a, cosmic=cosmic, n_block = n_block & nmb(i_file) = n_block
+                    if (n_block gt 15) and (i_file ge 1) then begin
+                       i_file = i_file - 1
+                       eit_prep, s(i_file), h, a, cosmic=cosmic, n_block = n_block & nmb(i_file) = n_block
 ; update size flags of replacement image:
-                    fffr = strpos(s(i_file), '32,32') gt 0
-                    ffhr = strpos(s(i_file), '2x(16,16)') gt 0
+                       fffr = strpos(s(i_file), '32,32') gt 0
+                       ffhr = strpos(s(i_file), '2x(16,16)') gt 0
 ;
-                 endif else if (n_block gt 15) and (i_file eq 0) then begin
-                    min_nmb = min(nmb) & i_file = !c
-                    eit_prep, s(i_file), h, a, cosmic=cosmic
-                 end
-                 
+                    endif else if (n_block gt 15) and (i_file eq 0) then begin
+                       min_nmb = min(nmb) & i_file = !c
+                       eit_prep, s(i_file), h, a, cosmic=cosmic
+                    end
+                    
 ; Start working on the planning file names.
 ;
-                 lower_case_file = strlowcase(s(i_file))
-                 ich_0 = strpos(lower_case_file, 'efr')
-                 short_file_name = strmid(lower_case_file, ich_0, 18)
-                 date_string = strmid(short_file_name, 3, 8)
-                 partial_path = strmid(date_string, 0, 4) + '/' + $
-                                strmid(date_string, 4, 2) + '/' + $
-                                strmid(date_string, 6, 2)
-                 time_string = strmid(short_file_name, 12, 4)
-                 summary_file_stub = 'seit_00' + wave(i_wave) + '_fd_' + date_string + '_' + $
-                                     time_string
-                 print, '%EIT_IMG_TIMERANGE-D-STUB, summary_file_stub = ', summary_file_stub
+                    lower_case_file = strlowcase(s(i_file))
+                    ich_0 = strpos(lower_case_file, 'efr')
+                    short_file_name = strmid(lower_case_file, ich_0, 18)
+                    date_string = strmid(short_file_name, 3, 8)
+                    partial_path = strmid(date_string, 0, 4) + '/' + $
+                                   strmid(date_string, 4, 2) + '/' + $
+                                   strmid(date_string, 6, 2)
+                    time_string = strmid(short_file_name, 12, 4)
+                    summary_file_stub = 'seit_00' + wave(i_wave) + '_fd_' + date_string + '_' + $
+                                        time_string
+                    print, '%EIT_IMG_TIMERANGE-D-STUB, summary_file_stub = ', summary_file_stub
 ;
-                 date_obs = strmid(anytim2utc(eit_fxpar(h, 'DATE_OBS'), /ecs), 0, 19)
+                    date_obs = strmid(anytim2utc(eit_fxpar(h, 'DATE_OBS'), /ecs), 0, 19)
 ; added option to use file and directory names that adhere to the helioviewer
 ;convention, DM 2008-11-10                
-                 IF KEYWORD_SET(hv_names) THEN BEGIN
-                    year_str=strmid(date_obs,0,4)
-                    mon_str=strmid(date_obs,5,2)
-                    day_str=strmid(date_obs,8,2)
-                    hour_str=strmid(date_obs,11,2)
-                    min_str=strmid(date_obs,14,2)
-                    sec_str=strmid(date_obs,17,2)
-                    
-                    datetime_string=year_str+'_'+mon_str+'_'+day_str+'_'+hour_str+min_str+sec_str+'_'+obs_str+'_'+ins_str+'_'+det_str+'_'+mes_str
-                    hv_dir=year_str+'/'+mon_str+'/'+day_str+'/'+hour_str+'/'+obs_str+'/'+ins_str+'/'+det_str+'/'+mes_str+'/'
+                    IF KEYWORD_SET(hv_names) THEN BEGIN
+                       year_str=strmid(date_obs,0,4)
+                       mon_str=strmid(date_obs,5,2)
+                       day_str=strmid(date_obs,8,2)
+                       hour_str=strmid(date_obs,11,2)
+                       min_str=strmid(date_obs,14,2)
+                       sec_str=strmid(date_obs,17,2)
+                       
+                       datetime_string=year_str+'_'+mon_str+'_'+day_str+'_'+hour_str+min_str+sec_str+'_'+obs_str+'_'+ins_str+'_'+det_str+'_'+mes_str
+                       hv_dir=year_str+'/'+mon_str+'/'+day_str+'/'+hour_str+'/'+obs_str+'/'+ins_str+'/'+det_str+'/'+mes_str+'/'
                                 ;create directory if needed
-                    if file_test(hv_dir) ne 1 then file_mkdir,dir_im+'/'+hv_dir
+                       if file_test(hv_dir) ne 1 then file_mkdir,dir_im+'/'+hv_dir
+                       
+                    ENDIF ELSE BEGIN
+                       datetime_string=strmid(date_obs,0,4)+strmid(date_obs,5,2)+strmid(date_obs,8,2)+'_'+strmid(date_obs,11,2)+strmid(date_obs,14,2)
+                    ENDELSE
                     
-                 ENDIF ELSE BEGIN
-                    datetime_string=strmid(date_obs,0,4)+strmid(date_obs,5,2)+strmid(date_obs,8,2)+'_'+strmid(date_obs,11,2)+strmid(date_obs,14,2)
-                 ENDELSE
-                 
-                 time_line(i_wave) = wave(i_wave) + ': ' + date_obs
-                 print, '%EIT_IMG_TIMERANGE-D-DATE_OBS, date_obs = ', date_obs
-                 wave_line = strtrim(eit_fxpar(h, 'WAVELNTH'), 2)
-                 nx = fix(strmid(h(3), 26, 4)) & ny = fix(strmid(h(4), 26, 4))
-                 object = strtrim(strlowcase(EIT_FXPAR(h, 'OBJECT')), 2)
-                 this_wave = wave_line
-                 sc_roll = eit_fxpar(h, 'SC_ROLL')
-                 print, '%EIT_IMG_TIMERANGE-D-ROLL, sc_roll = ', sc_roll
-                 found_wave = 1
-                 loadct, 42 + i_wave, file = getenv('coloreit')
+                    time_line(i_wave) = wave(i_wave) + ': ' + date_obs
+                    print, '%EIT_IMG_TIMERANGE-D-DATE_OBS, date_obs = ', date_obs
+                    wave_line = strtrim(eit_fxpar(h, 'WAVELNTH'), 2)
+                    nx = fix(strmid(h(3), 26, 4)) & ny = fix(strmid(h(4), 26, 4))
+                    object = strtrim(strlowcase(EIT_FXPAR(h, 'OBJECT')), 2)
+                    this_wave = wave_line
+                    sc_roll = eit_fxpar(h, 'SC_ROLL')
+                    print, '%EIT_IMG_TIMERANGE-D-ROLL, sc_roll = ', sc_roll
+                    found_wave = 1
+                    loadct, 42 + i_wave, file = getenv('coloreit')
                                 ; read RGB components
-                 tvlct,r,g,b,/get  
-                 
-; if image is half-res, then resample to 1024x1024
-                 if ffhr then begin
-                    a = a > ffhr_min_val(i_wave) & print, minmax(a)
-                    b1_top = 2^hvs_od.jp2.idl_bitdepth -1
-                    b1_min = alog10(ffhr_min_val(i_wave))
-                    b1_max = alog10(4*t_val(i_wave))
+                    tvlct,r,g,b,/get  
                     
-                    if (hvs_od.jp2.idl_bitdepth eq 8) then begin
-                       b0 = bytscl(alog10(a(*, *) < 4*t_val(i_wave)), min = b1_min, max = b1_max, top = 255b) 
+; if image is half-res, then resample to resample X resample
+                    if ffhr then begin
+                       resample = 512 ; = 512, keep original
+                       a = a > ffhr_min_val(i_wave) & print, minmax(a)
+                       b1_top = 2^hvs_od.jp2.idl_bitdepth -1
+                       b1_min = alog10(ffhr_min_val(i_wave))
+                       b1_max = alog10(4*t_val(i_wave))
+                       
+                       if (hvs_od.jp2.idl_bitdepth eq 8) then begin
+                          b0 = bytscl(alog10(a(*, *) < 4*t_val(i_wave)), min = b1_min, max = b1_max, top = 255b) 
+                       endif else begin
+                          b1 = alog10(a(*, *) < 4*t_val(i_wave))
+                          imin = where(b1 le b1_min, count)
+                          if (count gt 0) then begin
+                             b1(imin) = 0.0
+                          endif
+                          imax = where(b1 ge b1_max, count)
+                          if (count gt 0) then begin
+                             b1(imax) = b1_top
+                          endif
+                          b0 = nint( (b1_top + 0.9999)*(x-b1_min)/(b1_max-b1_min) )
+                       endelse
+                       if (resample ne 512) then begin
+                          b0=rebin(b0,resample,resample)
+                       endif
                     endif else begin
-                       b1 = alog10(a(*, *) < 4*t_val(i_wave))
-                       imin = where(b1 le b1_min, count)
-                       if (count gt 0) then begin
-                          b1(imin) = 0.0
-                       endif
-                       imax = where(b1 ge b1_max, count)
-                       if (count gt 0) then begin
-                          b1(imax) = b1_top
-                       endif
-                       b0 = nint( (b1_top + 0.9999)*(x-b1_min)/(b1_max-b1_min) )
-                    endelse
-                    b0=rebin(b0,1024,1024)
-                 endif else begin
-                    a = a > min_val(i_wave) & print, minmax(a)
-                    b1_top = byte(255) ;2^hvs_od.jp2.idl_bitdepth -1
-                    b1_min = alog10(min_val(i_wave))
-                    b1_max = alog10(t_val(i_wave))
-                    
-                    if (hvs_od.jp2.idl_bitdepth eq 8) then begin
-                       b0 = bytscl(alog10(a(*, *) < t_val(i_wave)), min =  b1_min, max = b1_max, top = 255b)     
-                    endif else begin
-                       b1 = alog10(a(*, *) < t_val(i_wave))
-                       imin = where(b1 le b1_min, mincount)
-                       imax = where(b1 ge b1_max, maxcount)
-                       b0 = floor( (b1_top + 0.99999)*(b1-b1_min)/(b1_max-b1_min) )
-                       if (mincount gt 0) then begin
-                          b0(imin) = 0.0
-                       endif
-                       if (maxcount gt 0) then begin
-                          b0(imax) = b1_top
-                       endif
+                       a = a > min_val(i_wave) & print, minmax(a)
+                       b1_top = byte(255) ;2^hvs_od.jp2.idl_bitdepth -1
+                       b1_min = alog10(min_val(i_wave))
+                       b1_max = alog10(t_val(i_wave))
+                       
+                       if (hvs_od.jp2.idl_bitdepth eq 8) then begin
+                          b0 = bytscl(alog10(a(*, *) < t_val(i_wave)), min =  b1_min, max = b1_max, top = 255b)     
+                       endif else begin
+                          b1 = alog10(a(*, *) < t_val(i_wave))
+                          imin = where(b1 le b1_min, mincount)
+                          imax = where(b1 ge b1_max, maxcount)
+                          b0 = floor( (b1_top + 0.99999)*(b1-b1_min)/(b1_max-b1_min) )
+                          if (mincount gt 0) then begin
+                             b0(imin) = 0.0
+                          endif
+                          if (maxcount gt 0) then begin
+                             b0(imax) = b1_top
+                          endif
                        
                        
 ;                    print,'!'
+                       endelse
                     endelse
-                 endelse
                  
 ;              IF KEYWORD_SET(gif) THEN BEGIN
 ;                 write_gif,dir_im+datetime_string+'_eit'+this_wave+'_1024.gif',b0
 ;              ENDIF 
                  
-                 
-                 
-                 IF KEYWORD_SET(jpg) THEN BEGIN                 
-                    im[*,*,0]=r(b0)    
-                    im[*,*,1]=g(b0)                          
-                    im[*,*,2]=b(b0)                                              
-                    WRITE_JPEG,dir_im+datetime_string+'_eit'+this_wave+'_1024.jpg', im,true=3,quality=quality_jpg,progressive=progressive
-                 ENDIF
-                 
+                    IF KEYWORD_SET(jpg) THEN BEGIN                 
+                       im[*,*,0]=r(b0)    
+                       im[*,*,1]=g(b0)                          
+                       im[*,*,2]=b(b0)                                              
+                       WRITE_JPEG,dir_im+datetime_string+'_eit'+this_wave+'_1024.jpg', im,true=3,quality=quality_jpg,progressive=progressive
+                    ENDIF
+                    
 ; insert FITS header info
                  
-                 if keyword_set(fitsheader) then begin
-                    header = fitshead2struct(h)
-                                ; string to store FITS header in XML format:
-                    xh = ''
-                                ; line feed character:
-                    lf=string(10b)
-                    
-                                ; write header into string in XML format:    
-                    ntags=n_tags(header)
-                    tagnames=tag_names(header) 
-                    jcomm=where(tagnames eq 'COMMENT')
-                    jhist=where(tagnames eq 'HISTORY')
-                                ; fix faulty character conversion of fitshead2struct:
-                    indf1=where(tagnames eq 'TIME_D$OBS',ni1)
-                    if ni1 eq 1 then tagnames[indf1]='TIME-OBS'
-                    indf2=where(tagnames eq 'DATE_D$OBS',ni2)
-                    if ni2 eq 1 then tagnames[indf2]='DATE-OBS'
-                    
-                    xh='<?xml version="1.0" encoding="UTF-8"?>'+lf
-                    xh+='<fits>'+lf
-                    for j=0,ntags-1 do begin
-                       if j ne jcomm and j ne jhist  then begin      
-                          xh+='<'+tagnames[j]+' descr="">'+strtrim(string(header.(j)),2)+'</'+tagnames[j]+'>'+lf
-                       endif
-                    endfor
-                    
-                    xh+='</fits>'+lf
-                    xh+='<history>'+lf
-                    j=jhist
-                    k=0
-                    while (header.(j))[k] ne '' do begin
-                       xh+=(header.(j))[k]+lf
-                       k=k+1
-                    endwhile
-                    xh+='</history>'+lf
-                    xh+='<comment>'+lf
-                    j=jcomm
-                    k=0
-                    while (header.(j))[k] ne '' do begin
-                       xh+=(header.(j))[k]+lf
-                       k=k+1
-                    endwhile
-                    xh+='</comment>'
+                    if keyword_set(fitsheader) then begin
+                       header = fitshead2struct(h)
+;                                ; string to store FITS header in XML format:
+;                       xh = ''
+;                                ; line feed character:
+;                       lf=string(10b)
+;                       
+;                                ; write header into string in XML format:    
+;                       ntags=n_tags(header)
+;                       tagnames=tag_names(header) 
+;                       jcomm=where(tagnames eq 'COMMENT')
+;                       jhist=where(tagnames eq 'HISTORY')
+;                                ; fix faulty character conversion of fitshead2struct:
+;                       indf1=where(tagnames eq 'TIME_D$OBS',ni1)
+;                       if ni1 eq 1 then tagnames[indf1]='TIME-OBS'
+;                       indf2=where(tagnames eq 'DATE_D$OBS',ni2)
+;                       if ni2 eq 1 then tagnames[indf2]='DATE-OBS'
+;                       
+;                       xh='<?xml version="1.0" encoding="UTF-8"?>'+lf
+;                       xh+='<fits>'+lf
+;                       for j=0,ntags-1 do begin
+;                          if j ne jcomm and j ne jhist  then begin      
+;                             xh+='<'+tagnames[j]+' descr="">'+strtrim(string(header.(j)),2)+'</'+tagnames[j]+'>'+lf
+;                          endif
+;                       endfor
+;                       
+;                       xh+='</fits>'+lf
+;                       xh+='<history>'+lf
+;                       j=jhist
+;                       k=0
+;                       while (header.(j))[k] ne '' do begin
+;                          xh+=(header.(j))[k]+lf
+;                          k=k+1
+;                       endwhile
+;                       xh+='</history>'+lf
+;                       xh+='<comment>'+lf
+;                       j=jcomm
+;                       k=0
+;                       while (header.(j))[k] ne '' do begin
+;                       xh+=(header.(j))[k]+lf
+;                       k=k+1
+;                    endwhile
+;                    xh+='</comment>'
                     
 ; alternatively, the jpx file can also be created externally
 ; using Kakadu's kdu_compress
 ; compress jpx file
 ;   cstr='kdu_compress -i '+outdir1+fname2+' -o '+outdir2+fname3+' Clayers='+strtrim(string(clayers),2)+' Clevels='+strtrim(string(clevels),2)+' -rate '+bitrate+' -jp2_box '+outdir1+fname_xml+' -quiet'
-                    
-                 endif    
-                 IF KEYWORD_SET(jp2) THEN BEGIN              
-                    im2[0,*,*]=r(b0)    
-                    im2[1,*,*]=g(b0)                          
-                    im2[2,*,*]=b(b0)  
-                    IF KEYWORD_SET(hv_names) THEN BEGIN
-                       fstr=dir_im+hv_dir+datetime_string+'.jp2'
-                    ENDIF ELSE BEGIN
-                       fstr=dir_im+datetime_string+'_eit'+this_wave+'_1024.jp2'
-                    ENDELSE
-                    IF KEYWORD_SET(fitsheader) THEN $
-                       oJP2 = OBJ_NEW('IDLffJPEG2000',fstr,/WRITE,BIT_RATE=bitrate_jp2,n_layers=n_layers_jp2,n_levels=n_levels_jp2,xml=xh) ELSE $
-                          oJP2 = OBJ_NEW('IDLffJPEG2000',fstr,/WRITE,BIT_RATE=bitrate_jp2,n_layers=n_layers_jp2,n_levels=n_levels_jp2)
-                    oJP2->SetData,im2
-                    OBJ_DESTROY, oJP2
+;                    
+                    endif    
+                    IF KEYWORD_SET(jp2) THEN BEGIN              
+;                    im2[0,*,*]=r(b0)    
+;                    im2[1,*,*]=g(b0)                          
+;                    im2[2,*,*]=b(b0)  
+;                    IF KEYWORD_SET(hv_names) THEN BEGIN
+;                       fstr=dir_im+hv_dir+datetime_string+'.jp2'
+;                    ENDIF ELSE BEGIN
+;                       fstr=dir_im+datetime_string+'_eit'+this_wave+'_1024.jp2'
+;                    ENDELSE
+;                    IF KEYWORD_SET(fitsheader) THEN $
+;                       oJP2 = OBJ_NEW('IDLffJPEG2000',fstr,/WRITE,BIT_RATE=bitrate_jp2,n_layers=n_layers_jp2,n_levels=n_levels_jp2,xml=xh) ELSE $
+;                          oJP2 = OBJ_NEW('IDLffJPEG2000',fstr,/WRITE,BIT_RATE=bitrate_jp2,n_layers=n_layers_jp2,n_levels=n_levels_jp2)
+;                    oJP2->SetData,im2
+;                    OBJ_DESTROY, oJP2
                     
 ;stop
-                 ENDIF
-                 
-                 IF KEYWORD_SET(gray_jp2) THEN BEGIN 
-                    
-                    IF KEYWORD_SET(hv_names) THEN BEGIN
-                       fstr=dir_im+hv_dir+datetime_string+'.jp2'
-                    ENDIF ELSE BEGIN
-                       fstr=dir_im+datetime_string+'_eit'+this_wave+'_1024_gray.jp2'
-                    ENDELSE
-                    
-                    IF KEYWORD_SET(fitsheader) THEN $
-                       oJP2 = OBJ_NEW('IDLffJPEG2000',fstr,/WRITE,BIT_RATE=bitrate_jp2,n_layers=n_layers_jp2,n_levels=n_levels_jp2,bit_depth=8,xml=xh) ELSE $
-                          oJP2 = OBJ_NEW('IDLffJPEG2000',fstr,/WRITE,BIT_RATE=bitrate_jp2,n_layers=n_layers_jp2,n_levels=n_levels_jp2,bit_depth=8)
-                    oJP2->SetData,b0
-                    OBJ_DESTROY, oJP2
-                 ENDIF
-                 
-                 IF KEYWORD_SET(sav) THEN BEGIN
-                    im=fltarr(1024,1024,3)
-                    tvlct,red,green,blue,/get                            
-                    im[*,*,0]=red(b0)    
-                    im[*,*,1]=green(b0)                          
-                    im[*,*,2]=blue(b0)              
-                    hvs = {img:b0, red:red, green:green, blue:blue}
-                    print,'Saving to ' +  dir_im+datetime_string+'_eit'+this_wave+'_1024.sav'
-                    save,filename = dir_im+datetime_string+'_eit'+this_wave+'_1024.sav', hvs
-                 ENDIF
+                    ENDIF
+;                 
+;                 IF KEYWORD_SET(gray_jp2) THEN BEGIN 
+;                    
+;                    IF KEYWORD_SET(hv_names) THEN BEGIN
+;                       fstr=dir_im+hv_dir+datetime_string+'.jp2'
+;                    ENDIF ELSE BEGIN
+;                       fstr=dir_im+datetime_string+'_eit'+this_wave+'_1024_gray.jp2'
+;                    ENDELSE
+;                    
+;                    IF KEYWORD_SET(fitsheader) THEN $
+;                       oJP2 = OBJ_NEW('IDLffJPEG2000',fstr,/WRITE,BIT_RATE=bitrate_jp2,n_layers=n_layers_jp2,n_levels=n_levels_jp2,bit_depth=8,xml=xh) ELSE $
+;                          oJP2 = OBJ_NEW('IDLffJPEG2000',fstr,/WRITE,BIT_RATE=bitrate_jp2,n_layers=n_layers_jp2,n_levels=n_levels_jp2,bit_depth=8)
+;                    oJP2->SetData,b0
+;                    OBJ_DESTROY, oJP2
+;                 ENDIF
+;                 
+;                 IF KEYWORD_SET(sav) THEN BEGIN
+;                    im=fltarr(1024,1024,3)
+;                    tvlct,red,green,blue,/get                            
+;                    im[*,*,0]=red(b0)    
+;                    im[*,*,1]=green(b0)                          
+;                    im[*,*,2]=blue(b0)              
+;                    hvs = {img:b0, red:red, green:green, blue:blue}
+;                    print,'Saving to ' +  dir_im+datetime_string+'_eit'+this_wave+'_1024.sav'
+;                    save,filename = dir_im+datetime_string+'_eit'+this_wave+'_1024.sav', hvs
+;                 ENDIF
 ;
 ; write hvs save files
 ;
-                 if keyword_set(hvs) then begin
-                    tvlct,red,green,blue,/get    
+                    if keyword_set(hvs) then begin
+                       tvlct,red,green,blue,/get    
 ;
 ; HV - set the observation chain
 ;
-                    oidm = ji_hv_oidm2('EIT')
-                    observatory = oidm.observatory
-                    instrument = oidm.instrument
-                    detector = oidm.detector
-                    measurement = this_wave
+                       oidm = ji_hv_oidm2('EIT')
+                       observatory = oidm.observatory
+                       instrument = oidm.instrument
+                       detector = oidm.detector
+                       measurement = this_wave
 ;
 ; Create a comment string
 ;
@@ -812,32 +815,33 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
 ; update the FITS header, taking into account that the image may have
 ; been resampled up
 ;
-                    header = fitshead2struct(h)
-                    if ffhr then begin
-                       hv_original_cdelt1 = header.cdelt1/2.0
-                       hv_original_cdelt2 = header.cdelt2/2.0
-                       hv_original_crpix1 = header.crpix1*2.0
-                       hv_original_crpix2 = header.crpix2*2.0
-                       hv_original_naxis1 = header.naxis1*2.0
-                       hv_original_naxis2 = header.naxis2*2.0
-                       hv_original_rsun   = header.solar_r*2.0
-                       info = 'Original FITS file data was 2x2 summed onboard EIT and has been resampled to standard 1024 x 1024 px by eit_img_timerange_081111.pro.'
-                    endif else begin
-                       hv_original_cdelt1 = header.cdelt1
-                       hv_original_cdelt2 = header.cdelt2
-                       hv_original_crpix1 = header.crpix1
-                       hv_original_crpix2 = header.crpix2
-                       hv_original_naxis1 = header.naxis1
-                       hv_original_naxis2 = header.naxis2
-                       hv_original_rsun   = header.solar_r
-                       info = ''
-                    endelse
-                    header = add_tag(header,observatory,'hv_observatory')
-                    header = add_tag(header,instrument,'hv_instrument')
-                    header = add_tag(header,detector,'hv_detector')
-                    header = add_tag(header,measurement,'hv_measurement')
+                       header = fitshead2struct(h)
+                       header = add_tag(header,observatory,'hv_observatory')
+                       header = add_tag(header,instrument,'hv_instrument')
+                       header = add_tag(header,detector,'hv_detector')
+                       header = add_tag(header,measurement,'hv_measurement')
+                       header = add_tag(header, header.date_obs,'hv_date_obs')
+                       header = add_tag(header,-header.SC_ROLL,'hv_rotation')
+;                    if ffhr then begin
+;                       hv_original_cdelt1 = header.cdelt1/2.0
+;                       hv_original_cdelt2 = header.cdelt2/2.0
+;                       hv_original_crpix1 = header.crpix1*2.0
+;                       hv_original_crpix2 = header.crpix2*2.0
+;                       hv_original_naxis1 = header.naxis1*2.0
+;                       hv_original_naxis2 = header.naxis2*2.0
+;                       hv_original_rsun   = header.solar_r*2.0
+;                       info = 'Original FITS file data was 2x2 summed onboard EIT and has been resampled to standard 1024 x 1024 px by eit_img_timerange_081111.pro.'
+;                    endif else begin
+;                       hv_original_cdelt1 = header.cdelt1
+;                       hv_original_cdelt2 = header.cdelt2
+;                       hv_original_crpix1 = header.crpix1
+;                       hv_original_crpix2 = header.crpix2
+;                       hv_original_naxis1 = header.naxis1
+;                       hv_original_naxis2 = header.naxis2
+;                       hv_original_rsun   = header.solar_r
+;                       info = ''
+;                    endelse
 ;                 header = add_tag(header,'wavelength','hv_measurement_type')
-                    header = add_tag(header, header.date_obs,'hv_date_obs')
 ;                 header = add_tag(header,1,'hv_opacity_group')
 ;
 ; The following hv_original_* tags are not required by ji_write_jp2_lwg.pro
@@ -850,44 +854,42 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
 ;;                  header = add_tag(header,hv_original_naxis1,'hv_original_naxis1')
 ;;                  header = add_tag(header,hv_original_naxis2,'hv_original_naxis2')
 
-                    header = add_tag(header,-header.SC_ROLL,'hv_rotation')
 ;                 header = add_tag(header,1,'hv_centering')
 ;                 header = add_tag(header,info,'hv_comment')
 ;
 ; HV - get the components to the observation time and date
 ;
-                    yy = strmid(header.date_obs,0,4)
-                    mm = strmid(header.date_obs,5,2)
-                    dd = strmid(header.date_obs,8,2)
-                    hh = strmid(header.date_obs,11,2)
-                    mmm = strmid(header.date_obs,14,2)
-                    ss = strmid(header.date_obs,17,2)
-                    milli = strmid(header.date_obs,20,3)
+                       yy = strmid(header.date_obs,0,4)
+                       mm = strmid(header.date_obs,5,2)
+                       dd = strmid(header.date_obs,8,2)
+                       hh = strmid(header.date_obs,11,2)
+                       mmm = strmid(header.date_obs,14,2)
+                       ss = strmid(header.date_obs,17,2)
+                       milli = strmid(header.date_obs,20,3)
 ;
 ; update the counter
 ;
-                    outfile_count = long(outfile_count) + long(1)
-                    print,'JI_EIT_IMG_TIMERANGE: number of files',outfile_count+1
-                    print,info
+                       outfile_count = long(outfile_count) + long(1)
+                       print,'JI_EIT_IMG_TIMERANGE: number of files',outfile_count+1
+;                       print,info
 ;
 ; create the hvs structure and save
 ;
 ;                 outfile = dir_im + datetime_string +'_eit'+this_wave+'_1024.hvs.sav'
-                    hvs = {img:b0, red:red, green:green, blue:blue, $
-                           header:header,$
-                           observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
-                           yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-                    JI_HV_WRITE_LIST_JP2,hvs,dir_im,outf = outf
-                    outfile_storage(outfile_count) = 'read ' + s(i_file) + '; wrote ' + outf + ' ; ' +JI_HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
-                    JI_HV_WRT_ASCII,outfile_storage(outfile_count),logfilename,/append
-                 endif
-
-                 
+                       hvs = {img:b0, red:red, green:green, blue:blue, $
+                              header:header,$
+                              observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
+                              yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
+                       JI_HV_WRITE_LIST_JP2,hvs,dir_im,outf = outf
+                       outfile_storage(outfile_count) = 'read ' + s(i_file) + '; wrote ' + outf + ' ; ' +JI_HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
+                       JI_HV_WRT_ASCII,outfile_storage(outfile_count),logfilename,/append
+                    endif
 ; end loop over images on given day:
-              endfor
+                 endfor 
+              endelse 
+           endif
 ; end loop over wavelengths:
-        endfor
-
+        endfor 
 ; end of time loop:
         ; go to day after last image:
         iday.mjd=day_0.mjd+1

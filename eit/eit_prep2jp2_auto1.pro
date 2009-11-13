@@ -26,7 +26,7 @@ oidm = JI_HV_OIDM2(nickname)
 ;
 ; Storage locations
 ;
-storage = JI_HV_STORAGE()
+storage = JI_HV_STORAGE(nickname = nickname)
 ;
 ; Create the log subdirectory for this nickname
 ;

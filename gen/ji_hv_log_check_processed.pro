@@ -13,9 +13,9 @@ FUNCTION JI_HV_LOG_CHECK_PROCESSED,nickname
 ;
 ; Get the log file directories
 ;
-  log = (JI_HV_STORAGE()).log_location
-  dirs1 = expand_dirs(log + nickname)
-  dirs2 = find_all_dir('+' + log + nickname)
+  log = (JI_HV_STORAGE(nickname = nickname)).log_location
+  dirs1 = expand_dirs(log)
+  dirs2 = find_all_dir('+' + log)
   if n_elements(dirs1) gt n_elements(dirs2) then dirs = dirs1 else dirs = dirs2
 ;
 ; Get the subdirectories
