@@ -5,7 +5,7 @@
 ; and the location of the Kakadu library
 ;
 FUNCTION JI_HV_WRITTENBY
-  spawn,'bzr revno',bzr_revno
+  spawn,'bzr revno ~/hv/progs',bzr_revno
   return,{local:{institute:'NASA-GSFC',$
                  contact:'ADNET Systems/ESA Helioviewer Group (webmaster@helioviewer.org)',$
                  kdu_lib_location:'~/KDU/Kakadu/v6_1_1-00781N/bin/Mac-x86-64-gcc/'},$

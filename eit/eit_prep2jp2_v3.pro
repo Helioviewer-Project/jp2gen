@@ -12,8 +12,9 @@
 ;        the correct directory structure for use with the Helioviewer
 ;        project.
 ;
-date_start = '2009/11/09' + 'T00:00:00.000'
-date_end   = '2009/11/09' + 'T23:59:59.000'
+nickname = 'EIT'
+date_start = '2009/09/20' + 'T00:00:00.000'
+date_end   = '2009/09/20' + 'T23:59:59.000'
 
 ;
 ; ===================================================================================================
@@ -24,7 +25,7 @@ progname = 'eit_prep2jp2_v3'
 ;
 ; Storage locations
 ;
-storage = JI_HV_STORAGE()
+storage = JI_HV_STORAGE(nickname = nickname)
 ;
 ; Start timing
 ;

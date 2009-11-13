@@ -26,7 +26,7 @@ FUNCTION JI_HV_OBSERVER_DETAILS,observer,measurement
 ;
 ; If so, continue
 ;
-  if ( observer_index ne -1) then begin
+  if (observer_index ne -1) then begin
      name = nicknames[observer_index]
      supported_yn = 1
 ;
@@ -47,8 +47,6 @@ FUNCTION JI_HV_OBSERVER_DETAILS,observer,measurement
 ; MDI
 ;
         'MDI': case measurement of 
-           'INT': jp2 = jp2_default
-           'MAG': jp2 = jp2_default
            'continuum': jp2 = jp2_default
            'magnetogram': jp2 = jp2_default
         endcase
@@ -56,14 +54,12 @@ FUNCTION JI_HV_OBSERVER_DETAILS,observer,measurement
 ; LASCO C2
 ;
         'LASCO-C2': case measurement of
-           'WL': jp2 = jp2_default
            'white-light': jp2 = jp2_default
         endcase
 ;
 ; LASCO C3
 ;
         'LASCO-C3': case measurement of
-           'WL': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth: 8}
            'white-light': jp2 = {n_layers:8,n_levels:8,bit_rate:[4.0,0.01],idl_bitdepth: 8}
         endcase
 ;
@@ -116,7 +112,24 @@ FUNCTION JI_HV_OBSERVER_DETAILS,observer,measurement
         'COR2-B': case measurement of
            'white-light': jp2 = jp2_default
         endcase
-
+;
+; ##############################################################################
+; Include details on the JP2 encoding of each measurement of the ZAP-C device
+; 
+; See the wiki page 
+; http://www.helioviewer.org/wiki/index.php?title=Converting_FITS_to_JP2_for_the_Helioviewer_Project
+; for more details
+;
+;                            MAXWELL-C
+;
+; ZAP-C
+;
+;        'ZAP-C':   case measurement of
+;           '1600': jp2 = jp2_default
+;           'WL': jp2 = {n_layers:4,n_levels:4,bit_rate:[8.0,0.01],idl_bitdepth: 8}
+;           '195': jp2 = jp2_default
+;           'polarity': jp2 = {n_layers:6,n_levels:16,bit_rate:[3.0,0.1],idl_bitdepth: 8}
+;        endcase
 
      endcase
   endif else begin

@@ -68,7 +68,7 @@ t0 = systime(1)
 ;
 ; Call details of storage locations
 ;
-storage = JI_HV_STORAGE()
+storage = JI_HV_STORAGE(nickname = nickname)
 ;
 ; Create the subdirectory for the log file.
 ;

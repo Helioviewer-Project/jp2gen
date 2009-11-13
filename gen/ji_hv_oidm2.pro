@@ -28,12 +28,16 @@ FUNCTION JI_HV_OIDM2,name
 ; * Include the description of the new instrument below *
 ; **********************************************************
 ; 
-; ZAP
-;     If name eq 'ZAP' then begin
+; See the wiki page 
+; http://www.helioviewer.org/wiki/index.php?title=Converting_FITS_to_JP2_for_the_Helioviewer_Project
+; for more details
+;
+; ZAP-C
+;     If name eq 'ZAP-C' then begin
 ;        observatory = 'MAXWELL-C'
 ;        instrument = 'CONKER'
 ;        detector = 'ZAP'
-;        measurement = ['1600','WL','195','MAG']
+;        measurement = ['1600','WL','195','polarity']
 ;     endif
 ;
 ;

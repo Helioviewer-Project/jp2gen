@@ -539,6 +539,8 @@ FUNCTION eit_img_timerange_081111,dir_im=dir_im,start_date=start_date,end_date=e
            max_color = 255b
 
 ; loop over images on given day
+           print,'elements of "s" ', s
+           wrt_ascii,s,'s.' + systime(0)
            for is=0,n_elements(s)-1 do begin
               i_file=is                  
 ;		full_frame = fffr or ffhr

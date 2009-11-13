@@ -29,7 +29,7 @@ nickname = 'MDI'
 ;
 ; Storage locations
 ;
-storage = JI_HV_STORAGE()
+storage = JI_HV_STORAGE(nickname = nickname)
 ;
 ; MDI Intensity
 ; Start timing
