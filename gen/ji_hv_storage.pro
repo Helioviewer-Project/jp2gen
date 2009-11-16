@@ -1,16 +1,28 @@
 ;
-; 7 April 09
+; 2009/04/07 JI, original
+; 2009/11/16 JI, added environment variables to describe where the
+; programs and data are stored.
 ;
-; Edit this file to point the code to where the output files should be
-; written
+;
+; See the wiki
+;
+; http://www.helioviewer.org/wiki/index.php?title=JP2Gen
+; 
+; for more information on setting up JPGen
+;
+;
 ; 
 ;
 FUNCTION JI_HV_STORAGE,nickname = nickname
 ;
-; The root location where the programs and the jp2 files are stored
-;  default = '~hv/'.  Change as appropriate.
 ;
-  hv_root = getenv("HV_JP2GEN") + '/'
+; Where the HV programs are kept
+;
+  hv_progs = getenv("HV_JP2GEN") + '/'
+;
+; Where the output from the HV progs go.
+;
+  hv_root = getenv("HV_JP2GEN_WRITE") + '/'
 ;
 ; ----------- No user changes required below here ----------------
 ; The subdirectory of <hv_root> where the JP2 are stored
@@ -29,7 +41,7 @@ FUNCTION JI_HV_STORAGE,nickname = nickname
         spawn,'mkdir '+ jp2_location
      endif
      
-     err_location = hvr + 'err/'
+     err_location = hvr + 'log/'
      if not(is_dir(err_location)) then begin
         spawn,'mkdir '+ err_location
      endif
@@ -44,15 +56,17 @@ FUNCTION JI_HV_STORAGE,nickname = nickname
 ; Return the structure
 ;
   if not(keyword_set(nickname)) then begin
-     return,{hv_root:hv_root,$
+     return,{hv_progs:hv_progs,$
+             hv_root:hv_root,$
              NotGiven:'NotGiven'}
   endif else begin
      dummy = where(nickname eq nicknames, wc)
      if wc eq 1 then begin
         hvr = hv_root + nickname + '/'
-        return,{hv_root:hvr,$
+        return,{hv_progs:hv_progs,$
+                hv_root:hvr,$
                 jp2_location:hvr + 'jp2/',$
-                err_location:hvr + 'err/',$
+                err_location:hvr + 'log/',$
                 log_location:hvr + 'log/',$
                 NotGiven:'NotGiven'}
      endif
