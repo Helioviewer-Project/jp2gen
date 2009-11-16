@@ -34,10 +34,8 @@
 ;   2008/05/16, JMK, Check if file exist before addding to goodfiles
 ;-  2009/11/09, ER, Fix check for prepped files: the listofimages is checked against files listed in dir.in+detector 
 ;========================== end header =====================================================
-PRO ji_hv_lasco_get_filenames, t1,t2, nickname
+FUNCTION ji_hv_lasco_get_filenames, t1,t2, nickname
   progname = 'ji_hv_lasco_get_filenames'
-
-; ------------------------main code ------------------------------------
 
   ldr = getenv('LZ_IMG') + '/' + 'level_05/' ; where the LASCO data is
 
@@ -53,8 +51,6 @@ PRO ji_hv_lasco_get_filenames, t1,t2, nickname
   date1 = anytim2utc(t1)
   date2 = anytim2utc(t2)
   
-
-  total_new_nimages=0
 
   image_list=' '
   FOR mjd=date1.mjd,date2.mjd DO BEGIN
@@ -89,17 +85,19 @@ PRO ji_hv_lasco_get_filenames, t1,t2, nickname
         endfor
      ENDIF ELSE print, ' Could not open '+sourcefile
   ENDFOR                        ; juldays
-  stop
-  if n_elements(image_list) eq  1 then  printf, log, ' NO IMAGES ARE FOUND: CHECK YOUR INPUT DATES' $
-  else begin
- 	image_list=image_list[1:*]
-  	printf, log, ' Number of images that will be downloaded: ',n_elements(image_list) 
-  	save, filename=dir.work+detector+'_image_list.sav', image_list
-  	printf, log, image_list
+
+  if n_elements(image_list) eq  1 then  begin
+     print,' NO IMAGES ARE FOUND: CHECK YOUR INPUT DATES'
+     stop
+  endif else begin
+     image_list=image_list[1:*]
+;     printf, log, ' Number of images that will be downloaded: ',n_elements(image_list) 
+;     save, filename=dir.work+detector+'_image_list.sav', image_list
+;     printf, log, image_list
   endelse
 
 ; ------------------------closing remarks-------------------------------
-  cactus_loginfo, myname, log, no_logfile=no_logfile, /close
+;  cactus_loginfo, myname, log, no_logfile=no_logfile, /close
 
-
+  return,image_list
 END 
