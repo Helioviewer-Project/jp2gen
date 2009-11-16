@@ -64,35 +64,32 @@ PRO ji_hv_lasco_get_filenames, t1,t2, nickname
      day=STRMID(nds,2,2)+STRMID(nds,5,2)+STRMID(nds,8,2)
        ; get img_hdr.txt to see which images we need to download
 ;         sourcefile    = dir.data+day+'/'+detector+'/'+'img_hdr.txt'
-     sourcefile    = ldr + day + '/' + detector +'/'+'img_hdr.txt'
-         IF file_test(sourcefile) THEN BEGIN
-          ; read img_hdr.txt
-            openr,dlu,sourcefile,/get_lun
-            listofimages=' '
-            line=' '
-            REPEAT BEGIN
-               readf,dlu,line
-               listofimages=[listofimages, line]
-            ENDREP UNTIL (eof(dlu))
-            close,dlu & free_lun,dlu
-            listofimages=listofimages[1:*]
-            stop
-          ; select images which need to be downloaded
-            nimages=n_elements(listofimages)
-            downloads=' '
-            for i=0, nimages-1 do begin
-               words=strsplit(listofimages[i],' ',/extract)
-	       file=strsplit(words[0],'.',/extract)	
-	       filename=file[0]+'_cactus.xdr.gz'
-               not_seen_yet = not file_test(dir.in+detector+path_sep()+filename)
-	       newfile=dir.data+day+path_sep()+detector+path_sep()+words[0]
-               good         =  (words[9] EQ filter) and (words[10] EQ 'Clear') and (words[11] EQ 'Normal') and (file_exist(newfile))
-               IF not_seen_yet and good THEN image_list=[image_list, newfile]
-            endfor
-         ENDIF ELSE print, ' Could not open '+sourcefile
-
-  ENDFOR ; juldays
-
+     sdir = ldr + day + path_sep() + detector + path_sep()
+     sourcefile    = sdir +'img_hdr.txt'
+     IF file_test(sourcefile) THEN BEGIN
+                                ; read img_hdr.txt
+        openr,dlu,sourcefile,/get_lun
+        listofimages=' '
+        line=' '
+        REPEAT BEGIN
+           readf,dlu,line
+           listofimages=[listofimages, line]
+        ENDREP UNTIL (eof(dlu))
+        close,dlu & free_lun,dlu
+        listofimages=listofimages[1:*]
+                                ; select images which need to be downloaded
+        nimages=n_elements(listofimages)
+        downloads=' '
+        for i=0, nimages-1 do begin
+           words=strsplit(listofimages[i],' ',/extract)
+           file=strsplit(words[0],'.',/extract)
+           newfile = sdir + words[0]
+           good = (words[9] EQ filter) and (words[10] EQ 'Clear') and (words[11] EQ 'Normal') and (file_exist(newfile)) and (words[5] eq '1024') and (words[6] eq '1024') 
+           IF  good THEN image_list=[image_list, newfile]
+        endfor
+     ENDIF ELSE print, ' Could not open '+sourcefile
+  ENDFOR                        ; juldays
+  stop
   if n_elements(image_list) eq  1 then  printf, log, ' NO IMAGES ARE FOUND: CHECK YOUR INPUT DATES' $
   else begin
  	image_list=image_list[1:*]
