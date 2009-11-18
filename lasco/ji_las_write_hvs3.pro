@@ -11,15 +11,15 @@
 ;
 ;
 ;
-FUNCTION JI_LAS_WRITE_HVS3,list,rootdir,nickname,bf_process = bf_process,standard_process = standard_process
+FUNCTION JI_LAS_WRITE_HVS3,list,rootdir,nickname,date_start,date_end,bf_process = bf_process,standard_process = standard_process
 ;
 ; Read in the first and last FITS file
 ;
-  dummy = readfits(list[0],h1)
-  date_start = (fitshead2struct(h1)).obt_time
+;  dummy = readfits(list[0],h1)
+;  date_start = (fitshead2struct(h1)).obt_time
 
-  dummy = readfits(list[n_elements(list)-1],h2)
-  date_end = (fitshead2struct(h2)).obt_time
+;  dummy = readfits(list[n_elements(list)-1],h2)
+;  date_end = (fitshead2struct(h2)).obt_time
 
   JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
   logfilename = JI_HV_LOG_FILENAME_CONVENTION(nickname, date_start, date_end)

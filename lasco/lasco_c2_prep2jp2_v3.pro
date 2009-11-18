@@ -13,8 +13,8 @@
 ;        create JP2 files in the correct directory structure for use
 ;        with the Helioviewer project.
 
-date_start = '2003/01/01'
-date_end = '2003/12/31'
+date_start = '2003/01/01' + 'T00:00:00'
+date_end = '2003/12/31' + 'T23:59:59'
 
 ;
 ;
@@ -33,21 +33,10 @@ t0 = systime(1)
 ;
 storage = JI_HV_STORAGE(nickname = nickname)
 ;
-; Create the subdirectory for the log file.
-;
-;dummy = readfits(list[0],h1)
-;JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = (fitshead2struct(h1)).obt_time,subdir = subdir
-;
-; The filename for a file which will contain the locations of the
-; JP2 log files
-;
-;dummy = readfits(list[n_elements(list)-1],h2)
-;filename = JI_HV_LOG_FILENAME_CONVENTION(nickname,(fitshead2struct(h1)).obt_time,(fitshead2struct(h2)).obt_time)
-;
 ; Write direct to JP2 from FITS
 ;
 prev = fltarr(1024,1024)
-prepped = JI_LAS_WRITE_HVS3(list,storage.jp2_location,nickname,/bf_process)
+prepped = JI_LAS_WRITE_HVS3(list,storage.jp2_location,nickname,date_start,date_end,/bf_process)
 ; 
 ; Save the log file
 ;
@@ -56,10 +45,8 @@ prepped = JI_LAS_WRITE_HVS3(list,storage.jp2_location,nickname,/bf_process)
 ; Report time taken
 ;
 JI_HV_REPORT_WRITE_TIME,progname,t0,prepped
-;
-;
-;
 end
+
 ;
 ;
 ; Instructions on how to use the LASCO software WLISTER for HV
@@ -104,3 +91,14 @@ end
 ;; print,' The wlister is done, and the program continues'
 ;; print,' '
 ;list = WLISTER() 
+;
+; Create the subdirectory for the log file.
+;
+;dummy = readfits(list[0],h1)
+;JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = (fitshead2struct(h1)).obt_time,subdir = subdir
+;
+; The filename for a file which will contain the locations of the
+; JP2 log files
+;
+;dummy = readfits(list[n_elements(list)-1],h2)
+;filename = JI_HV_LOG_FILENAME_CONVENTION(nickname,(fitshead2struct(h1)).obt_time,(fitshead2struct(h2)).obt_time)

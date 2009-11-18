@@ -51,6 +51,8 @@ FUNCTION ji_hv_lasco_get_filenames, t1,t2, nickname
   date1 = anytim2utc(t1)
   date2 = anytim2utc(t2)
   
+  JI_HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date1,subdir = subdir
+  logfilename = JI_HV_LOG_FILENAME_CONVENTION(nickname, date1, date2)
 
   image_list=' '
   FOR mjd=date1.mjd,date2.mjd DO BEGIN
@@ -83,7 +85,11 @@ FUNCTION ji_hv_lasco_get_filenames, t1,t2, nickname
            good = (words[9] EQ filter) and (words[10] EQ 'Clear') and (words[11] EQ 'Normal') and (file_exist(newfile)) and (words[5] eq '1024') and (words[6] eq '1024') 
            IF  good THEN image_list=[image_list, newfile]
         endfor
-     ENDIF ELSE print, ' Could not open '+sourcefile
+     ENDIF ELSE BEGIN 
+        action = progname + ': Could not open '+sourcefile
+        print, action
+        JI_HV_WRT_ASCII,action,subdir + logfilename,/append
+     ENDELSE
   ENDFOR                        ; juldays
 
   if n_elements(image_list) eq  1 then  begin
@@ -91,6 +97,7 @@ FUNCTION ji_hv_lasco_get_filenames, t1,t2, nickname
      stop
   endif else begin
      image_list=image_list[1:*]
+     JI_HV_WRT_ASCII,image_list,subdir + logfilename,/append
 ;     printf, log, ' Number of images that will be downloaded: ',n_elements(image_list) 
 ;     save, filename=dir.work+detector+'_image_list.sav', image_list
 ;     printf, log, image_list
