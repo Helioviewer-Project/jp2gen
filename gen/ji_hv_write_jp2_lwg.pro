@@ -475,6 +475,12 @@ PRO ji_hv_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=
            xh+='<HV_ROCC_OUTER>'+trim(header.hv_rocc_outer)+'</HV_ROCC_OUTER>'+lf
         endif
 ;
+; If there is an error report, write that too
+;
+        if have_tag(header,'hv_error_report') then begin
+           xh+='<HV_ERROR_REPORT>'+trim(header.hv_error_report)+'</HV_ERROR_REPORT>'+lf
+        endif
+;
 ; JP2 specific tag names - number of layers, bit depth, etc
 ;
 ;        jp2_tag_names = tag_names(obsdet.jp2)

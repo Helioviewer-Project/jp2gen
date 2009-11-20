@@ -127,25 +127,38 @@ FUNCTION JI_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename
      if (hd.cdelt1 le 0.0) then begin
         err_hd[0] = 1
         err_report = err_report + 'original CDELT1 &lt;=0, replacing with a default value to enable continued processing:'
-        hd.hv_original_cdelt1 = 11.4
+        hd.cdelt1 = 11.4
      endif
      if (hd.cdelt2 le 0.0) then begin
         err_hd[1] = 1
         err_report = err_report + 'original CDELT1 &lt;=0, replacing with a default value to enable continued processing:'
-        hd.hv_original_cdelt2 = 11.4
+        hd.cdelt2 = 11.4
      endif
      if (hd.crpix1 le 0.0) then begin
         err_hd[2] = 1
         err_report = err_report + 'original CRPIX1 &lt;=0, replacing with a default value to enable continued processing:'
-        hd.hv_original_crpix1 = 512.0
+        hd.crpix1 = 512.0
      endif
      if (hd.crpix2 le 0.0) then begin
         err_hd[3] = 1
         err_report = err_report + 'original CRPIX2 &lt;=0, replacing with a default value to enable continued processing:'
-        hd.hv_original_crpix2 = 512.0
+        hd.crpix2 = 512.0
      endif
+;
+; Write an error file if required.
+;
+;     if total(err_hd gt 0) then begin
+;        outfile = JI_HV_ERR_REPORT(err_report,filename, hvs = hvs,name = obs_time + '_' + observation)
+;     endif
+;
+; Write th2 JP2
+;
+     outfile = progname + '; source ; ' +hd.filename + ' ; ' + rootdir + obs_time + '_' + observation + '.hvs.jp2' + ' ; ' + JI_HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
+     print,outfile
+     JI_HV_WRT_ASCII,outfile,logfilename,/append
      if total(err_hd gt 0) then begin
         hd = add_tag(hd,'Warning ' + err_report,'hv_error_report')
+        JI_HV_WRT_ASCII,err_report,logfilename,/append
      endif
 ;
 ; HVS file
@@ -153,21 +166,9 @@ FUNCTION JI_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename
      hvs = {img:image_new, red:r, green:g, blue:b, header:hd,$
             observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-;
-; Write an error file if required.
-;
-     if total(err_hd gt 0) then begin
-        outfile = JI_HV_ERR_REPORT(err_report,filename, hvs = hvs,name = obs_time + '_' + observation)
-     endif
-;
-; Write a JP2 or HVS file
-;
-        JI_HV_WRITE_LIST_JP2,hvs,rootdir
-        outfile = progname + '; source ; ' +hd.filename + ' ; ' + rootdir + obs_time + '_' + observation + '.hvs.jp2' + ' ; ' + JI_HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
-        print,outfile
-        JI_HV_WRT_ASCII,outfile,logfilename,/append
+     JI_HV_WRITE_LIST_JP2,hvs,rootdir
   endif else begin
-     outfile = JI_HV_ERR_REPORT('JP2 file not written due to problem with FITS file: ',filename,name = 'lasco_c2')
+     JI_HV_WRT_ASCII,outfile + ': JP2 file not written due to problem with FITS file',logfilename,/append
   endelse
   return,outfile
 end
