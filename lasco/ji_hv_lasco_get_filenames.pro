@@ -80,10 +80,16 @@ FUNCTION ji_hv_lasco_get_filenames, t1,t2, nickname
         downloads=' '
         for i=0, nimages-1 do begin
            words=strsplit(listofimages[i],' ',/extract)
-           file=strsplit(words[0],'.',/extract)
-           newfile = sdir + words[0]
-           good = (words[9] EQ filter) and (words[10] EQ 'Clear') and (words[11] EQ 'Normal') and (file_exist(newfile)) and (words[5] eq '1024') and (words[6] eq '1024') 
-           IF  good THEN image_list=[image_list, newfile]
+           if (n_elements(words) lt 12) then begin
+              action = progname + ': img_hdr.txt malformed for this file: '+sourcefile
+              print, action
+              JI_HV_WRT_ASCII,action,subdir + logfilename,/append
+           endif else begin
+              file=strsplit(words[0],'.',/extract)
+              newfile = sdir + words[0]
+              good = (words[9] EQ filter) and (words[10] EQ 'Clear') and (words[11] EQ 'Normal') and (file_exist(newfile)) and (words[5] eq '1024') and (words[6] eq '1024') 
+              IF  good THEN image_list=[image_list, newfile]
+           endelse
         endfor
      ENDIF ELSE BEGIN 
         action = progname + ': Could not open '+sourcefile
