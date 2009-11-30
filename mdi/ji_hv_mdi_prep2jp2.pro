@@ -71,9 +71,9 @@ PRO JI_HV_MDI_PREP2JP2,mdidir,int = int, mag = mag
      t0 = systime(1)
      list = file_search(mdidir,'*M*.00*.fits')
      dummy = rfits(list[0],head=h1)
-     date_start = (fitshead2struct(h1)).date_obs
+     date_start = (fitshead2struct(h1)).t_obs
      dummy = rfits(list[n_elements(list)-1],head=h2)
-     date_end = (fitshead2struct(h2)).date_obs
+     date_end = (fitshead2struct(h2)).t_obs
 ;
 ; The filename for a file which will contain the locations of the
 ; JP2 log files

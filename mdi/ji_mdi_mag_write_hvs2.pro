@@ -24,8 +24,11 @@ observation =  observatory + '_' + instrument + '_' + detector + '_' + measureme
 ;  *****************************************************
 
   data = rfits(infile,head=hd,/scale)
-;  obs_time = strtrim(sxpar(hd, 'T_OBS'),2)
-  obs_time = strtrim(sxpar(hd, 'DATE_OBS'),2)
+  if tag_exist(fitshead2struct(hd),'DATE_OBS') then begin
+     obs_time = strtrim(sxpar(hd, 'DATE_OBS'),2)
+  endif else begin
+     obs_time = strtrim(sxpar(hd, 'T_OBS'),2)
+  endelse
   pangle = sxpar(hd, 'P_ANGLE')
   radius = sxpar(hd,'R_SUN')
   x0 = sxpar(hd, 'X0')
@@ -45,6 +48,7 @@ observation =  observatory + '_' + instrument + '_' + detector + '_' + measureme
   mmm = strmid(obs_time,14,2)
   ss = strmid(obs_time,17,2)
   milli = strmid(obs_time,20,3)
+  if milli eq 'UT' then milli = '000' ; T_OBS doesn't have milliseconds
 ;
 ; Convert T_OBS into the required date format
 ;
