@@ -117,7 +117,6 @@ PRO JI_HV_MDI_PREP2JP2,mdidir,ds,de,int = int, mag = mag
      list = a.list
      print,'Closest time to requested start date = ' + date_start
      print,'Closest time to requested end date   = ' + date_end
-     stop
 ;
 ; The filename for a file which will contain the locations of the
 ; JP2 log files
@@ -154,7 +153,6 @@ PRO JI_HV_MDI_PREP2JP2,mdidir,ds,de,int = int, mag = mag
      list = a.list
      print,'Closest time to requested start date = ' + date_start
      print,'Closest time to requested end date   = ' + date_end
-     stop
 ;
 ; The filename for a file which will contain the locations of the
 ; JP2 log files

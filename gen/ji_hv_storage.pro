@@ -18,35 +18,37 @@ FUNCTION JI_HV_STORAGE,nickname = nickname
 ;
 ; Where the HV programs are kept
 ;
-  hv_progs = getenv("HV_JP2GEN") + '/'
+  hv_progs = getenv("HV_JP2GEN") + path_sep()
 ;
 ; Where the output from the HV progs go.
 ;
-  hv_root = getenv("HV_JP2GEN_WRITE") + '/'
+  hv_root = getenv("HV_JP2GEN_WRITE") + path_sep()
 ;
 ; ----------- No user changes required below here ----------------
 ; The subdirectory of <hv_root> where the JP2 are stored
 ;
-  hv_root = hv_root + 'write/v' + trim((JI_HV_WRITTENBY()).source.jp2gen_version)+ '/'
+  hv_root = hv_root + 'write' + path_sep() + 'v' + trim((JI_HV_WRITTENBY()).source.jp2gen_version) + path_sep()
   if not(is_dir(hv_root)) then spawn,'mkdir -p '+ hv_root
   nicknames = (JI_HV_OIDM2('EIT')).nicknames
   for i = 0, n_elements(nicknames)-1 do begin
-     hvr = hv_root + nicknames(i) + '/'
-     spawn,'mkdir -p '+ hvr
+     hvr = hv_root + nicknames(i) + path_sep()
+     if not(is_dir(hvr)) then begin
+        spawn,'mkdir -p '+ hvr
+     endif
 ;
 ; Create the necessary subdirectory locations
 ;
-     jp2_location = hvr + 'jp2/'
+     jp2_location = hvr + 'jp2' + path_sep()
      if not(is_dir(jp2_location)) then begin
         spawn,'mkdir '+ jp2_location
      endif
      
-     err_location = hvr + 'log/'
+     err_location = hvr + 'log' + path_sep()
      if not(is_dir(err_location)) then begin
         spawn,'mkdir '+ err_location
      endif
      
-     log_location = hvr + 'log/'
+     log_location = hvr + 'log' + path_sep()
      if not(is_dir(log_location)) then begin
         spawn,'mkdir '+ log_location
      endif
@@ -62,12 +64,12 @@ FUNCTION JI_HV_STORAGE,nickname = nickname
   endif else begin
      dummy = where(nickname eq nicknames, wc)
      if wc eq 1 then begin
-        hvr = hv_root + nickname + '/'
+        hvr = hv_root + nickname + path_sep()
         return,{hv_progs:hv_progs,$
                 hv_root:hvr,$
-                jp2_location:hvr + 'jp2/',$
-                err_location:hvr + 'log/',$
-                log_location:hvr + 'log/',$
+                jp2_location:hvr + 'jp2' + path_sep(),$
+                err_location:hvr + 'log' + path_sep(),$
+                log_location:hvr + 'log' + path_sep(),$
                 NotGiven:'NotGiven'}
      endif
      if wc eq 0 then begin
