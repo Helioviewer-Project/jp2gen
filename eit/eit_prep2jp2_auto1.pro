@@ -90,6 +90,10 @@ repeat begin
    print,'Last file written at approximately ',tMostRecent
    print,'Number of successful FITS to JP2 preparation script executions since this program was launched ',nwrite
 ;
+; Move files
+;
+   JI_HV_JP2_MOVE_SCRIPT,nickname
+;
 ; Wait 15 minutes before looking for more data
 ;
    print,'Fixed wait time of 15 minutes now progressing.'
