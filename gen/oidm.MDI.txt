@@ -1,0 +1,5 @@
+observatory = SOHO
+instrument = MDI
+detector = MDI
+measurement = continuum
+measurement = magnetogram

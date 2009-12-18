@@ -1,0 +1,15 @@
+nickname = LASCO-C2
+subdir = lasco
+END
+
+nickname = LASCO-C3
+subdir = lasco
+END
+
+nickname = EIT
+subdir = eit
+END
+
+nickname = MDI
+subdir = mdi
+END
