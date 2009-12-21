@@ -1,15 +1,19 @@
+START 
 nickname = LASCO-C2
 subdir = lasco
 END
 
+START 
 nickname = LASCO-C3
 subdir = lasco
 END
 
+START 
 nickname = EIT
 subdir = eit
 END
 
+START 
 nickname = MDI
 subdir = mdi
 END
