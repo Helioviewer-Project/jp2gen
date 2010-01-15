@@ -1,0 +1,5 @@
+observatory = SOHO
+instrument = LASCO
+detector = C2
+measurement = white-light
+version = 1.0
