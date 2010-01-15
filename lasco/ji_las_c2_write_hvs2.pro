@@ -58,6 +58,7 @@ FUNCTION JI_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename
      solar_ephem,yymmdd,radius=radius,/soho
      asolr = radius*3600
      r_sun = asolr/arcs
+	stop
      r_occ = 2.3                ; C2 occulter inner radius in solar radii
      r_occ_out = 8.0            ; C2 occulter outer radius in solar radii
 ;     alpha_mask = 1.0 + 0.0*image_new  ; transparency mask: 0 = transparent, 1 = not transparent

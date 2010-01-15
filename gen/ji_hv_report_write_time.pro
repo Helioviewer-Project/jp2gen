@@ -3,7 +3,11 @@
 ;
 PRO JI_HV_REPORT_WRITE_TIME,progname,t0,prepped,report = report
   t1 = systime(1)
-  n1 = n_elements(prepped)
+  if isarray(prepped) then begin
+     n1 = n_elements(prepped)
+  endif else begin
+     n1 = prepped
+  endelse
   tt = t1 - t0
   av = tt/float(n1)
   print,'*************************'

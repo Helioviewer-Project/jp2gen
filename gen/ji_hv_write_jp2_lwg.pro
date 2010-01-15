@@ -67,9 +67,22 @@
 ; carried out inside JHV and on the helioviewer.org server.
 ;
 ;
+; Required Inputs
+; file = filename that the JP2 will be saved too
+; image = 2 dimensional greyscale image
+;
+; OPTIONAL INPUTS
+;
+; bit_rate = JP2; bit_rate
+; n_layers = JP2; number of layers
+; n_levels = JP2; number of levels
+;
+; fitsheader = FITS header 
+; head2struct = switch to convert the FITS header to a structure
+;
 ;-
 
-PRO ji_hv_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,_extra=_extra,head2struct=head2struct, keep_tif=keep_tif,keep_xml=keep_xml,quiet=quiet,kdu_lib_location=kdu_lib_location
+PRO ji_hv_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,quiet=quiet,kdu_lib_location=kdu_lib_location,_extra = _extra
 
 ;
 ; this program name
@@ -78,7 +91,7 @@ PRO ji_hv_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=
 ;
 ; Line feed character:
 ;
-        lf=string(10b)
+  lf=string(10b)
 
 ;
 ; set keyword "quiet" to suppress kdu_compress output
@@ -103,7 +116,9 @@ PRO ji_hv_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=
      sz = size(image_new,/dim)
      nx = sz[0]
      ny = sz[1]
-     IF keyword_set(head2struct) THEN header = fitshead2struct(fitsheader) ELSE header = fitsheader
+     IF not(is_struct(fitsheader)) THEN header = fitshead2struct(fitsheader) ELSE header = fitsheader
+
+;     IF keyword_set(head2struct) THEN header = fitshead2struct(fitsheader) ELSE header = fitsheader
 ;
 ; Hierarchy Scales
 ;
@@ -147,6 +162,7 @@ PRO ji_hv_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=
 ; Get details on the observer, JP2 compression details, etc
 ;
      obsdet = JI_HV_OBSERVER_DETAILS(observer,measurement)
+;     obsdet = {supported_yn:1}
 ;
 ; Get contact details
 ;
@@ -447,7 +463,6 @@ PRO ji_hv_write_jp2_lwg,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=
 ;
         if trim(obsdet.supported_yn) THEN BEGIN
            xh+='<HV_SUPPORTED>TRUE</HV_SUPPORTED>'+lf
-;           xh+='<SUPPORTED_YN>'+trim(obsdet.supported_yn)+'</SUPPORTED_YN>'+lf
         ENDIF ELSE BEGIN
            xh+='<HV_SUPPORTED>FALSE</HV_SUPPORTED>'+lf           
         ENDELSE
