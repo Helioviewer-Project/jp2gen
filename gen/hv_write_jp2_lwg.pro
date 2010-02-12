@@ -83,9 +83,6 @@
 ;-
 
 PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,quiet=quiet,kdu_lib_location=kdu_lib_location,_extra = _extra
-
-;
-; this program name
 ;
   progname = 'HV_WRITE_JP2_LWG'
 ;
@@ -151,9 +148,9 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Find which observation we are looking at
 ;
-     observatory = header.hv_observatory
-     instrument = header.hv_instrument
-     detector = header.hv_detector
+     observatory = header.details.observatory
+     instrument = header.details.instrument
+     detector = header.details.detector
      measurement = header.hv_measurement
 ;
      observer = observatory + '_' + instrument + '_' + detector
@@ -161,7 +158,9 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Get details on the observer, JP2 compression details, etc
 ;
-     obsdet = HV_OBSERVER_DETAILS(observer,measurement)
+     w = where(details.measurement eq measurement)
+     obsdet = details[w]
+;     obsdet = HV_OBSERVER_DETAILS(observer,measurement)
 ;     obsdet = {supported_yn:1}
 ;
 ; Get contact details

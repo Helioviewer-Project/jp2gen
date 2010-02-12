@@ -13,9 +13,14 @@
 ;        the correct directory structure for use with the Helioviewer
 ;        project.
 ;
-PRO HV_EIT_PREP2JP2,ds,de,auto = auto
+PRO HV_EIT_PREP2JP2,ds,de,auto = auto,details_file = details_file
   progname = 'hv_eit_prep2jp2'
-  nickname = 'EIT'
+;
+; use the default EIT file is no other one is specified
+;
+  if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_EIT'
+;
+  details = CALL_FUNCTION(details_file)
 ;
 ; Go through the requested dates
 ;
@@ -42,7 +47,7 @@ PRO HV_EIT_PREP2JP2,ds,de,auto = auto
 ;
 ; Storage locations
 ;
-     storage = HV_STORAGE(nickname = nickname)
+     storage = HV_STORAGE(nickname = details.nickname)
 ;
 ; Start timing
 ;
@@ -50,7 +55,7 @@ PRO HV_EIT_PREP2JP2,ds,de,auto = auto
 ;
 ; Write direct to JP2 from FITS
 ;
-     prepped = HV_EIT_WRITE(date_start,date_end,storage.jp2_location)
+     prepped = HV_EIT_WRITE(date_start,date_end,storage.jp2_location,details)
 ;
 ; Report time taken
 ;

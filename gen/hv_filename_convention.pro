@@ -54,18 +54,19 @@ FUNCTION HV_FILENAME_CONVENTION, hvs, create = create, split = split, construct 
         endelse
         time =  hh + '_' +  mmm + '_' +   ss + '_' +  milli
 
-        if tag_exist(hvs,'observatory') then begin
-           if hvs.observatory eq '' then observatory = NotGiven else observatory = hvs.observatory
+        details = hvs.details
+        if tag_exist(details,'observatory') then begin
+           if details.observatory eq '' then observatory = NotGiven else observatory = details.observatory
         endif else begin
            observatory = NotGiven
         endelse
-        if tag_exist(hvs,'instrument') then begin
-           if hvs.instrument eq '' then instrument = NotGiven else instrument = hvs.instrument
+        if tag_exist(details,'instrument') then begin
+           if details.instrument eq '' then instrument = NotGiven else instrument = details.instrument
         endif else begin
            instrument = NotGiven
         endelse
-        if tag_exist(hvs,'detector') then begin
-           if hvs.detector eq '' then detector = NotGiven else detector = hvs.detector
+        if tag_exist(details,'detector') then begin
+           if details.detector eq '' then detector = NotGiven else detector = details.detector
         endif else begin
            detector = NotGiven
         endelse

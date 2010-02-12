@@ -8,8 +8,8 @@ FUNCTION HV_WRITE_LIST_JP2_MKDIR,hvs,dir,$
   loc = dir
 
   if not(keyword_set(original)) then begin
-     if hvs.nickname ne '' then begin
-        loc = loc + hvs.nickname + path_sep()
+     if hvs.details.nickname ne '' then begin
+        loc = loc + hvs.details.nickname + path_sep()
         if not(is_dir(loc)) then spawn,'mkdir '+ loc
      endif
 
@@ -35,7 +35,10 @@ FUNCTION HV_WRITE_LIST_JP2_MKDIR,hvs,dir,$
 
   endif else begin
      if keyword_set(observer_subdir) then begin
-        loc = loc + hvs.observatory + '-' + hvs.instrument + '-' + hvs.detector + path_sep()
+        loc = loc + $
+              hvs.details.observatory + '-' + $
+              hvs.details.instrument + '-' + $
+              hvs.details.detector + path_sep()
         if not(is_dir(loc)) then spawn,'mkdir '+ loc
      endif
 
@@ -54,18 +57,18 @@ FUNCTION HV_WRITE_LIST_JP2_MKDIR,hvs,dir,$
         if not(is_dir(loc)) then spawn,'mkdir '+ loc
      endif
         
-     if hvs.observatory ne '' then begin
-        loc = loc + hvs.observatory + path_sep()
+     if hvs.details.observatory ne '' then begin
+        loc = loc + hvs.details.observatory + path_sep()
         if not(is_dir(loc)) then spawn,'mkdir '+ loc
      endif
         
-     if hvs.instrument ne '' then begin
-        loc = loc + hvs.instrument + path_sep()
+     if hvs.details.instrument ne '' then begin
+        loc = loc + hvs.details.instrument + path_sep()
         if not(is_dir(loc)) then spawn,'mkdir '+ loc
      endif
         
-     if hvs.detector ne '' then begin
-        loc = loc + hvs.detector + path_sep()
+     if hvs.details.detector ne '' then begin
+        loc = loc + hvs.details.detector + path_sep()
         if not(is_dir(loc)) then spawn,'mkdir '+ loc
      endif
         

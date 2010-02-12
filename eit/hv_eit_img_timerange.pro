@@ -1,4 +1,4 @@
-PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,dir_im,write_hv
+PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,dir_im,write_hv,details
 ;
 ; Turn the header into a structure
 ;
@@ -8,26 +8,11 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,dir_im,write_hv
 ;
   if ffhr then b0 = rebin(b0,512,512)
 ;
-; Load in the HV observer details
-;
-  hvs_od = HV_OBSERVER_DETAILS('EIT')
-;
-; HV - set the observation chain
-;
-  oidm = HV_OIDM2('EIT')
-  observatory = oidm.observatory
-  instrument = oidm.instrument
-  detector = oidm.detector
-  measurement = this_wave
-;
-; update the FITS header, taking into account that the image may have
-; been resampled up
-;
   header = fitshead2struct(h)
-  header = add_tag(header,observatory,'hv_observatory')
-  header = add_tag(header,instrument,'hv_instrument')
-  header = add_tag(header,detector,'hv_detector')
-  header = add_tag(header,measurement,'hv_measurement')
+;  header = add_tag(header,observatory,'hv_observatory')
+;  header = add_tag(header,instrument,'hv_instrument')
+;  header = add_tag(header,detector,'hv_detector')
+  header = add_tag(header,this_wave,'hv_measurement')
   header = add_tag(header, header.date_obs,'hv_date_obs')
   header = add_tag(header,-header.SC_ROLL,'hv_rotation')
 ;
@@ -45,8 +30,8 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,dir_im,write_hv
 ;
   hvs = {img:b0, $
          header:header,$
-         observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
-         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
+         measurement:this_wave,$
+         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli, details:details}
   HV_WRITE_LIST_JP2,hvs,dir_im,outf = outf
   outfile_storage = 'read ' + s + '; wrote ' + outf + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
   HV_WRT_ASCII,outfile_storage,write_hv,/append

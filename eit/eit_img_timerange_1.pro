@@ -313,7 +313,7 @@ END
 ;+
 ;PRO eit_img_timerange,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill
 ;-
-PRO eit_img_timerange_1,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,hv_write = hv_write, hv_count = hv_count ; *** HV ***
+PRO eit_img_timerange_1,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,hv_write = hv_write, hv_count = hv_count, hv_details = hv_details; *** HV ***
 hv_count = 0  ; *** HV ***
 IF KEYWORD_SET(help) THEN BEGIN
    print,'This is eit_img_timerange.pro.'
@@ -603,7 +603,7 @@ ENDIF
 ; JP2Gen suite of programs
 ;
                 if KEYWORD_SET(hv_write) then begin ; *** HV ***
-                   HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s(i_file),this_wave,dir_im,hv_write
+                   HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s(i_file),this_wave,dir_im,hv_write,hv_details
                    hv_count = hv_count + 1
                 endif
 
