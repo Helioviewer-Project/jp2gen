@@ -342,11 +342,21 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Create and add an information string
 ;
+; Who created this file and where
+;
         hv_comment = 'JP2 file created locally at ' + wby.local.institute + $
                                ' using '+ progname + $
                                ' at ' + systime() + '.' + lf + $
                                'Contact ' + wby.local.contact + $
                                ' for more details/questions/comments regarding this JP2 file.'+lf
+;
+; Which setup file was used
+;
+        hv_comment = hv_comment + 'HVS (Helioviewer setup) file used to create this JP2 file: ' + $
+                     details.hvs_details_filename + ' (version ' + details.hvs_details_filename_version + ').'+lf
+;
+; Source code attribution
+;
         hv_comment = hv_comment + $
                      'FITS to JP2 source code provided by ' + wby.source.contact + $
                      '[' + wby.source.institute + ']'+ $
