@@ -159,10 +159,15 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; Get details on the observer, JP2 compression details, etc
 ;
      w = where(details.details.measurement eq measurement)
-     if 
-     obsdet = details.details[w]
-;     obsdet = HV_OBSERVER_DETAILS(observer,measurement)
-;     obsdet = {supported_yn:1}
+     if w[0] eq -1 then begin
+        supported_yn = 0
+        print,'Nickname = ' + details.nickname + ' with measurement = ' + $
+              'not explicitly supported. Stopping.'
+        stop
+     endif else begin
+        supported_yn = 1
+        obsdet = details.details[w]
+     endelse
 ;
 ; Get contact details
 ;
@@ -181,7 +186,7 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Is this observer supported?
 ;    
-     if not(is_struct(obsdet)) then begin
+     if not(supported_yn) then begin
         print,'Unsupported observer.  Stopping.'
         stop
      endif else begin
@@ -465,13 +470,21 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
         xh+='<HV_JP2GEN_BRANCH_REVISION>'+trim(wby.source.jp2gen_branch_revision)+'</HV_JP2GEN_BRANCH_REVISION>'+lf
 ;
+; HVS setup file
+;
+        xh+='<HV_HVS_DETAILS_FILENAME>'+trim(details.hvs_details_filename)+'</HV_HVS_DETAILS_FILENAME>'+lf
+;
+; HVS setup file version
+;
+        xh+='<HV_HVS_DETAILS_FILENAME_VERSION>'+trim(details.hvs_details_filename_version)+'</HV_HVS_DETAILS_FILENAME_VERSION>'+lf
+;
 ; JP2 comments
 ;
         xh+='<HV_COMMENT>'+hv_comment+'</HV_COMMENT>'+lf
 ;
 ; Explicit support from the Helioviewer Project
 ;
-        if trim(obsdet.supported_yn) THEN BEGIN
+        if trim(supported_yn) THEN BEGIN
            xh+='<HV_SUPPORTED>TRUE</HV_SUPPORTED>'+lf
         ENDIF ELSE BEGIN
            xh+='<HV_SUPPORTED>FALSE</HV_SUPPORTED>'+lf           
