@@ -18,7 +18,7 @@ PRO HV_WRITE_LIST_JP2,hvs,dir, loc = loc, filename = filename, outf = outf
      loc = HV_WRITE_LIST_JP2_MKDIR(hvs,dir)
 ;     loc = HV_WRITE_LIST_JP2_MKDIR(hvs,dir,/original)
      filename = HV_FILENAME_CONVENTION(hvs,/create)
-     HV_WRITE_JP2_LWG,loc + filename,hvs.img,fitsheader = hvs.header
+     HV_WRITE_JP2_LWG,loc + filename,hvs.img,fitsheader = hvs.header,details = hvs.details
      outf = loc + filename
   endif else begin
 ;
@@ -55,7 +55,7 @@ PRO HV_WRITE_LIST_JP2,hvs,dir, loc = loc, filename = filename, outf = outf
 ;
 ; call the program to write the JP2 file
 ;
-           HV_WRITE_JP2_LWG,loc + filename,hvs.img,fitsheader = hvs.header
+           HV_WRITE_JP2_LWG,loc + filename,hvs.img,fitsheader = hvs.header,details = hvs.details
 
         ENDIF
      ENDFOR

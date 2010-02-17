@@ -82,7 +82,7 @@
 ;
 ;-
 
-PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,quiet=quiet,kdu_lib_location=kdu_lib_location,_extra = _extra
+PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,quiet=quiet,kdu_lib_location=kdu_lib_location,details = details,_extra = _extra
 ;
   progname = 'HV_WRITE_JP2_LWG'
 ;
@@ -148,9 +148,9 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Find which observation we are looking at
 ;
-     observatory = header.details.observatory
-     instrument = header.details.instrument
-     detector = header.details.detector
+     observatory = details.observatory
+     instrument = details.instrument
+     detector = details.detector
      measurement = header.hv_measurement
 ;
      observer = observatory + '_' + instrument + '_' + detector
@@ -158,8 +158,9 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Get details on the observer, JP2 compression details, etc
 ;
-     w = where(details.measurement eq measurement)
-     obsdet = details[w]
+     w = where(details.details.measurement eq measurement)
+     if 
+     obsdet = details.details[w]
 ;     obsdet = HV_OBSERVER_DETAILS(observer,measurement)
 ;     obsdet = {supported_yn:1}
 ;
@@ -170,9 +171,9 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; Set the JP2 compression details, override defaults if set from
 ; function call
 ;
-     IF KEYWORD_SET(bit_rate) eq 0 THEN bit_rate = obsdet.jp2.bit_rate
-     IF KEYWORD_SET(n_layers) eq 0 THEN n_layers = obsdet.jp2.n_layers
-     IF KEYWORD_SET(n_levels) eq 0 THEN n_levels = obsdet.jp2.n_levels
+     IF KEYWORD_SET(bit_rate) eq 0 THEN bit_rate = obsdet.bit_rate
+     IF KEYWORD_SET(n_layers) eq 0 THEN n_layers = obsdet.n_layers
+     IF KEYWORD_SET(n_levels) eq 0 THEN n_levels = obsdet.n_levels
 ;
 ; Set where the KDU library is, if required
 ;
@@ -180,7 +181,7 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Is this observer supported?
 ;    
-     if ( obsdet.supported_yn ne 1 ) then begin
+     if not(is_struct(obsdet)) then begin
         print,'Unsupported observer.  Stopping.'
         stop
      endif else begin

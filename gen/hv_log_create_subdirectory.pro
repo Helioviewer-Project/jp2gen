@@ -4,8 +4,8 @@
 PRO HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date,subdir = subdir
   log_location = (HV_STORAGE(nickname = nickname)).log_location
   if not(is_dir(log_location)) then begin
-;     subdir = log_location + nickname
-     subdir = log_location
+     subdir = log_location + nickname
+;     subdir = log_location
      spawn,'mkdir ' + subdir
      if keyword_set(date) then begin
         answer = HV_LOG_FILENAME_CONVENTION(nickname,date,date,/components)

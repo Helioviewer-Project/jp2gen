@@ -18,7 +18,7 @@ PRO HV_EIT_PREP2JP2,ds,de,auto = auto,details_file = details_file
 ;
 ; use the default EIT file is no other one is specified
 ;
-  if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_EIT'
+  if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_eit'
 ;
   details = CALL_FUNCTION(details_file)
 ;

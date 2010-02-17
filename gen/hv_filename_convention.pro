@@ -8,7 +8,7 @@ FUNCTION HV_FILENAME_CONVENTION, hvs, create = create, split = split, construct 
 ;
 ; Take the HVS header and create a filename
 ;
-  NotGiven = (HV_STORAGE()).NotGiven
+  NotGiven = (HV_STORAGE(nickname = hvs.details.nickname)).NotGiven
   if keyword_set(create) then begin
      if not(is_struct(hvs)) then begin
         print,' Input is not a structure.  Returning -1 '
