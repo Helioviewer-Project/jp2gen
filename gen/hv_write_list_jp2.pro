@@ -10,13 +10,14 @@
 ;              rescaling or recentering)
 ;
 ;-
-PRO HV_WRITE_LIST_JP2,hvs,dir, loc = loc, filename = filename, outf = outf
+PRO HV_WRITE_LIST_JP2,hvs, loc = loc, filename = filename, outf = outf
 ;
 ;
 ;
   if is_struct(hvs) then begin
-     loc = HV_WRITE_LIST_JP2_MKDIR(hvs,dir)
-;     loc = HV_WRITE_LIST_JP2_MKDIR(hvs,dir,/original)
+     storage = HV_STORAGE(nickname = hvs.details.nickname)
+     loc = HV_WRITE_LIST_JP2_MKDIR(hvs,storage.jp2_location)
+;    loc = HV_WRITE_LIST_JP2_MKDIR(hvs,dir,/original)
      filename = HV_FILENAME_CONVENTION(hvs,/create)
      HV_WRITE_JP2_LWG,loc + filename,hvs.img,fitsheader = hvs.header,details = hvs.details
      outf = loc + filename

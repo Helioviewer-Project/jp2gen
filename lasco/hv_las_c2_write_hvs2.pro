@@ -162,7 +162,7 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
      hvs = {img:image_new, header:hd,details:details,$
             measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-     HV_WRITE_LIST_JP2,hvs,rootdir
+     HV_WRITE_LIST_JP2,hvs
   endif else begin
      HV_WRT_ASCII,outfile + ': JP2 file not written due to problem with FITS file',logfilename,/append
   endelse

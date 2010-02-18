@@ -182,7 +182,7 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
      hvs = {img:image_new, header:hd,details: details,$
             measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-     HV_WRITE_LIST_JP2,hvs,rootdir
+     HV_WRITE_LIST_JP2,hvs
 ;ENDIF ELSE BEGIN
 ;        outfile = rootdir + obs_time + '_' + observation + '.hvs.sav'
 ;        print,progname + ': Writing to ' + outfile

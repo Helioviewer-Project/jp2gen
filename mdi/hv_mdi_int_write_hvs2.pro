@@ -100,7 +100,7 @@ FUNCTION HV_MDI_INT_WRITE_HVS2,infile,rootdir,details = details
   hvs = {img:image_new, header:hd, details:details,$
          measurement:measurement,$
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-  HV_WRITE_LIST_JP2,hvs,rootdir
+  HV_WRITE_LIST_JP2,hvs
   outfile = 'read ' + infile + $
             ' ; wrote ' + rootdir + obs_time + '_' + observation  + $
             ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $

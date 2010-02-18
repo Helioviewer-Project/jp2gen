@@ -1,4 +1,4 @@
-PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,dir_im,write_hv,details
+PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,dir_im,hv_write,details
 ;
 ; Turn the header into a structure
 ;
@@ -32,8 +32,8 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,dir_im,write_hv,details
          header:header,$
          measurement:this_wave,$
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli, details:details}
-  HV_WRITE_LIST_JP2,hvs,dir_im,outf = outf
+  HV_WRITE_LIST_JP2,hvs,outf = outf
   outfile_storage = 'read ' + s + '; wrote ' + outf + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
-  HV_WRT_ASCII,outfile_storage,write_hv,/append
+  HV_WRT_ASCII,outfile_storage,hv_write,/append
   return
 end
