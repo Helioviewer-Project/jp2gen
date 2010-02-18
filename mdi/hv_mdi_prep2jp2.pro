@@ -89,15 +89,21 @@ end
 ;
 ;
 
-PRO HV_MDI_PREP2JP2,mdidir,ds,de,int = int, mag = mag
+PRO HV_MDI_PREP2JP2,mdidir,ds,de,int = int, mag = mag,details_file = details_file
+  progname = 'hv_mdi_prep2jp2'
 
 ;
 ; ===================================================================================================
 ;
 ; Setup some defaults - usually there is NO user contribution below here
 ;
-  progname = 'hv_mdi_prep2jp2'
-  nickname = 'MDI'
+;
+; use the default MDI file is no other one is specified
+;
+  if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_mdi'
+;
+  details = CALL_FUNCTION(details_file)
+  nickname = details.nickname
 ;
 ; Storage locations
 ;
@@ -129,7 +135,7 @@ PRO HV_MDI_PREP2JP2,mdidir,ds,de,int = int, mag = mag
 ;
 ; Write direct to JP2 from FITS
 ;
-     prepped = HV_MDI_WRITE_HVS(list,storage.jp2_location,/int)        
+     prepped = HV_MDI_WRITE_HVS(list,storage.jp2_location,/int,details= details)        
 ;
 ; Report time taken
 ;
@@ -165,7 +171,7 @@ PRO HV_MDI_PREP2JP2,mdidir,ds,de,int = int, mag = mag
 ;
 ; Write direct to JP2 from FITS
 ;
-     prepped = HV_MDI_WRITE_HVS(list,storage.jp2_location,/mag)
+     prepped = HV_MDI_WRITE_HVS(list,storage.jp2_location,/mag,details= details)
 ; 
 ; Save the log file
 ;

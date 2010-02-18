@@ -3,8 +3,8 @@
 ;
 ; Return the filenames
 ;
-FUNCTION HV_MDI_WRITE_HVS,list,rootdir,int = int, mag = mag
-  nickname = 'MDI'
+FUNCTION HV_MDI_WRITE_HVS,list,rootdir,int = int, mag = mag,details= details
+  nickname = details.nickname
   n = long(n_elements(list))
 ;
 ; Read in the first and last FITS file to create the log
@@ -35,14 +35,14 @@ FUNCTION HV_MDI_WRITE_HVS,list,rootdir,int = int, mag = mag
   if keyword_set(int) then begin
      logfilename = 'int.' + filename
      for i = long(0),n-long(1) do begin
-        done(i) = HV_MDI_INT_WRITE_HVS2(list(i),rootdir)
+        done(i) = HV_MDI_INT_WRITE_HVS2(list(i),rootdir,details=details)
         HV_WRT_ASCII,done(i),subdir + logfilename,/append
      endfor
   endif
   if keyword_set(mag) then begin
      logfilename = 'mag.' + filename
      for i = long(0),n-long(1) do begin
-        done(i) = HV_MDI_MAG_WRITE_HVS2(list(i),rootdir)
+        done(i) = HV_MDI_MAG_WRITE_HVS2(list(i),rootdir,details=details)
         HV_WRT_ASCII,done(i),subdir + logfilename,/append
      endfor
   endif

@@ -5,16 +5,15 @@
 ;
 ; 
 ;
-FUNCTION HV_MDI_INT_WRITE_HVS2,infile,rootdir
+FUNCTION HV_MDI_INT_WRITE_HVS2,infile,rootdir,details = details
   progname = 'HV_MDI_INT_WRITE_HVS2'
 ;
 ; get the observatory, instrument, detector names for MDI
 ;
-  oidm = HV_OIDM2('MDI')
-  observatory = oidm.observatory
-  instrument = oidm.instrument
-  detector = oidm.detector
-  measurement = oidm.measurement[0]
+  observatory = details.observatory
+  instrument = details.instrument
+  detector = details.detector
+  measurement = 'continuum'
 ;
   observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
 ;
@@ -98,8 +97,8 @@ FUNCTION HV_MDI_INT_WRITE_HVS2,infile,rootdir
 ;
 ; save
 ;
-  hvs = {img:image_new, header:hd,$
-         observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
+  hvs = {img:image_new, header:hd, details:details,$
+         measurement:measurement,$
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
   HV_WRITE_LIST_JP2,hvs,rootdir
   outfile = 'read ' + infile + $
