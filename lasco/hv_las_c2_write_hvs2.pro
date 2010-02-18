@@ -4,17 +4,13 @@
 ; 2009-05-26.  Added error log file for data files with bad header information
 ;
 ;
-FUNCTION HV_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename
-;
-;
-;
+FUNCTION HV_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
   progname = 'HV_LAS_C2_WRITE_HVS2'
 ;
-  oidm = HV_OIDM2('LASCO-C2')
-  observatory = oidm.observatory
-  instrument = oidm.instrument
-  detector = oidm.detector
-  measurement = oidm.measurement
+  observatory = details.observatory
+  instrument = details.instrument
+  detector = details.detector
+  measurement = details.details[0].measurement
 ;
   observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
 ;
@@ -163,8 +159,8 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename
 ;
 ; HVS file
 ;
-     hvs = {img:image_new, red:r, green:g, blue:b, header:hd,$
-            observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
+     hvs = {img:image_new, header:hd,details:details,$
+            measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
      HV_WRITE_LIST_JP2,hvs,rootdir
   endif else begin

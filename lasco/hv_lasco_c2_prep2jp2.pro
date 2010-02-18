@@ -13,16 +13,21 @@
 ;        create JP2 files in the correct directory structure for use
 ;        with the Helioviewer project.
 
-PRO HV_LASCO_C2_PREP2JP2,ds,de,auto = auto
-
+PRO HV_LASCO_C2_PREP2JP2,ds,de,auto = auto,details_file = details_file
+  progname = 'HV_LASCO_C2_PREP2JP2'
+;
   date_start = ds + 'T00:00:00'
   date_end = de + 'T23:59:59'
-
-;
 ;
 ; ===================================================================================================
-  nickname = 'LASCO-C2'
-  progname = 'HV_LASCO_C2_PREP2JP2'
+;
+; use the default LASCO-C2 file is no other one is specified
+;
+  if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_lasco_c2'
+;
+  details = CALL_FUNCTION(details_file)
+  nickname = details.nickname
+
   list = HV_LASCO_GET_FILENAMES(date_start,date_end,nickname)
 ;
 ; Setup some defaults - usually there is NO user contribution below here
@@ -38,7 +43,7 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,auto = auto
 ; Write direct to JP2 from FITS
 ;
   prev = fltarr(1024,1024)
-  prepped = HV_LAS_WRITE_HVS3(list,storage.jp2_location,nickname,date_start,date_end,/bf_process)
+  prepped = HV_LAS_WRITE_HVS3(list,storage.jp2_location,nickname,date_start,date_end,/bf_process,details = details)
 ; 
 ; Save the log file
 ;

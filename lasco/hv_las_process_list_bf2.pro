@@ -4,7 +4,7 @@
 ; the file
 ;
 FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAIND=staind, AGAIN=again, GIFS=gifs, $
-		ALLSTARS=allstars, ROOT=root
+		ALLSTARS=allstars, ROOT=root,details = details
 ;
 ; set this for proper scaling
 ;
@@ -218,10 +218,10 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
 ; 
 ;
            if (nickname eq 'LASCO-C2') then begin
-              outfile(i) = HV_LAS_C2_WRITE_HVS2(this_filename,rootdir,{cimg:imc,header:h},logfilename)
+              outfile(i) = HV_LAS_C2_WRITE_HVS2(this_filename,rootdir,{cimg:imc,header:h},logfilename,details = details)
            endif
            if (nickname eq 'LASCO-C3') then begin
-              outfile(i) = HV_LAS_C3_WRITE_HVS2(this_filename,rootdir,{cimg:imc,header:h},logfilename)
+              outfile(i) = HV_LAS_C3_WRITE_HVS2(this_filename,rootdir,{cimg:imc,header:h},logfilename,details = details)
            endif
 
         ENDFOR

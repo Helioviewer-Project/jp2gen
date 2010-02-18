@@ -1,21 +1,20 @@
 ;
 ; Write the HVS file for a LASCO C2 image
 ;
-FUNCTION HV_LAS_C3_WRITE_HVS2,filename,rootdir,ld,logfilename
+FUNCTION HV_LAS_C3_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
   COMMON C3_BLOCK, pylonim, ctr, pylon,pylonima
   progname = 'HV_LAS_C3_WRITE_HVS2'
 ;
-  oidm = HV_OIDM2('LASCO-C3')
-  observatory = oidm.observatory
-  instrument = oidm.instrument
-  detector = oidm.detector
-  measurement = oidm.measurement
+  observatory = details.observatory
+  instrument = details.instrument
+  detector = details.detector
+  measurement = details.details[0].measurement
 ;
   observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
 ;
 ; Get further image processing details
 ;
-  IP = HV_LASCO_IP(/c3)
+  gamma_correction = details.gamma_correction
 ;
 ;  ld = JI_MAKE_IMAGE_C3(filename,/nologo,/nolabel)
   if is_struct(ld) then begin
@@ -24,7 +23,7 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,filename,rootdir,ld,logfilename
 ;
 ; Apply the gamma correction
 ;
-     cimg = max(cimg)*(cimg/max(cimg))^IP.gamma
+     cimg = max(cimg)*(cimg/max(cimg))^gamma_correction
 ;
 ; Get the components of the observation time
 ;
@@ -180,8 +179,8 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,filename,rootdir,ld,logfilename
 ;
 ; HVS file
 ;
-     hvs = {img:image_new, red:r, green:g, blue:b, header:hd,$
-            observatory:observatory,instrument:instrument,detector:detector,measurement:measurement,$
+     hvs = {img:image_new, header:hd,details: details,$
+            measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
      HV_WRITE_LIST_JP2,hvs,rootdir
 ;ENDIF ELSE BEGIN

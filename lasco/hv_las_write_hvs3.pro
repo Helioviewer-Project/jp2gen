@@ -11,7 +11,7 @@
 ;
 ;
 ;
-FUNCTION HV_LAS_WRITE_HVS3,list,rootdir,nickname,date_start,date_end,bf_process = bf_process,standard_process = standard_process
+FUNCTION HV_LAS_WRITE_HVS3,list,rootdir,nickname,date_start,date_end,bf_process = bf_process,standard_process = standard_process,details = details
 ;
 ; Read in the first and last FITS file
 ;
@@ -23,7 +23,7 @@ FUNCTION HV_LAS_WRITE_HVS3,list,rootdir,nickname,date_start,date_end,bf_process 
 
   HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
   logfilename = HV_LOG_FILENAME_CONVENTION(nickname, date_start, date_end)
-  done =  HV_LAS_PROCESS_LIST_BF2(list,rootdir,nickname,subdir + logfilename)
+  done =  HV_LAS_PROCESS_LIST_BF2(list,rootdir,nickname,subdir + logfilename,details = details)
 
 RETURN,done
 END
