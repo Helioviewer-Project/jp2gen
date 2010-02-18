@@ -10,7 +10,9 @@
 ;              rescaling or recentering)
 ;
 ;-
-PRO HV_WRITE_LIST_JP2,hvs, loc = loc, filename = filename, outf = outf
+PRO HV_WRITE_LIST_JP2,hvs, loc = loc, filename = filename, outf = outf,$
+                      log_comment = log_comment,$
+                      log_subdir = log_subdir
 ;
 ;
 ;

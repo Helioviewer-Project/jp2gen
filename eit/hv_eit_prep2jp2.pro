@@ -20,7 +20,7 @@ PRO HV_EIT_PREP2JP2,ds,de,auto = auto,details_file = details_file
 ;
   if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_eit'
 ;
-  details = CALL_FUNCTION(details_file)
+  info = CALL_FUNCTION(details_file)
 ;
 ; Go through the requested dates
 ;
@@ -47,7 +47,7 @@ PRO HV_EIT_PREP2JP2,ds,de,auto = auto,details_file = details_file
 ;
 ; Storage locations
 ;
-     storage = HV_STORAGE(nickname = details.nickname)
+     storage = HV_STORAGE(nickname = info.nickname)
 ;
 ; Start timing
 ;
@@ -55,7 +55,7 @@ PRO HV_EIT_PREP2JP2,ds,de,auto = auto,details_file = details_file
 ;
 ; Write direct to JP2 from FITS
 ;
-     prepped = HV_EIT_WRITE(date_start,date_end,storage.jp2_location,details)
+     prepped = HV_EIT_WRITE(date_start,date_end,storage.jp2_location,info)
 ;
 ; Report time taken
 ;
