@@ -26,24 +26,24 @@ FUNCTION HV_MDI_WRITE_HVS,list,rootdir,int = int, mag = mag,details= details
      date_end = hs2.t_obs
   endelse
 
-  HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
-  filename = HV_LOG_FILENAME_CONVENTION(nickname, date_start, date_end)
+;  HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
+;  filename = HV_LOG_FILENAME_CONVENTION(nickname, date_start, date_end)
 ;
 ; Go through the list
 ;
   done = strarr(n)
   if keyword_set(int) then begin
-     logfilename = 'int.' + filename
+;     logfilename = 'int.' + filename
      for i = long(0),n-long(1) do begin
         done(i) = HV_MDI_INT_WRITE_HVS2(list(i),rootdir,details=details)
-        HV_WRT_ASCII,done(i),subdir + logfilename,/append
+;        HV_WRT_ASCII,done(i),subdir + logfilename,/append
      endfor
   endif
   if keyword_set(mag) then begin
-     logfilename = 'mag.' + filename
+;     logfilename = 'mag.' + filename
      for i = long(0),n-long(1) do begin
         done(i) = HV_MDI_MAG_WRITE_HVS2(list(i),rootdir,details=details)
-        HV_WRT_ASCII,done(i),subdir + logfilename,/append
+;        HV_WRT_ASCII,done(i),subdir + logfilename,/append
      endfor
   endif
 

@@ -127,11 +127,11 @@ PRO HV_MDI_PREP2JP2,mdidir,ds,de,int = int, mag = mag,details_file = details_fil
 ; The filename for a file which will contain the locations of the
 ; JP2 log files
 ;
-     filename = prefix + HV_LOG_FILENAME_CONVENTION(nickname,date_start,date_end)
+;     filename = prefix + HV_LOG_FILENAME_CONVENTION(nickname,date_start,date_end)
 ;
 ; Create the subdirectory for the log file.
 ;
-     HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
+;     HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
 ;
 ; Write direct to JP2 from FITS
 ;
@@ -163,11 +163,11 @@ PRO HV_MDI_PREP2JP2,mdidir,ds,de,int = int, mag = mag,details_file = details_fil
 ; The filename for a file which will contain the locations of the
 ; JP2 log files
 ;
-     filename = prefix + HV_LOG_FILENAME_CONVENTION(nickname,date_start,date_end)
+;     filename = prefix + HV_LOG_FILENAME_CONVENTION(nickname,date_start,date_end)
 ;
 ; Create the subdirectory for the log file.
 ;
-     HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
+;     HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
 ;
 ; Write direct to JP2 from FITS
 ;
