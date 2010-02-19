@@ -10,57 +10,20 @@
 ;              rescaling or recentering)
 ;
 ;-
-PRO HV_WRITE_LIST_JP2,hvs, loc = loc, filename = filename, outf = outf,$
-                      log_comment = log_comment,$
-                      log_subdir = log_subdir
+PRO HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename
 ;
-;
+; Do the JP2 file
 ;
   if is_struct(hvs) then begin
      storage = HV_STORAGE(nickname = hvs.details.nickname)
      loc = HV_WRITE_LIST_JP2_MKDIR(hvs,storage.jp2_location)
-;    loc = HV_WRITE_LIST_JP2_MKDIR(hvs,dir,/original)
      filename = HV_FILENAME_CONVENTION(hvs,/create)
-     HV_WRITE_JP2_LWG,loc + filename,hvs.img,fitsheader = hvs.header,details = hvs.details
-     outf = loc + filename
+     jp2_filename = loc + filename
+     HV_WRITE_JP2_LWG,jp2_filename,hvs.img,fitsheader = hvs.header,details = hvs.details
+     jp2_filename = loc + filename + '.jp2'
   endif else begin
-;
-; go through the list 
-;
-     n = n_elements(list)
-     for i = 0,n-1 do begin
-;
-; check to see if the file is ok
-;
-        if (list(i) ne '-1') THEN BEGIN
-;
-; load the file
-;
-           restore, list(i)
-;
-; create a directory if need be
-;
-           loc = HV_WRITE_LIST_JP2_MKDIR(hvs,dir)
-;           loc = HV_WRITE_LIST_JP2_MKDIR(hvs,dir,/original)
-;
-; create the filename
-;
-           filename = hvs.yy + '_' + hvs.mm + '_' + hvs.dd + '_' + $
-                      hvs.hh + hvs.mmm + hvs.ss + '_' + $
-                      hvs.details.observatory + '_' + $
-                      hvs.details.instrument + '_' + $
-                      hvs.details.detector + '_' + $
-                      hvs.measurement
-;
-; call the program to write the JP2 file
-;
-;           ji_write_jp2_kdu,loc + filename,hvs.img,fitsheader = hvs.header
-;
-; call the program to write the JP2 file
-;
-           HV_WRITE_JP2_LWG,loc + filename,hvs.img,fitsheader = hvs.header,details = hvs.details
-
-        ENDIF
-     ENDFOR
-  ENDELSE
+     print,'Input hvs variable is not a structure.  Stopping'
+     stop
+  endelse
+  return
 END

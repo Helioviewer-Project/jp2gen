@@ -25,10 +25,10 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,auto = auto,details_file = details_file
 ;
   if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_lasco_c2'
 ;
-  details = CALL_FUNCTION(details_file)
-  nickname = details.nickname
+  info = CALL_FUNCTION(details_file)
+  nickname = info.nickname
 
-  list = HV_LASCO_GET_FILENAMES(date_start,date_end,nickname)
+  list = HV_LASCO_GET_FILENAMES(date_start,date_end,nickname,info)
 ;
 ; Setup some defaults - usually there is NO user contribution below here
 ;
@@ -43,7 +43,7 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,auto = auto,details_file = details_file
 ; Write direct to JP2 from FITS
 ;
   prev = fltarr(1024,1024)
-  prepped = HV_LAS_WRITE_HVS3(list,storage.jp2_location,nickname,date_start,date_end,/bf_process,details = details)
+  prepped = HV_LAS_WRITE_HVS3(list,storage.jp2_location,nickname,date_start,date_end,/bf_process,details = info)
 ; 
 ; Save the log file
 ;

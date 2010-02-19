@@ -10,9 +10,6 @@
 ; 
 ; for more information on setting up JPGen
 ;
-;
-; 
-;
 FUNCTION HV_STORAGE,nickname = nickname
 ;
 ;
@@ -44,35 +41,4 @@ FUNCTION HV_STORAGE,nickname = nickname
   return,{jp2_location:jp2_location,$
           log_location:log_location,$
           NotGiven:'NotGiven'}
-;
-; Return the structure
-;
-  ;; if not(keyword_set(nickname)) then begin
-  ;;    return,{hv_progs:hv_progs,$
-  ;;            hv_root:hv_root,$
-  ;;            NotGiven:'NotGiven'}
-  ;; endif else begin
-  ;;    dummy = where(nickname eq nicknames, wc)
-  ;;    if wc eq 1 then begin
-  ;;       hvr = hv_root + nickname + path_sep()
-  ;;       return,{hv_progs:hv_progs,$
-  ;;               hv_root:hvr,$
-  ;;               jp2_location:hvr + 'jp2' + path_sep(),$
-  ;;               err_location:hvr + 'log' + path_sep(),$
-  ;;               log_location:hvr + 'log' + path_sep(),$
-  ;;               NotGiven:'NotGiven'}
-  ;;    endif
-  ;;    if wc eq 0 then begin
-  ;;       print,'The passed nickname "' + nickname + '" is not a recognized nickname.'
-  ;;       print,'Please check the nickname and the file HV_OIDM2.PRO'
-  ;;       print,'Stopping.'
-  ;;       stop
-  ;;    endif
-  ;;    if wc ge 2 then begin
-  ;;       print,'The passed nickname "' + nickname + '" resulted in multiple entries in the nickname list.'
-  ;;       print,'This should not occur.  Please check the nickname and the file HV_OIDM2.PRO'
-  ;;       print,'Stopping.'
-  ;;       stop
-  ;;    endif
-  ;; endelse
 END

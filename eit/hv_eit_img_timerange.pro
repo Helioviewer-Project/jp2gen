@@ -32,8 +32,8 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,dir_im,hv_write,details
          header:header,$
          measurement:this_wave,$
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli, details:details}
-  HV_WRITE_LIST_JP2,hvs,outf = outf
-  outfile_storage = 'read ' + s + '; wrote ' + outf + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
-  HV_WRT_ASCII,outfile_storage,hv_write,/append
+
+  HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename
+  HV_WRITE_LOG,hvs,'read ' + s + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0) + ' : wrote to ' + jp2_filename
   return
 end

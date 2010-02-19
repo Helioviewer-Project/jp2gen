@@ -34,7 +34,7 @@
 ;   2008/05/16, JMK, Check if file exist before addding to goodfiles
 ;-  2009/11/09, ER, Fix check for prepped files: the listofimages is checked against files listed in dir.in+detector 
 ;========================== end header =====================================================
-FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname
+FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
   progname = 'HV_LASCO_GET_FILENAMES'
 
   ldr = getenv('LZ_IMG') + '/' + 'level_05/' ; where the LASCO data is
@@ -50,20 +50,21 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname
 
   date1 = anytim2utc(t1)
   date2 = anytim2utc(t2)
-  
-  HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date1,subdir = subdir
-  logfilename = HV_LOG_FILENAME_CONVENTION(nickname, date1, date2)
-
   image_list=' '
   FOR mjd=date1.mjd,date2.mjd DO BEGIN
      newday = {mjd:mjd,time:0.0}
      nds = utc2str(newday,/date_only)
-
      day=STRMID(nds,2,2)+STRMID(nds,5,2)+STRMID(nds,8,2)
        ; get img_hdr.txt to see which images we need to download
 ;         sourcefile    = dir.data+day+'/'+detector+'/'+'img_hdr.txt'
      sdir = ldr + day + path_sep() + detector + path_sep()
      sourcefile    = sdir +'img_hdr.txt'
+
+     hvs = {img:-1,header:-1,measurement: info.details[0].measurement,$
+            yy:STRMID(nds,0,4),mm:STRMID(nds,5,2),dd:STRMID(nds,8,2),$
+            hh:'log', mmm:'log', ss:'log', milli:'log',$
+            details:info}
+
      IF file_test(sourcefile) THEN BEGIN
                                 ; read img_hdr.txt
         openr,dlu,sourcefile,/get_lun
@@ -81,9 +82,9 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname
         for i=0, nimages-1 do begin
            words=strsplit(listofimages[i],' ',/extract)
            if (n_elements(words) lt 12) then begin
-              action = progname + ': img_hdr.txt malformed for this file: '+sourcefile
-              print, action
-              HV_WRT_ASCII,action,subdir + logfilename,/append
+              log_comment = progname + ': img_hdr.txt malformed for this file: '+sourcefile
+              print, log_comment
+              HV_WRITE_LOG,hvs,log_comment
            endif else begin
               file=strsplit(words[0],'.',/extract)
               newfile = sdir + words[0]
@@ -92,9 +93,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname
            endelse
         endfor
      ENDIF ELSE BEGIN 
-        action = progname + ': Could not open '+sourcefile
-        print, action
-        HV_WRT_ASCII,action,subdir + logfilename,/append
+        HV_WRITE_LOG,hvs,progname + ': Could not open '+sourcefile
      ENDELSE
   ENDFOR                        ; juldays
 
@@ -103,7 +102,8 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname
      stop
   endif else begin
      image_list=image_list[1:*]
-     HV_WRT_ASCII,image_list,subdir + logfilename,/append
+     HV_WRITE_LOG,hvs,image_list
+
 ;     printf, log, ' Number of images that will be downloaded: ',n_elements(image_list) 
 ;     save, filename=dir.work+detector+'_image_list.sav', image_list
 ;     printf, log, image_list

@@ -141,20 +141,12 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
         hd.crpix2 = 512.0
      endif
 ;
-; Write an error file if required.
+; Write the JP2
 ;
-;     if total(err_hd gt 0) then begin
-;        outfile = HV_ERR_REPORT(err_report,filename, hvs = hvs,name = obs_time + '_' + observation)
-;     endif
-;
-; Write th2 JP2
-;
-     outfile = progname + '; source ; ' +hd.filename + ' ; ' + rootdir + obs_time + '_' + observation + '.hvs.jp2' + ' ; ' + HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
-     print,outfile
-     HV_WRT_ASCII,outfile,logfilename,/append
+     log_comment = progname + '; source ; ' +hd.filename + ' ; ' + HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
      if total(err_hd gt 0) then begin
         hd = add_tag(hd,'Warning ' + err_report,'hv_error_report')
-        HV_WRT_ASCII,err_report,logfilename,/append
+        log_comment = log_comment + ' : ' + err_report
      endif
 ;
 ; HVS file
@@ -162,9 +154,11 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
      hvs = {img:image_new, header:hd,details:details,$
             measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-     HV_WRITE_LIST_JP2,hvs
+     HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename
+     HV_WRITE_LOG,hvs, log_comment + ' : wrote ' + jp2_filename
   endif else begin
-     HV_WRT_ASCII,outfile + ': JP2 file not written due to problem with FITS file',logfilename,/append
+     print,'ld was not a structure.  something funny with this LASCO C2 fits file'
+     stop
   endelse
-  return,outfile
+  return,log_comment
 end
