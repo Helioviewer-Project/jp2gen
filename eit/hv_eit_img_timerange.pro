@@ -1,4 +1,4 @@
-PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_written = already_written
+PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_written = already_written, jp2_filename = jp2_filename
 ;
 ; Turn the header into a structure
 ;

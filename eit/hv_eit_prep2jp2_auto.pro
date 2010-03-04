@@ -17,86 +17,25 @@
 ;        project.
 ;
 ;
-PRO HV_EIT_PREP2JP2_AUTO,ds,de
-  progname = 'ji_hv_eit_prep2jp2_auto' ; the program name
-  nickname = 'EIT'                     ; instrument nickname
+PRO HV_EIT_PREP2JP2_AUTO
+  progname = 'hv_eit_prep2jp2_auto' ; the program name
 ;
-; If the start or end dates are -1, write the appropriate
-; files
 ;
-  if ((ds eq -1) or (de eq -1)) then begin
-     HV_EIT_PREP2JP2,ds,de
-  endif
 ;
-; Get the observer details
-;
-  oidm = HV_OIDM2(nickname)
-;
-; Storage locations
-;
-  storage = HV_STORAGE(nickname = nickname)
-;
-; Create the log subdirectory for this nickname
-;
-  HV_LOG_CREATE_SUBDIRECTORY,nickname
-;
-; Infinite loop
-;
-  nwrite = long(0)
   repeat begin
-;
-; Look in the log directory to get the last run data: look for log files from the instrument 'nickname'
-;
-     date_most_recent = (HV_LOG_CHECK_PROCESSED(nickname)).most_recent
-     if (date_most_recent eq -1) then begin
-        get_utc,utc,/ecs,/date_only
-        date_most_recent = utc
-     endif else begin
-        date_most_recent = strmid(date_most_recent,0,10) + 'T00:00:00.000'
-     endelse
+
 ;
 ; Get today's date in UT
 ;
-     date_start = date_most_recent
-     get_utc,utc,/ecs,/date_only
-     date_end   = utc + 'T23:59:59.000'
-     print,' '
-     print,progname + ': Processing... ' + date_start + ' to ' + date_end
+  get_utc,utc,/ecs,/date_only
+  date_start = utc 
+  date_end   = utc 
+  print,' '
+  print,progname + ': Processing... ' + date_start + ' to ' + date_end
 ;
-; Create the subdirectory for the log file.  First we create an hvs
 ;
-     HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
 ;
-; ===================================================================================================
-;
-; Start timing
-;
-     t0 = systime(1)
-;
-; The filename for a file which will contain the locations of the
-; JP2 log files
-;
-     filename = HV_LOG_FILENAME_CONVENTION(nickname,date_start,date_end)
-;
-; Create the location of the listname
-;
-     listname = filename + '.prepped.log'
-;
-; Write direct to JP2 from FITS
-;
-     prepped = JI_EIT_WRITE_HVS(date_start,date_end,storage.jp2_location)
-     nwrite = nwrite + long(1)
-     tMostRecent = systime(0)
-;
-; Save the log file
-;
-;   HV_LOG_WRITE,subdir,listname,prepped,/verbose
-;
-; Timing stats
-;
-     HV_REPORT_WRITE_TIME,progname,t0,prepped
-     print,'Last file written at approximately ',tMostRecent
-     print,'Number of successful FITS to JP2 preparation script executions since this program was launched ',nwrite
+  HV_EIT_PREP2JP2,date_start,date_end
 ;
 ; Wait 15 minutes before looking for more data
 ;
