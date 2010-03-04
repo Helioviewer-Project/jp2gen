@@ -603,8 +603,9 @@ ENDIF
 ; JP2Gen suite of programs
 ;
                 if KEYWORD_SET(hv_write) then begin ; *** HV ***
-                   HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s(i_file),this_wave,dir_im,hv_write,hv_details
-                   hv_count = hv_count + 1
+                   sep = STRSPLIT(s(i_file),' ',/extract)
+                   HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s(i_file),this_wave,hv_details,'NOTGIVEN',sep[n_elements(sep)-1],already_written = already_written
+                   hv_count = hv_count + (1-already_written)
                 endif
 
 ; end loop over images on given day:

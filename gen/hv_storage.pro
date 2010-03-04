@@ -29,16 +29,30 @@ FUNCTION HV_STORAGE,nickname = nickname
 ;
 ; Create the necessary subdirectory locations
 ;
+; JP2 files
+;
   jp2_location = hv_root + 'jp2' + path_sep() + nickname + path_sep()
   if not(is_dir(jp2_location)) then begin
      spawn,'mkdir -p '+ jp2_location
   endif
-     
+;
+; Log files
+;
   log_location = hv_root + 'log' + path_sep() + nickname + path_sep()
   if not(is_dir(log_location)) then begin
      spawn,'mkdir -p '+ log_location
   endif
+;
+; Database
+;
+  db_location = hv_root + 'db' + path_sep() + nickname + path_sep()
+  if not(is_dir(db_location)) then begin
+     spawn,'mkdir -p '+ db_location
+  endif
+
+
   return,{jp2_location:jp2_location,$
           log_location:log_location,$
+          db_location:db_location,$
           NotGiven:'NotGiven'}
 END
