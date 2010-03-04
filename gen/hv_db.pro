@@ -27,7 +27,7 @@ PRO HV_DB,hvs,check_fitsname_only = check_fitsname_only,$
 ;
 ; Create the comma separated entry
 ;
-  dbtext = hvs.dir + delim + hvs.fitsname + delim + jp2name + delim
+  dbtext = hvs.dir + delim + hvs.fitsname + delim + jp2name + delim + systime(0) + delim
 ;
 ; Message if a new database entry is being created
 ;

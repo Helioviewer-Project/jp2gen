@@ -14,7 +14,7 @@ FUNCTION HV_WRITTENBY
                   contact:'ADNET Systems/ESA Helioviewer Group (webmaster@helioviewer.org)',$
                   all_code:'https://launchpad.net/helioviewer',$
                   jp2gen_code:'https://launchpad.net/jp2gen',$
-                  jp2gen_version:0.7,$
+                  jp2gen_version:0.8,$
                   jp2gen_branch_revision:bzr_revno}}
 
 END
