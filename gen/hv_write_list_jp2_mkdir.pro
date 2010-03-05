@@ -8,10 +8,6 @@ FUNCTION HV_WRITE_LIST_JP2_MKDIR,hvs,dir,$
   loc = dir
 
   if not(keyword_set(original)) then begin
-;     if hvs.details.nickname ne '' then begin
-;        loc = loc + hvs.details.nickname + path_sep()
-;        if not(is_dir(loc)) then spawn,'mkdir '+ loc
-;     endif
 
      if hvs.measurement ne '' then begin
         loc = loc + hvs.measurement + path_sep()

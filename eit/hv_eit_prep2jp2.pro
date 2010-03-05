@@ -54,12 +54,16 @@ PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file
 ;
 ; Report time taken
 ;
-  HV_REPORT_WRITE_TIME,progname,t0,prepped.hv_count
+  HV_REPORT_WRITE_TIME,progname,t0,n_elements(prepped.hv_count)-1
+;
+; Move the new files to the outgoing directory
+;
+;  HV_JP2_MOVE2OUTGOING,info.nickname,prepped.hv_count
 ;
 ; print out the filenames written
 ;
   print,'Files written: '
-  print,prepped.hv_jp2_written
+  print,prepped.hv_count
 
   return
 end

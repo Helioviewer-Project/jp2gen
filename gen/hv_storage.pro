@@ -49,10 +49,14 @@ FUNCTION HV_STORAGE,nickname = nickname
   if not(is_dir(db_location)) then begin
      spawn,'mkdir -p '+ db_location
   endif
-
+;
+; Outgoing
+;
+  outgoing = hv_root + 'outgoing' + path_sep()
 
   return,{jp2_location:jp2_location,$
           log_location:log_location,$
           db_location:db_location,$
+          outgoing:outgoing,$
           NotGiven:'NotGiven'}
 END

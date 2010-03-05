@@ -2,12 +2,9 @@
 ;+
 ; Write a simple database
 ; 
-; 
-; 
-;
-; 2009/08/07 - change to call ji_write_jp2_lwg.pro (which does no
-;              rescaling or recentering)
-;
+; 2010/03/04 - first attempt.  Liable to be superseded by a more
+;              sophisticated approach using Dominic Zarro's/ Ron
+;              Yurow's database system as developed for EIS 
 ;-
 PRO HV_DB,hvs,check_fitsname_only = check_fitsname_only,$
           already_written = already_written,$
@@ -34,7 +31,7 @@ PRO HV_DB,hvs,check_fitsname_only = check_fitsname_only,$
   if not(file_exist(dbloc + dbname)) then begin
      print,'Starting new database file at '+ dbloc + dbname
      HV_WRT_ASCII,'First created ' + systime(0),dbloc + dbname,/append
-     HV_WRT_ASCII,'dir,fitsname,jp2_filename_root,',dbloc + dbname,/append
+     HV_WRT_ASCII,'dir,fitsname,jp2_filename_root,time_of_writing',dbloc + dbname,/append
   endif
 ;
 ; Update the database and the latest file
