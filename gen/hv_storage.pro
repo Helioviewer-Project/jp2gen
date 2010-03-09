@@ -39,9 +39,13 @@ FUNCTION HV_STORAGE,nickname = nickname
 ;
 ; Create the necessary subdirectory locations
 ;
-; JP2 files
+; location of all the JP2 files
 ;
-  jp2_location = hvr + 'jp2' + path_sep() + nickname + path_sep()
+  hvr_jp2 = hvr + 'jp2' + path_sep()
+;
+; JP2 files for a given nickname
+;
+  jp2_location = hvr_jp2 + nickname + path_sep()
   if not(is_dir(jp2_location)) then begin
      spawn,'mkdir -p '+ jp2_location
   endif
@@ -64,6 +68,7 @@ FUNCTION HV_STORAGE,nickname = nickname
           hv_write:hv_write,$
           outgoing:outgoing,$
           hvr:hvr,$
+          hvr_jp2:hvr_jp2,$
           jp2_location:jp2_location,$
           log_location:log_location,$
           db_location:db_location,$

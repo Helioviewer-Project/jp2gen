@@ -20,9 +20,7 @@ PRO HV_JP2_MOVE2OUTGOING,nickname,files
      for i = 1,n-1 do begin
         z = STRSPLIT(files[i],path_sep(),/extract)
         nz = n_elements(z)
-        s = z[nz-8] + path_sep() + $
-            z[nz-7] + path_sep() + $
-            z[nz-6] + path_sep() + $
+        s = z[nz-6] + path_sep() + $
             z[nz-5] + path_sep() + $
             z[nz-4] + path_sep() + $
             z[nz-3] + path_sep() + $
@@ -31,7 +29,7 @@ PRO HV_JP2_MOVE2OUTGOING,nickname,files
 ;
 ; Move the JP2 file to the outgoing directory
 ;
-        cd,storage.hv_write,current = old_dir
+        cd,storage.hvr_jp2,current = old_dir
         spawn,'cp --parents ' + s + ' ' + outgoing_root
         cd,old_dir
         print,progname + ': transferred ' + files[i] + ' to ' + outgoing_root

@@ -13,7 +13,7 @@
 ;        the correct directory structure for use with the Helioviewer
 ;        project.
 ;
-PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file
+PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file, transfer = transfer
   progname = 'hv_eit_prep2jp2'
 ;
 ; use the default EIT file is no other one is specified
@@ -58,12 +58,10 @@ PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file
 ;
 ; Move the new files to the outgoing directory
 ;
-  HV_JP2_MOVE2OUTGOING,info.nickname,prepped.hv_count
-;
-; print out the filenames written
-;
-  print,'Files written: '
-  print,prepped.hv_count
+  if keyword_set(transfer) then begin
+     HV_JP2_MOVE2OUTGOING,info.nickname,prepped.hv_count
+     HV_JP2_TRANSFER,info.nickname
+  endif
 
   return
 end
