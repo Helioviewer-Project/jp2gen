@@ -22,41 +22,50 @@ FUNCTION HV_STORAGE,nickname = nickname
   hv_root = getenv("HV_JP2GEN_WRITE") + path_sep()
 ;
 ; ----------- No user changes required below here ----------------
-; The subdirectory of <hv_root> where the JP2 are stored
+; The write subdirectory 
 ;
-  hv_root = hv_root + 'write' + path_sep() + 'v' + trim((HV_WRITTENBY()).source.jp2gen_version) + path_sep()
-  if not(is_dir(hv_root)) then spawn,'mkdir -p '+ hv_root
+  hv_write = hv_root + 'write' + path_sep() 
+  if not(is_dir(hv_write)) then spawn,'mkdir -p '+ hv_write
+;
+; Outgoing
+;
+  outgoing = hv_write + 'outgoing' + path_sep()
+  if not(is_dir(outgoing)) then spawn,'mkdir -p '+ outgoing
+;
+; Update the root for the version number and device nickname
+;
+  hvr = hv_write + 'v' + trim((HV_WRITTENBY()).source.jp2gen_version) + path_sep()
+  if not(is_dir(hvr)) then spawn,'mkdir -p '+ hvr
 ;
 ; Create the necessary subdirectory locations
 ;
 ; JP2 files
 ;
-  jp2_location = hv_root + 'jp2' + path_sep() + nickname + path_sep()
+  jp2_location = hvr + 'jp2' + path_sep() + nickname + path_sep()
   if not(is_dir(jp2_location)) then begin
      spawn,'mkdir -p '+ jp2_location
   endif
 ;
 ; Log files
 ;
-  log_location = hv_root + 'log' + path_sep() + nickname + path_sep()
+  log_location = hvr + 'log' + path_sep() + nickname + path_sep()
   if not(is_dir(log_location)) then begin
      spawn,'mkdir -p '+ log_location
   endif
 ;
 ; Database
 ;
-  db_location = hv_root + 'db' + path_sep() + nickname + path_sep()
+  db_location = hvr + 'db' + path_sep() + nickname + path_sep()
   if not(is_dir(db_location)) then begin
      spawn,'mkdir -p '+ db_location
   endif
-;
-; Outgoing
-;
-  outgoing = hv_root + 'outgoing' + path_sep()
 
-  return,{jp2_location:jp2_location,$
+  return,{hv_root:hv_root,$
+          hv_write:hv_write,$
+          outgoing:outgoing,$
+          hvr:hvr,$
+          jp2_location:jp2_location,$
           log_location:log_location,$
           db_location:db_location,$
-          outgoing:outgoing,$
           NotGiven:'NotGiven'}
 END

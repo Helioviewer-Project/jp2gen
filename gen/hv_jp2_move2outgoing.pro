@@ -7,25 +7,34 @@ PRO HV_JP2_MOVE2OUTGOING,nickname,files
 ;
 ; get the outgoing directory for this nickname
 ;
-  outgoing_root = (HV_STORAGE(nickname = nickname)).outgoing
+  storage = HV_STORAGE(nickname = nickname)
+  outgoing_root = storage.outgoing
 ;
 ; Split the path of the file.
 ;
-  if (files(0) eq '-1' and n_elements(files) eq 1) then begin
+  n = n_elements(files)
+  if (files(0) eq '-1' and n eq 1) then begin
      print,progname + ': No files to be moved.'
   endif else begin
-     for i = 0,n-1 do begin
+     
+     for i = 1,n-1 do begin
         z = STRSPLIT(files[i],path_sep(),/extract)
         nz = n_elements(z)
-;
-; Construct the path for the new outgoing directory and create it
-;
-        outgoing = outgoing_root + 
+        s = z[nz-8] + path_sep() + $
+            z[nz-7] + path_sep() + $
+            z[nz-6] + path_sep() + $
+            z[nz-5] + path_sep() + $
+            z[nz-4] + path_sep() + $
+            z[nz-3] + path_sep() + $
+            z[nz-2] + path_sep() + $
+            z[nz-1]
 ;
 ; Move the JP2 file to the outgoing directory
 ;
-        spawn,'cp ' + files[i] + ' ' + outgoing + path_sep() + '.'
-
+        cd,storage.hv_write,current = old_dir
+        spawn,'cp --parents ' + s + ' ' + outgoing_root
+        cd,old_dir
+        print,progname + ': transferred ' + files[i] + ' to ' + outgoing_root
      endfor
 
   endelse
