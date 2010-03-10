@@ -5,7 +5,7 @@
 ; those files from the outgoing directory.
 ;
 ;
-PRO HV_JP2_TRANSFER,nickname,trasnfer_details = transfer_details
+PRO HV_JP2_TRANSFER,nickname,transfer_details = transfer_details
   progname = 'hv_jp2_transfer'
 ;
   if NOT(KEYWORD_SET(transfer_details)) THEN BEGIN
