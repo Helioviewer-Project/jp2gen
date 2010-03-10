@@ -8,16 +8,23 @@ PRO HV_EIT_PREP2JP2_BACKFILL
 ;
 ; Today's date
 ;
-
+     get_utc,de,/ecs,/date_only
 ;
-; First do the last week's data
+; Today's time in seconds
 ;
+     get_utc,utc
+     today_in_seconds = ANYTIM2TAI(utc)
      one_week_in_seconds = 7.0*24.0*60.0*60.0
-     HV_EIT_PREP2JP2,ds,de,/move2outgoing
+     one_month_in_seconds = 4*one_week_in_seconds
 ;
 ; Now do the last month's worth of data
 ;
-     one_month_in_seconds = 4*one_week_in_seconds
+     ds = ANYTIM2CAL(today_in_seconds - one_month_in_seconds,form = 11, /date)
+     HV_EIT_PREP2JP2,ds,de,/move2outgoing
+;
+; First do the last week's data
+;
+     ds = ANYTIM2CAL(today_in_seconds - one_week_in_seconds,form = 11, /date)
      HV_EIT_PREP2JP2,ds,de,/move2outgoing
 ;
 ; Update progress

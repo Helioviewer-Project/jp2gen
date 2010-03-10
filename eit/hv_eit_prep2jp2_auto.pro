@@ -23,19 +23,18 @@ PRO HV_EIT_PREP2JP2_AUTO, move2outgoing = move2outgoing
 ;
 ;
   repeat begin
-
 ;
 ; Get today's date in UT
 ;
-  get_utc,utc,/ecs,/date_only
-  date_start = utc 
-  date_end   = utc 
-  print,' '
-  print,progname + ': Processing... ' + date_start + ' to ' + date_end
+     get_utc,utc,/ecs,/date_only
+     date_start = utc 
+     date_end   = utc 
+     print,' '
+     print,progname + ': Processing... ' + date_start + ' to ' + date_end
 ;
 ;
 ;
-  HV_EIT_PREP2JP2,date_start,date_end, move2outgoing = move2outgoing
+     HV_EIT_PREP2JP2,date_start,date_end, move2outgoing = move2outgoing
 ;
 ; Wait 15 minutes before looking for more data
 ;
