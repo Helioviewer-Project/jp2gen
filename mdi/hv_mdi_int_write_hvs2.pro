@@ -104,7 +104,7 @@ FUNCTION HV_MDI_INT_WRITE_HVS2,infile,rootdir,details = details
   log_comment = 'read ' + infile + $
             ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
             ' ; at ' + systime(0)
-  HV_WRITE_LOG,hvs,log_comment + ' ; wrote ' + jp2_filename
+  HV_LOG_WRITE,hvs,log_comment + ' ; wrote ' + jp2_filename
 
   return,log_comment
 end

@@ -3,7 +3,7 @@
 ; Do the log file
 ;
 ;-
-PRO HV_WRITE_LOG,hvs, log_comment, log_filename = log_filename
+PRO HV_LOG_WRITE,hvs, log_comment, log_filename = log_filename
   if is_struct(hvs) then begin
      storage = HV_STORAGE(nickname = hvs.details.nickname)
      filename = HV_FILENAME_CONVENTION(hvs,/create)

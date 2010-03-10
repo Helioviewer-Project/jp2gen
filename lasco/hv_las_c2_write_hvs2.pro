@@ -155,7 +155,7 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
             measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
      HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename
-     HV_WRITE_LOG,hvs, log_comment + ' : wrote ' + jp2_filename
+     HV_LOG_WRITE,hvs, log_comment + ' : wrote ' + jp2_filename
   endif else begin
      print,'ld was not a structure.  something funny with this LASCO C2 fits file'
      stop

@@ -1,11 +1,17 @@
 ;
-; 2009/10/28
+;+
+; Do the log file
 ;
-; write a logfile
-;
-
-PRO HV_LOG_WRITE,subdir,filename,prepped,verbose = verbose
-  wrt_ascii,prepped,subdir + filename
-  if verbose then print,'HV_LOG_WRITE wrote a log file: '+ subdir + filename + ' at ' + systime(0)
-  return
-end
+;-
+PRO HV_WRITE_LOG,hvs, log_comment, log_filename = log_filename
+  if is_struct(hvs) then begin
+     storage = HV_STORAGE(nickname = hvs.details.nickname)
+     filename = HV_FILENAME_CONVENTION(hvs,/create)
+     log = HV_WRITE_LIST_JP2_MKDIR(hvs,storage.log_location)
+     log_filename = log + filename + '.' + systime(0) + '.log'
+     HV_WRT_ASCII,log_comment,log_filename
+  endif else begin
+     print,'Input hvs file is not a structure.  Stopping.'
+     stop
+  ENDELSE
+END

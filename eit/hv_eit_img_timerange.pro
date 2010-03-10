@@ -37,7 +37,7 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_writ
 
   HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename, already_written = already_written
   if not(already_written) then begin
-     HV_WRITE_LOG,hvs,'read ' + s + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0) + ' : wrote to ' + jp2_filename
+     HV_LOG_WRITE,hvs,'read ' + s + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0) + ' : wrote to ' + jp2_filename
   endif
   return
 end
