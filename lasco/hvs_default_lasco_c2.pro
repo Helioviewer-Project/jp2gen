@@ -51,7 +51,8 @@ FUNCTION HVS_DEFAULT_LASCO_C2
        detector:'C2',$ ; REQUIRED
        nickname:'LASCO-C2',$ ; REQUIRED
        hvs_details_filename:'hvs_default_lasco_c2.pro',$ ; REQUIRED
-       hvs_details_filename_version:'1.0'} ; REQUIRED
+       hvs_details_filename_version:'1.0',$ ; REQUIRED
+       local_quicklook:'/service/soho-archive/soho/private/data/lasco/quicklook/level_05/'}
 ;
 ; white-light
 ;

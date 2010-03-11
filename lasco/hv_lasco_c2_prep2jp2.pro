@@ -13,7 +13,7 @@
 ;        create JP2 files in the correct directory structure for use
 ;        with the Helioviewer project.
 
-PRO HV_LASCO_C2_PREP2JP2,ds,de,auto = auto,details_file = details_file
+PRO HV_LASCO_C2_PREP2JP2,ds,de,auto = auto,details_file = details_file,called_by = called_by
   progname = 'HV_LASCO_C2_PREP2JP2'
 ;
   date_start = ds + 'T00:00:00'
@@ -27,7 +27,18 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,auto = auto,details_file = details_file
 ;
   info = CALL_FUNCTION(details_file)
   nickname = info.nickname
-
+;
+; If called_by information is given, pass it along.  Otherwise, just
+; use this program name
+;
+  if keyword_set(called_by) then begin
+     info = add_tag(info,called_by,'called_by')
+  endif else begin
+     info = add_tag(info,progname,'called_by')
+  endelse
+;
+; Get the list of files
+;
   list = HV_LASCO_GET_FILENAMES(date_start,date_end,nickname,info)
 ;
 ; Setup some defaults - usually there is NO user contribution below here

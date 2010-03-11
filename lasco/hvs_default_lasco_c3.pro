@@ -52,7 +52,8 @@ FUNCTION HVS_DEFAULT_LASCO_C3
        nickname:'LASCO-C3',$ ; REQUIRED
        hvs_details_filename:'hvs_default_lasco_c3.pro',$ ; REQUIRED
        hvs_details_filename_version:'1.0',$  ; REQUIRED
-       gamma_correction:0.380 } ; used in HV_LAS_C3_WRITE_HVS2.pro
+       gamma_correction:0.380,$ ; used in HV_LAS_C3_WRITE_HVS2.pro
+       local_quicklook:'/service/soho-archive/soho/private/data/lasco/quicklook/level_05/'}
 ;
 ; white-light
 ;

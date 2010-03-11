@@ -45,7 +45,7 @@ FUNCTION HV_STORAGE,nickname = nickname, no_db = no_db, no_log = no_log, no_jp2 
 ;
 ;
 ;
-  if (not(is_number(nickname))) or (strlowcase(trim(nickname)) eq 'dummy') then begin
+  if (not(is_number(nickname))) or (strlowcase(trim(nickname)) ne 'dummy') then begin
 ;
 ; JP2 files for a given nickname
 ;

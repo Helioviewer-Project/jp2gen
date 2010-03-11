@@ -215,14 +215,21 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
                                 ;ENDIF
            ENDIF
 ;
-; 
+; Calculate the LASCO directory
 ;
+           lascodir = ''
+           zzz = strsplit(this_filename,path_sep(),/extract)
+           for iii = 0, n_elements(zzz)-2 do begin
+              lascodir = lascodir + zzz[iii]+ '/'
+           endfor
+
            if (nickname eq 'LASCO-C2') then begin
-              outfile(i) = HV_LAS_C2_WRITE_HVS2(this_filename,rootdir,{cimg:imc,header:h},logfilename,details = details)
+              outfile(i) = HV_LAS_C2_WRITE_HVS2(lascodir,{cimg:imc,header:h},details = details)
            endif
            if (nickname eq 'LASCO-C3') then begin
-              outfile(i) = HV_LAS_C3_WRITE_HVS2(this_filename,rootdir,{cimg:imc,header:h},logfilename,details = details)
+              outfile(i) = HV_LAS_C3_WRITE_HVS2(lascodir,{cimg:imc,header:h},details = details)
            endif
+
 
         ENDFOR
      

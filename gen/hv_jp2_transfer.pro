@@ -9,7 +9,8 @@ PRO HV_JP2_TRANSFER,nickname,transfer_details = transfer_details
   progname = 'hv_jp2_transfer'
 ;
   if NOT(KEYWORD_SET(transfer_details)) THEN BEGIN
-     transfer_details = ' -e ssh -l ireland@delphi.nascom.nasa.gov:/var/www/jp2/v0.8/inc/test_transfer/'
+;     transfer_details = ' -e ssh -l ireland@delphi.nascom.nasa.gov:/var/www/jp2/v0.8/inc/test_transfer/'
+     transfer_details = ' -e ssh -l ireland@helioviewer.nascom.nasa.gov:/home/ireland/incoming/v0.8/'
   endif 
 ;
   storage = HV_STORAGE(nickname = nickname)

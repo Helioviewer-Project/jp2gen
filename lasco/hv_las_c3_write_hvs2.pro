@@ -1,7 +1,7 @@
 ;
 ; Write the HVS file for a LASCO C2 image
 ;
-FUNCTION HV_LAS_C3_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
+FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
   COMMON C3_BLOCK, pylonim, ctr, pylon,pylonima
   progname = 'HV_LAS_C3_WRITE_HVS2'
 ;
@@ -175,11 +175,13 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
 ;
 ; HVS file
 ;
-     hvs = {img:image_new, header:hd,details: details,$
+     hvs = {dir:dir,fitsname:hd.filename,img:image_new, header:hd,details: details,$
             measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-     HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename
-     HV_LOG_WRITE,hvs,log_comment + ' : wrote ' + jp2_filename
+     HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_written
+     if not(already_written) then begin
+        HV_LOG_WRITE,hvs,log_comment + ' : wrote ' + jp2_filename
+     endif
   endif else begin
      print,'ld was not a structure.  something funny with this LASCO C2 fits file'
      stop

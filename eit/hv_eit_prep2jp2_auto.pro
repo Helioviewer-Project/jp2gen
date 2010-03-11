@@ -32,7 +32,7 @@ PRO HV_EIT_PREP2JP2_AUTO, move2outgoing = move2outgoing
      print,' '
      print,progname + ': Processing... ' + date_start + ' to ' + date_end
 ;
-;
+; Prep the data automagically.
 ;
      HV_EIT_PREP2JP2,date_start,date_end, move2outgoing = move2outgoing, called_by = progname
 ;

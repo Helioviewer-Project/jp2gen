@@ -12,7 +12,7 @@
 ; and pick an instrument
 ;
 
-PRO HV_LASCO_PREP2JP2,ds,de,auto = auto,c2 = c2, c3 = c3,details_file = details_file
+PRO HV_LASCO_PREP2JP2,ds,de,c2 = c2, c3 = c3,details_file = details_file
   progname = 'HV_LASCO_PREP2JP2'
 
   if (anytim2tai(ds) gt anytim2tai(de)) then begin
