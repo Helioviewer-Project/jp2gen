@@ -2,12 +2,12 @@
 ; Move a set of given list of files to the outgoing directory
 ;
 ;
-PRO HV_JP2_MOVE2OUTGOING,nickname,files
+PRO HV_JP2_MOVE2OUTGOING,files
   progname = 'hv_jp2_move2outgoing'
 ;
 ; get the outgoing directory for this nickname
 ;
-  storage = HV_STORAGE(nickname = nickname)
+  storage = HV_STORAGE(nickname = 'dummy')
   outgoing_root = storage.outgoing
 ;
 ; Split the path of the file.

@@ -20,18 +20,14 @@ PRO HV_EIT_PREP2JP2_BACKFILL
 ; Now do the last month's worth of data
 ;
      ds = ANYTIM2CAL(today_in_seconds - one_month_in_seconds,form = 11, /date)
-     HV_EIT_PREP2JP2,ds,de,/move2outgoing
-;
-; First do the last week's data
-;
-     ds = ANYTIM2CAL(today_in_seconds - one_week_in_seconds,form = 11, /date)
-     HV_EIT_PREP2JP2,ds,de,/move2outgoing
+     HV_EIT_PREP2JP2,ds,de,prepped,called_by = progname
+     HV_JP2_MOVE2OUTGOING,prepped
 ;
 ; Update progress
 ;
      n = n + 1
      print,progname + ': completed transfer '+trim(n)
-     print,progname + ': waiting one day until next backfill run'
+     print,progname + ': waiting one day until next backfill run.'
      wait,long(60)*long(60)*long(24)
   endrep until 1 eq 0
   return

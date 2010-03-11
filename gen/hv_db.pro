@@ -32,12 +32,19 @@ PRO HV_DB,hvs,check_fitsname_only = check_fitsname_only,$
            jp2name + delim + $
            systime(0) + delim
 ;
+; Add in other information, if required.
+;
+  if tag_exist(hvs.details,'called_by') then begin
+     dbtext = dbtext + hvs.details.called_by + delim
+  endif
+
+;
 ; Message if a new database entry is being created
 ;
   if not(file_exist(dbloc + dbname)) then begin
      print,'Starting new database file at '+ dbloc + dbname
      HV_WRT_ASCII,'This file first created ' + systime(0),dbloc + dbname,/append
-     HV_WRT_ASCII,'fitsdir,fitsname,jp2dir,jp2name,time_of_writing',dbloc + dbname,/append
+     HV_WRT_ASCII,'fitsdir,fitsname,jp2dir,jp2name,time_of_writing,calling_program[optional],',dbloc + dbname,/append
   endif
 ;
 ; Update the database and the latest file

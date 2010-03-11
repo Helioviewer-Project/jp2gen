@@ -20,7 +20,9 @@ PRO HV_JP2_TRANSFER,nickname,transfer_details = transfer_details
   a = file_list(find_all_dir(sdir),'*.jp2')
 
   if not(isarray(a)) then begin
-     print,'No files to transfer'
+     note = 'No files to transfer'
+     print, note
+     HV_LOG_WRITE,'transfer_log',note,/transfer
   endif else begin
      n = n_elements(a)
      b = a
@@ -39,6 +41,10 @@ PRO HV_JP2_TRANSFER,nickname,transfer_details = transfer_details
               b[i] + ' ' + $
               transfer_details
      endfor
+;
+; Write a logfile describing what was transferred
+;
+     HV_LOG_WRITE,'transfer_log',b,/transfer
 ;
 ; Remove files from the outgoing that have been transferred
 ;

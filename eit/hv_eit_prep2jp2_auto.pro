@@ -34,7 +34,7 @@ PRO HV_EIT_PREP2JP2_AUTO, move2outgoing = move2outgoing
 ;
 ;
 ;
-     HV_EIT_PREP2JP2,date_start,date_end, move2outgoing = move2outgoing
+     HV_EIT_PREP2JP2,date_start,date_end, move2outgoing = move2outgoing, called_by = progname
 ;
 ; Wait 15 minutes before looking for more data
 ;

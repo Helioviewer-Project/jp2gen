@@ -13,14 +13,26 @@
 ;        the correct directory structure for use with the Helioviewer
 ;        project.
 ;
-PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file, move2outgoing = move2outgoing
+PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file, move2outgoing = move2outgoing,prepped = prepped,called_by = called_by
+;
+; Program name
+;
   progname = 'hv_eit_prep2jp2'
 ;
-; use the default EIT file is no other one is specified
+; use the default EIT file if no other one is specified
 ;
   if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_eit'
-;
   info = CALL_FUNCTION(details_file)
+;
+; If called_by information is given, pass it along.  Otherwise, just
+; use this program name
+;
+  if keyword_set(called_by) then begin
+     info = add_tag(info,called_by,'called_by')
+  endif else begin
+     info = add_tag(info,progname,'called_by')
+  endelse
+
 ;
 ; Fix the dates if need be
 ;
@@ -50,16 +62,17 @@ PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file, move2outgoing = move2outg
 ;
 ; Write direct to JP2 from FITS
 ;
-  prepped = HV_EIT_WRITE(date_start,date_end,storage.jp2_location,info)
+  output = HV_EIT_WRITE(date_start,date_end,storage.jp2_location,info)
+  prepped = output.hv_count
 ;
 ; Report time taken
 ;
-  HV_REPORT_WRITE_TIME,progname,t0,n_elements(prepped.hv_count)-1
+  HV_REPORT_WRITE_TIME,progname,t0,n_elements(prepped)-1
 ;
 ; Move the new files to the outgoing directory
 ;
   if keyword_set(move2outgoing) then begin
-     HV_JP2_MOVE2OUTGOING,info.nickname,prepped.hv_count
+     HV_JP2_MOVE2OUTGOING,prepped
   endif
 
   return
