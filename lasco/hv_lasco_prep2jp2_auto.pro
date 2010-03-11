@@ -39,6 +39,11 @@ PRO HV_LASCO_PREP2JP2_AUTO,c2 = c2, c3 = c3,details_file = details_file
         print,'No coronagraph chosen.  Stopping'
         stop
      endif
+;
+; Wait 15 minutes before looking for more data
+;
+     print,'Fixed wait time of 30 minutes now progressing.'
+     wait,60*30.0
 
   endrep until 1 eq 0
 

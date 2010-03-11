@@ -13,7 +13,7 @@
 ;        create JP2 files in the correct directory structure for use
 ;        with the Helioviewer project.
 
-PRO HV_LASCO_C2_PREP2JP2,ds,de,auto = auto,details_file = details_file,called_by = called_by
+PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
   progname = 'HV_LASCO_C2_PREP2JP2'
 ;
   date_start = ds + 'T00:00:00'
