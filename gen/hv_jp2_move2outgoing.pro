@@ -17,7 +17,7 @@ PRO HV_JP2_MOVE2OUTGOING,files
      print,progname + ': No files to be moved.'
   endif else begin
 
-     for i = long(1),- long(1) do begin
+     for i = long(1),- long(1) do begin 
         if files[i] ne 'already_written' then begin
            z = STRSPLIT(files[i],path_sep(),/extract)
            nz = n_elements(z)
