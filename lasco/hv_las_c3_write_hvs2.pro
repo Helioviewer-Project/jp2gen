@@ -181,10 +181,12 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
      HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_written
      if not(already_written) then begin
         HV_LOG_WRITE,hvs,log_comment + ' : wrote ' + jp2_filename
-     endif
+     endif else begin
+        jp2_filename = 'already_written'
+     endelse
   endif else begin
      print,'ld was not a structure.  something funny with this LASCO C2 fits file'
      stop
   endelse
-  return,log_comment
+  return,jp2_filename
 end

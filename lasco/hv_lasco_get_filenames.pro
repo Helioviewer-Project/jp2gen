@@ -58,7 +58,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
 
   date1 = anytim2utc(t1)
   date2 = anytim2utc(t2)
-  image_list=' '
+  image_list='-1'
   FOR mjd=date1.mjd,date2.mjd DO BEGIN
      newday = {mjd:mjd,time:0.0}
      nds = utc2str(newday,/date_only)
@@ -107,7 +107,6 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
 
   if n_elements(image_list) eq  1 then  begin
      print,' NO IMAGES ARE FOUND: CHECK YOUR INPUT DATES'
-     stop
   endif else begin
      image_list=image_list[1:*]
      HV_LOG_WRITE,hvs,image_list

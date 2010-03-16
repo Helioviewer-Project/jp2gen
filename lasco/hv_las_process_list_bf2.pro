@@ -235,7 +235,7 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
      
         IF datatype(allstarims) NE 'UND' THEN allstars=allstarims
 
-        return,outfile
+        return,{hv_count:outfile}
      endif
   endif else begin
      print,'LASCO_READFITS reports that this file is not a LASCO file.  JP2 Processing aborted'

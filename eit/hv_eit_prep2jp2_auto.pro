@@ -22,6 +22,7 @@ PRO HV_EIT_PREP2JP2_AUTO, move2outgoing = move2outgoing
 ;
 ;
 ;
+  count = long(0)
   repeat begin
 ;
 ; Get today's date in UT
@@ -38,7 +39,9 @@ PRO HV_EIT_PREP2JP2_AUTO, move2outgoing = move2outgoing
 ;
 ; Wait 15 minutes before looking for more data
 ;
-     print,'Fixed wait time of 15 minutes now progressing.'
+     count = count + long(1)
+     print,progname + ': completed repeat number '+trim(count)
+     print,progname + ': Fixed wait time of 15 minutes now progressing.'
      wait,60*15.0
 
   endrep until 1 eq 0

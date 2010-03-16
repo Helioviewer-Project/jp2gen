@@ -13,7 +13,7 @@
 ;        create JP2 files in the correct directory structure for use
 ;        with the Helioviewer project.
 
-PRO HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
+PRO HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = called_by,move2outgoing = move2outgoing
   progname = 'HV_LASCO_C3_PREP2JP2'
 ;
   date_start = ds + 'T00:00:00'
@@ -40,22 +40,34 @@ PRO HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
 ; Get the list of files
 ;
   list = HV_LASCO_GET_FILENAMES(date_start,date_end,nickname,info)
+  if (list[0] eq '-1') then begin
+     print,'No files to process: returning'
+  endif else begin
 ;
 ; Start a clock
 ;
-  t0 = systime(1)
+     t0 = systime(1)
 ;
 ; Call details of storage locations
 ;
-  storage = HV_STORAGE(nickname = nickname)
+     storage = HV_STORAGE(nickname = nickname)
 ;
 ; Write direct to JP2 from FITS
 ;
-  prev = fltarr(1024,1024)
-  prepped = HV_LAS_WRITE_HVS3(list,storage.jp2_location,nickname,date_start,date_end,/bf_process,details = info)
+     prev = fltarr(1024,1024)
+     output = HV_LAS_WRITE_HVS3(list,storage.jp2_location,nickname,date_start,date_end,/bf_process,details = info)
+     prepped = output.hv_count
 ;
 ; Report time taken
 ;
-  HV_REPORT_WRITE_TIME,progname,t0,prepped
+     HV_REPORT_WRITE_TIME,progname,t0,n_elements(prepped)-1
+;
+; Move2outgoing
+;
+     if keyword_set(move2outgoing) then begin
+        HV_JP2_MOVE2OUTGOING,prepped
+     endif
+  endelse
+
   return
 end
