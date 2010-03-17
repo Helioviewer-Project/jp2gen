@@ -42,7 +42,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
 ; If we are calling this program to get the quicklooks, change ldr
 ;
   if tag_exist(info,'called_by') then begin
-     if (info.called_by eq 'HV_LASCO_PREP2JP2_AUTO') then begin
+     if (strpos(info.called_by,'HV_LASCO_PREP2JP2_AUTO') ge 0) then begin
         ldr = info.local_quicklook
      endif
   endif

@@ -12,7 +12,7 @@
 ; and pick an instrument
 ;
 
-PRO HV_LASCO_PREP2JP2_AUTO,c2 = c2, c3 = c3,details_file = details_file,$
+PRO HV_LASCO_PREP2JP2_AUTO,start = ds,c2 = c2, c3 = c3,details_file = details_file,$
                            alternate_backgrounds = alternate_backgrounds,$
                            copy2outgoing = copy2outgoing
   progname = 'HV_LASCO_PREP2JP2_AUTO'
@@ -27,22 +27,31 @@ PRO HV_LASCO_PREP2JP2_AUTO,c2 = c2, c3 = c3,details_file = details_file,$
 ;
 ;
 ;
+  timestart = systime(0)
+  count = 0
   repeat begin
 ;
 ; Get today's date in UT
 ;
      get_utc,utc,/ecs,/date_only
-     ds = utc
-     de = utc
+     if (count eq 0) then begin
+        if keyword_set(start) then begin 
+           ds = start
+        endif else begin
+           ds = utc
+        endif
+     endif else begin
+        ds = utc
+     endelse
      print,' '
      print,progname + ': Processing... ' + ds + ' to ' + de
 
      if keyword_set(c2) then begin
-        HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing
+        HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds
      endif
 
      if keyword_set(c3) then begin
-        HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing
+        HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds
      endif
 
      if NOT(keyword_set(c2)) and NOT(keyword_set(c3)) then begin
@@ -52,6 +61,8 @@ PRO HV_LASCO_PREP2JP2_AUTO,c2 = c2, c3 = c3,details_file = details_file,$
 ;
 ; Wait 15 minutes before looking for more data
 ;
+     print,progname + ': started at '+timestart
+     print,progname + ': number of repeats completed = '+trim(count)
      print,'Fixed wait time of 30 minutes now progressing.'
      wait,60*30.0
 

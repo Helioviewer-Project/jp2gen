@@ -13,13 +13,18 @@
 ;        create JP2 files in the correct directory structure for use
 ;        with the Helioviewer project.
 
-PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by, copy2outgoing = copy2outgoing
+PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by, copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds
   progname = 'HV_LASCO_C2_PREP2JP2'
 ;
   date_start = ds + 'T00:00:00'
   date_end = de + 'T23:59:59'
 ;
 ; ===================================================================================================
+;
+  IF keyword_set(alternate_backgrounds) then begin
+     progname = progname + '(used alternate backgrounds from ' + alternate_backgrounds + ')'
+     setenv,'MONTHLY_IMAGES=' + alternate_backgrounds
+  endif
 ;
 ; use the default LASCO-C2 file is no other one is specified
 ;
