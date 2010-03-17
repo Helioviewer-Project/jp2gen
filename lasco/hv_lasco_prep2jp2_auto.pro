@@ -12,23 +12,19 @@
 ; and pick an instrument
 ;
 
-PRO HV_LASCO_PREP2JP2_AUTO,start = ds,c2 = c2, c3 = c3,details_file = details_file,$
+PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details_file,$
                            alternate_backgrounds = alternate_backgrounds,$
                            copy2outgoing = copy2outgoing
   progname = 'HV_LASCO_PREP2JP2_AUTO'
 ;
-;
-;
   IF keyword_set(alternate_backgrounds) then begin
      progname = progname + '(used alternate backgrounds from ' + alternate_backgrounds + ')'
      setenv,'MONTHLY_IMAGES=' + alternate_backgrounds
-  endif
-     
-;
-;
+  endif    
 ;
   timestart = systime(0)
-  count = 0
+  count = long(0)
+;
   repeat begin
 ;
 ; Get today's date in UT
@@ -43,6 +39,7 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = ds,c2 = c2, c3 = c3,details_file = details_fi
      endif else begin
         ds = utc
      endelse
+     de = utc
      print,' '
      print,progname + ': Processing... ' + ds + ' to ' + de
 
@@ -61,6 +58,7 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = ds,c2 = c2, c3 = c3,details_file = details_fi
 ;
 ; Wait 15 minutes before looking for more data
 ;
+     count = count + 1
      print,progname + ': started at '+timestart
      print,progname + ': number of repeats completed = '+trim(count)
      print,'Fixed wait time of 30 minutes now progressing.'

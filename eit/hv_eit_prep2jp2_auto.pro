@@ -17,19 +17,28 @@
 ;        project.
 ;
 ;
-PRO HV_EIT_PREP2JP2_AUTO, copy2outgoing = copy2outgoing
+PRO HV_EIT_PREP2JP2_AUTO,start = start, copy2outgoing = copy2outgoing
   progname = 'hv_eit_prep2jp2_auto' ; the program name
 ;
 ;
 ;
+  timestart = systime(0)
   count = long(0)
   repeat begin
 ;
 ; Get today's date in UT
 ;
      get_utc,utc,/ecs,/date_only
-     date_start = utc 
-     date_end   = utc 
+     if (count eq 0) then begin
+        if keyword_set(start) then begin 
+           date_start = start
+        endif else begin
+           date_start = utc
+        endif
+     endif else begin
+        date_start = utc
+     endelse
+     date_end = utc
      print,' '
      print,progname + ': Processing... ' + date_start + ' to ' + date_end
 ;
@@ -40,6 +49,7 @@ PRO HV_EIT_PREP2JP2_AUTO, copy2outgoing = copy2outgoing
 ; Wait 15 minutes before looking for more data
 ;
      count = count + long(1)
+     print,progname + ': started at '+timestart
      print,progname + ': completed repeat number '+trim(count)
      print,progname + ': Fixed wait time of 15 minutes now progressing.'
      wait,60*15.0
