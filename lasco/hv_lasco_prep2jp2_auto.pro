@@ -12,8 +12,18 @@
 ; and pick an instrument
 ;
 
-PRO HV_LASCO_PREP2JP2_AUTO,c2 = c2, c3 = c3,details_file = details_file
+PRO HV_LASCO_PREP2JP2_AUTO,c2 = c2, c3 = c3,details_file = details_file,$
+                           alternate_backgrounds = alternate_backgrounds,$
+                           copy2outgoing = copy2outgoing
   progname = 'HV_LASCO_PREP2JP2_AUTO'
+;
+;
+;
+  IF keyword_set(alternate_backgrounds) then begin
+     progname = progname + '(used alternate backgrounds from ' + alternate_backgrounds + ')'
+     setenv,'MONTHLY_IMAGES=' + alternate_backgrounds
+  endif
+     
 ;
 ;
 ;
@@ -28,11 +38,11 @@ PRO HV_LASCO_PREP2JP2_AUTO,c2 = c2, c3 = c3,details_file = details_file
      print,progname + ': Processing... ' + ds + ' to ' + de
 
      if keyword_set(c2) then begin
-        HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = progname
+        HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing
      endif
 
      if keyword_set(c3) then begin
-        HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = progname
+        HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing
      endif
 
      if NOT(keyword_set(c2)) and NOT(keyword_set(c3)) then begin

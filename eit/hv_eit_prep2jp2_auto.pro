@@ -17,7 +17,7 @@
 ;        project.
 ;
 ;
-PRO HV_EIT_PREP2JP2_AUTO, move2outgoing = move2outgoing
+PRO HV_EIT_PREP2JP2_AUTO, copy2outgoing = copy2outgoing
   progname = 'hv_eit_prep2jp2_auto' ; the program name
 ;
 ;
@@ -35,7 +35,7 @@ PRO HV_EIT_PREP2JP2_AUTO, move2outgoing = move2outgoing
 ;
 ; Prep the data automagically.
 ;
-     HV_EIT_PREP2JP2,date_start,date_end, move2outgoing = move2outgoing, called_by = progname
+     HV_EIT_PREP2JP2,date_start,date_end, copy2outgoing = copy2outgoing, called_by = progname
 ;
 ; Wait 15 minutes before looking for more data
 ;

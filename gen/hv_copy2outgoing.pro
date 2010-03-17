@@ -1,9 +1,9 @@
 ;
-; Move a set of given list of files to the outgoing directory
+; Copy a set of given list of files to the outgoing directory
 ;
 ;
-PRO HV_JP2_MOVE2OUTGOING,files,search = search
-  progname = 'hv_jp2_move2outgoing'
+PRO HV_COPY2OUTGOING,files,search = search
+  progname = 'hv_copy2outgoing'
 ;
 ; get the outgoing directory for this nickname
 ;

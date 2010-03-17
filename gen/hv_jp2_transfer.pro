@@ -25,9 +25,9 @@ PRO HV_JP2_TRANSFER,nickname,transfer_details = transfer_details
      print, note
      HV_LOG_WRITE,'transfer_log',note,/transfer
   endif else begin
-     n = n_elements(a)
+     n = long(n_elements(a))
      b = a
-     for i = 0, n-1 do begin
+     for i = long(0), n-long(1) do begin
         b[i] = strmid(a[i],strlen(sdir),strlen(a[i])-strlen(sdir)) 
      endfor
 ;
@@ -37,7 +37,7 @@ PRO HV_JP2_TRANSFER,nickname,transfer_details = transfer_details
 ;
 ; Open connection to the remote machine and start transferring
 ;
-     for i = 0, n-1 do begin
+     for i = long(0), n-long(1) do begin
         spawn,'rsync -Ravxz --exclude "*.DS_Store" ' + $
               b[i] + ' ' + $
               transfer_details
@@ -49,7 +49,7 @@ PRO HV_JP2_TRANSFER,nickname,transfer_details = transfer_details
 ;
 ; Remove files from the outgoing that have been transferred
 ;
-     for i = 0, n-1 do begin
+     for i = long(0), n-long(1) do begin
         spawn,'rm -f ' + b[i]
      endfor
      cd,old_dir

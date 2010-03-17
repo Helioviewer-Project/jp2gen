@@ -21,7 +21,7 @@ PRO HV_EIT_PREP2JP2_BACKFILL
 ;
      ds = ANYTIM2CAL(today_in_seconds - one_month_in_seconds,form = 11, /date)
      HV_EIT_PREP2JP2,ds,de,prepped=prepped,called_by = progname
-     HV_JP2_MOVE2OUTGOING,prepped
+     HV_COPY2OUTGOING,prepped
 ;
 ; Update progress
 ;
