@@ -43,12 +43,6 @@ FUNCTION HV_MDI_INT_WRITE_HVS2,infile,rootdir,details = details
   ss = strmid(obs_time,17,2)
   milli = strmid(obs_time,20,3)
 ;
-; Convert T_OBS into the required date format
-;
-  hv_date_obs = yy + '-' + mm + '-' + dd + 'T' + $
-                hh + ':' + mmm +':' + ss + $
-                '.' + milli + 'Z'
-;
 ; Convert T_OBS into the file format time
 ;
 ;  obs_time = yy + '_' + mm + '_' + dd + '_' + hh + mmm + ss + '.' + milli
