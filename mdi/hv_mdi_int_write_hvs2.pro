@@ -97,16 +97,23 @@ FUNCTION HV_MDI_INT_WRITE_HVS2,infile,rootdir,details = details
 ;
 ; save
 ;
-  hvs = {img:image_new, header:hd, details:details,$
+  hvs = {dir:'NotGiven',$
+         fitsname:hd.datafile,$
+         img:image_new,$
+         header:hd,$
          measurement:measurement,$
-         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
+         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli,$
+         details:details}
+
   HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
   if not(already_written) then begin
      log_comment = 'read ' + infile + $
                    ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
                    ' ; at ' + systime(0)
      HV_LOG_WRITE,hvs,log_comment + ' ; wrote ' + jp2_filename
-  endif
+  endif else begin
+     jp2_filename = 'already_written'
+  endelse
 
-  return,log_comment
+  return,jp2_filename
 end

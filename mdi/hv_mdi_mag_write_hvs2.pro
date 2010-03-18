@@ -99,7 +99,9 @@ function HV_MDI_MAG_WRITE_HVS2,infile,rootdir,details = details
 ;
 ; save
 ;
-  hvs = {img:image_new, header:hd, details: details,$
+  hvs = {dir:'NotGiven',$
+         fitsname:hd.datafile,$
+         img:image_new, header:hd, details: details,$
          measurement:measurement,$
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
   HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
@@ -108,7 +110,9 @@ function HV_MDI_MAG_WRITE_HVS2,infile,rootdir,details = details
                    ' ; ' + HV_JP2GEN_CURRENT(/verbose) + $
                    ' ; at ' + systime(0)
      HV_LOG_WRITE,hvs,log_comment + ' ; wrote ' + jp2_filename
-  endif
+  endif else begin
+     jp2_filename = 'already_written'
+  endelse
 
-  return,log_comment
+  return,jp2_filename
 end

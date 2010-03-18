@@ -32,7 +32,6 @@ PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file, copy2outgoing = copy2outg
   endif else begin
      info = add_tag(info,progname,'called_by')
   endelse
-
 ;
 ; Fix the dates if need be
 ;

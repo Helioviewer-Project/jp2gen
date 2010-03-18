@@ -35,7 +35,7 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details
            ds = start
         endif else begin
            ds = utc
-        endif
+        endelse
      endif else begin
         ds = utc
      endelse
@@ -59,6 +59,7 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details
 ; Wait 15 minutes before looking for more data
 ;
      count = count + 1
+     print,progname + ': just finished date range ' + ds + ' to ' + de
      print,progname + ': started at '+timestart
      print,progname + ': number of repeats completed = '+trim(count)
      print,'Fixed wait time of 30 minutes now progressing.'

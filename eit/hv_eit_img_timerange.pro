@@ -33,7 +33,8 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_writ
          img:b0, $
          header:header,$
          measurement:this_wave,$
-         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli, details:details}
+         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli,$
+         details:details}
 
   HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename, already_written = already_written
   if not(already_written) then begin
