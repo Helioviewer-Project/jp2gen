@@ -5,7 +5,7 @@
 ;	15-Aug-96 (MDM) - Scaled to gauss
 ;	19-Aug-96 (MDM) - Removed /5 logic (since mk_mdi_fits does it now)
 ;	21-Aug-96 (MDM) - Added call to mk_gif_mag_index
-;	20-Jan-97 (MDM) - Changed output directory from
+;	20-Jan-97 (MDM) - Changed outputut directory from
 ;			  /soho-archive/public/data/summary/mdi  (to)
 ;			  /soho-archive/public/data/summary/gif/YYMMDD
 ;	11-Jun-97 (MDM) - Modified to mask out the part of the data which
@@ -37,17 +37,33 @@
 ;     04-Dec-2009 (SEG) - Updating the flat_field file from flat_Dec2008.fits to flat_Dec2009.fits
 ;-
 
-progname = 'hv_mdi_prep2jp2_ql'
+PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoing,output = output
+;
+; Program name
+;
+  progname = 'hv_mdi_prep2jp2_ql'
+;
+; use the default MDI file is no other one is specified
+;
+  if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_mdi'
+  info = CALL_FUNCTION(details_file)
+  nickname = info.nickname
+;
+; start the infinite loop
+;
+  repeat begin
 
-sttim = anytim2ints(ut_time(), offset=-2*86400)
-entim = ut_time()
+
+     t0 = systime(1)
+     sttim = anytim2ints(ut_time(), offset=-2*86400)
+     entim = ut_time()
 ;; ------ temporyary fix for network switch problems where igram and doppl cannot be read from soho-archive 11-Jul-2007 (SEG) 
 ;;dir = '/soho-archive/private/data/planning/mdi' ;;--- 11-Jul-2007 (SEG)
 ;;dir = '/sas12/temp' ;------16-nov-2007 (SEG) On the new network, not saving fits to sas4/temp anymore 
 		    ;------19-Sep-2009 (SEG) Added this back in since soho-arch down for maintainence, will keep so that
 		    ;                        if soho-arch goes down, we will always have fits and gifs.  Soho-arch will get
 		    ;                        fits according to go_fits_sci160k.pro
-dir = '/service/soho-archive/soho/private/data/planning/mdi'
+     dir = info.quicklook_directory
 ;; outdir2 = '/soho-archive/public/data/summary/gif' -- 11-Jul-2007 (SEG) 
 ;;outdir2 = '/sas12/temp' -- 11-Jul-2007 (SEG)
 
@@ -56,87 +72,143 @@ dir = '/service/soho-archive/soho/private/data/planning/mdi'
 ;ff_file = '/mdisw/dbase/cal/files/flat_mar2005.fits'
 ;ff_file = '/mdisw/dbase/cal/files/flat_Dec2008.fits'
 ;ff_file = '/mdisw/dbase/cal/files/flat_Dec2009.fits'
-ff_file = '/service/soho-archive/sdb/soho/mdi/flatfield/flat_Dec2009.fits'
-
-if (n_elements(types) eq 0) then types = ['maglc', 'igram']
-for itype=0,n_elements(types)-1 do begin
-   type = types(itype)
-   ff = file_list(dir, '*' + type + '*', file=file)
-   timarr = anytim2ints(fid2ex( strmid(file, 16, 11)))
-   ss = sel_timrange(timarr, sttim, entim, /between)
-   if (ss(0) ne -1) then begin
-      for i=0,n_elements(ss)-1 do begin
-         error_report = ''
-         infil = ff(ss(i))
-         break_file, infil, dsk_log, dir00, filnam
-         img = rfits(infil, h=h)
-         hd = FITSHEAD2STRUCT(h)
+;
+; Flatfield file
+;
+     ff_file = info.flatfield_file
+  
+     if (n_elements(types) eq 0) then types = ['maglc_fd', 'igram_fd']
+     for itype=0,n_elements(types)-1 do begin
+        type = types(itype)
+        ff = file_list(dir, '*' + type + '*', file=file)
+        timarr = anytim2ints(fid2ex( strmid(file, 16, 11)))
+        ss = sel_timrange(timarr, sttim, entim, /between)
+        if (ss(0) ne -1) then begin
+           for i=0,n_elements(ss)-1 do begin
+;
+; keep the file names
+;
+              output = strarr(1 +n_elements(ss))
+              error_report = ''
+              infil = ff(ss(i))
+              break_file, infil, dsk_log, dir00, filnam
+              img = rfits(infil, h=h)
+              hd = FITSHEAD2STRUCT(h)
 ;
 ; Add in required Helioviewer rags
 ;
-         hd = add_tag(hd,hd.radius,'R_SUN')
-         error_report = error_report + 'R_SUN tag inserted and value copied from FITS value "RADIUS"; tag added by '+progname +'. '
+              hd = add_tag(hd,hd.radius,'R_SUN')
+              error_report = error_report + 'R_SUN tag inserted and value copied from FITS value "RADIUS"; tag added by '+progname +'. '
 
-         error_report = error_report + 'DATE_OBS tag modified '+progname +' as follows: took FITS value "REFTIME" and manipulated it to conform to CCSDS format.  The original value of DATE_OBS is ='+hd.DATE_OBS + '. '
-         hd.date_obs = (ji_txtrep(ji_txtrep(hd.reftime,'/','-'),' ','T')) + 'Z'
+              error_report = error_report + 'DATE_OBS tag modified '+progname +' as follows: took FITS value "REFTIME" and manipulated it to conform to CCSDS format.  The original value of DATE_OBS is ='+hd.DATE_OBS + '. '
+              hd.date_obs = (ji_txtrep(ji_txtrep(hd.reftime,'/','-'),' ','T')) + 'Z'
 
 
-         case type of
-            'maglc': begin
-               ss2 = circle_mask(img, sxpar(h,'CRPIX1'), sxpar(h,'CRPIX2'), 'GE', sxpar(h,'RADIUS') )
-               if (ss2(0) ne -1) then img(ss2)=-3000
-               dpc_str = string(sxpar(h, 'dpc'), format='(z8.8)')
-               img = img*0.352*8. ;data is 8 m/sec
-               smin = -250.
-               smax = 250.
-               axis1 = 'Gauss'
-               fmt='(f7.2)'
+              case type of
+                 'maglc_fd': begin
+                    ss2 = circle_mask(img, sxpar(h,'CRPIX1'), sxpar(h,'CRPIX2'), 'GE', sxpar(h,'RADIUS') )
+                    if (ss2(0) ne -1) then img(ss2)=-3000
+                    dpc_str = string(sxpar(h, 'dpc'), format='(z8.8)')
+                    img = img*0.352*8. ;data is 8 m/sec
+                    smin = -250.
+                    smax = 250.
+                    axis1 = 'Gauss'
+                    fmt='(f7.2)'
 ;		outdir = getenv('MDI_GIF_DIR')+'/mag'
-               outdir = '~/Desktop/test'
-               tit = 'SOHO/MDI Magnetogram'
-               loadct = 0
-               img = bytscl(img,smin,smax,top=!d.n_colors-1)
-               hd = add_tag(hd,'FD_Magnetogram','DPC_OBSR')
-               error_report = error_report + 'DPC_OBSR tag inserted and value set by '+progname +'.'
-            end
-            'igram': begin
-               naxis=sxpar(h,'naxis1')
-               xyz=[sxpar(h,'crpix1'), sxpar(h,'crpix2'), sxpar(h,'radius')]
-               img=(img/10.)^2.
-               if (n_elements(ff_img) eq 0) then begin
-                  ff_img = rfits(ff_file)
-                  ff_img = rebin(ff_img, naxis, naxis)
-               end
-               img = img * ff_img
-               darklimb_correct, img, img3, limbxyr=xyz, lambda=6767
-               img = temporary(img3)
-               smin = 5000.
-               smax = 13000.
-               gamma=1.8	
+                    outdir = '~/Desktop/test'
+                    tit = 'SOHO/MDI Magnetogram'
+                    loadct = 0
+                    img = bytscl(img,smin,smax,top=!d.n_colors-1)
+                    hd = add_tag(hd,'FD_Magnetogram','DPC_OBSR')
+                    error_report = error_report + 'DPC_OBSR tag inserted and value set by '+progname +'.'
+                    measurement = info.details[0].measurement
+                 end
+                 'igram_fd': begin
+                    naxis=sxpar(h,'naxis1')
+                    xyz=[sxpar(h,'crpix1'), sxpar(h,'crpix2'), sxpar(h,'radius')]
+                    img=(img/10.)^2.
+                    if (n_elements(ff_img) eq 0) then begin
+                       ff_img = rfits(ff_file)
+                       ff_img = rebin(ff_img, naxis, naxis)
+                    end
+                    img = img * ff_img
+                    darklimb_correct, img, img3, limbxyr=xyz, lambda=6767
+                    img = temporary(img3)
+                    smin = 5000.
+                    smax = 13000.
+                    gamma=1.8	
                                 ;img(*,505:*) = 0	;mask out garbage at the top
-               axis1 = ''
-               fmt='(f7.1)'
+                    axis1 = ''
+                    fmt='(f7.1)'
 ;		outdir = getenv('MDI_GIF_DIR')+'/igram'
-               outdir = '~/Desktop/test'
-               tit = 'SOHO/MDI Continuum'
-               loadct = 3
-               img = bytscl(img,smin,smax,top=!d.n_colors-1)
-               hd = add_tag(hd,'FD_Magnetogram','DPC_OBSR')
-               error_report = error_report + 'DPC_OBSR tag inserted and value set by '+progname +'.'
-               
-            end
-         endcase
-         hd = add_tag(hd,error_report,'HV_ERROR_REPORT')
+                    outdir = '~/Desktop/test'
+                    tit = 'SOHO/MDI Continuum'
+                    loadct = 3
+                    img = bytscl(img,smin,smax,top=!d.n_colors-1)
+                    hd = add_tag(hd,'FD_Magnetogram','DPC_OBSR')
+                    error_report = error_report + 'DPC_OBSR tag inserted and value set by '+progname +'.'
+                    measurement = info.details[1].measurement
+                    
+                 end
+              endcase
+;
+; De-rotate if necessary
+;           
+              if (sxpar(h, 'CROT') eq 180) then begin
+                 img = rotate(img,2)
+                 hd = add_tag(hd,180.0,'hv_rotation')
+              endif else begin
+                 hd = add_tag(hd,0.0,'hv_rotation')
+              endelse
+;
+; Add in error report
+;
+              hd = add_tag(hd,error_report,'HV_ERROR_REPORT')
+;
+; Get the times
+;           
+              aaa = HV_PARSE_CCSDS(hd.date_obs)
+;
+; Get the outfile name
+;
+              zzz = strsplit(hd.outfil,path_sep(),/extract)
+;
+; Construct the HVS
+;
+              hvs = {dir:dir,$
+                     fitsname:zzz[n_elements(zzz)-1],$
+                     img:img,$
+                     header:hd,$
+                     measurement:measurement,$
+                     yy:aaa.yy, mm:aaa.mm, dd:aaa.dd, hh:aaa.hh, mmm:aaa.mmm, ss:aaa.ss, milli:aaa.milli,$
+                     details:info}
+;
+; Call the JP2 writing
+;
+              HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
+              if not(already_written) then begin
+                 log_comment = 'read ' + ff(ss(i)) + $
+                               ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
+                               ' ; at ' + systime(0)
+                 HV_LOG_WRITE,hvs,log_comment + ' ; wrote ' + jp2_filename
+              endif else begin
+                 jp2_filename = 'already_written'
+              endelse
+              output[i] = jp2_filename
+           endfor ; end of file loop
+;
+; Report time
+;
+           HV_REPORT_WRITE_TIME,progname,t0,n_elements(output)-1
+;
+; Copy to outgoing
+;
+           if keyword_set(copy2outgoing) then begin
+              HV_COPY2OUTGOING,output
+           endif
 
-	if (sxpar(h, 'CROT') eq 180) then begin
-	  img = rotate(img,2)
-	end
+        endif ; check for at least one file
+     endfor ; check for all types
+  endrep until 1 eq 0 ; infinite repeat
 
-        
-
-    end
-  end
-end
-
-;mk_gif_mag_index
 end

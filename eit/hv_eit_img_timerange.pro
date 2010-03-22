@@ -9,9 +9,6 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_writ
   if ffhr then b0 = rebin(b0,512,512)
 ;
   header = fitshead2struct(h)
-;  header = add_tag(header,observatory,'hv_observatory')
-;  header = add_tag(header,instrument,'hv_instrument')
-;  header = add_tag(header,detector,'hv_detector')
   header = add_tag(header,this_wave,'hv_measurement')
   header = add_tag(header, header.date_obs,'hv_date_obs')
   header = add_tag(header,-header.SC_ROLL,'hv_rotation')

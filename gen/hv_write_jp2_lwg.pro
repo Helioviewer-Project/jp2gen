@@ -82,7 +82,7 @@
 ;
 ;-
 
-PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,quiet=quiet,kdu_lib_location=kdu_lib_location,details = details,_extra = _extra
+PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,quiet=quiet,kdu_lib_location=kdu_lib_location,details = details,measurement = measurement,_extra = _extra
 ;
   progname = 'HV_WRITE_JP2_LWG'
 ;
@@ -151,7 +151,6 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
      observatory = details.observatory
      instrument = details.instrument
      detector = details.detector
-     measurement = header.hv_measurement
 ;
      observer = observatory + '_' + instrument + '_' + detector
      observation = observer + '_' + measurement

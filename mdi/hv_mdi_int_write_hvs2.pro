@@ -71,10 +71,10 @@ FUNCTION HV_MDI_INT_WRITE_HVS2,infile,rootdir,details = details
 ; change the header to a structure, and add HV tags
 ;
   hd = fitshead2struct(hd)
-  hd = add_tag(hd,observatory,'hv_observatory')
-  hd = add_tag(hd,instrument,'hv_instrument')
-  hd = add_tag(hd,detector,'hv_detector')
-  hd = add_tag(hd,measurement,'hv_measurement')
+;  hd = add_tag(hd,observatory,'hv_observatory')
+;  hd = add_tag(hd,instrument,'hv_instrument')
+;  hd = add_tag(hd,detector,'hv_detector')
+;  hd = add_tag(hd,measurement,'hv_measurement')
   hd = add_tag(hd,'wavelength','hv_measurement_type')
   hd = add_tag(hd,0.0,'hv_rotation')
   hd = add_tag(hd,progname,'hv_source_program')

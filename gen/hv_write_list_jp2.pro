@@ -18,11 +18,12 @@ PRO HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_
 ; if new, then write it and update the database for this day
 ;
   if NOT(already_written) then begin
-     storage = HV_STORAGE(nickname = hvs.details.nickname)
+     details = hvs.details
+     storage = HV_STORAGE(nickname = details.nickname)
      loc = HV_WRITE_LIST_JP2_MKDIR(hvs,storage.jp2_location)
      filename = HV_FILENAME_CONVENTION(hvs,/create)
      jp2_filename = loc + filename
-     HV_WRITE_JP2_LWG,jp2_filename,hvs.img,fitsheader = hvs.header,details = hvs.details
+     HV_WRITE_JP2_LWG,jp2_filename,hvs.img,fitsheader = hvs.header,details = details,measurement = hvs.measurement
      jp2_filename = loc + filename + '.jp2'
      HV_DB,hvs,/update
   endif else begin
