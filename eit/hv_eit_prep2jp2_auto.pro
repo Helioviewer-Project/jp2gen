@@ -34,7 +34,7 @@ PRO HV_EIT_PREP2JP2_AUTO,start = start, copy2outgoing = copy2outgoing
            date_start = start
         endif else begin
            date_start = utc
-        endif
+        endelse
      endif else begin
         date_start = utc
      endelse
