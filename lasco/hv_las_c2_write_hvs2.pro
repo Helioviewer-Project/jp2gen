@@ -149,6 +149,18 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
         log_comment = log_comment + ' : ' + err_report
      endif
 ;
+; Detect if this is a quicklook file
+;
+     if have_tag(details,'local_quicklook') then begin
+        qlyn = strpos(dir,details.local_quicklook)
+        if qlyn ne -1 then begin
+           hd = add_tag(hd,'TRUE','HV_QUICKLOOK')
+           print,progname + ': using quicklook data.'
+        endif
+     endif else begin
+        print,progname + ': no local quicklook tag detected in details structure.  Assuming data arises from non-quicklook FITS files.'
+     endelse
+;
 ; HVS file
 ;
      hvs = {dir:dir,fitsname:hd.filename,img:image_new, header:hd,details:details,$

@@ -166,12 +166,23 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;
 ; Write the jp2
 ;
-
      log_comment = progname + '; source ; ' +hd.filename + ' ; ' + HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
      if total(err_hd gt 0) then begin
         hd = add_tag(hd,'Warning ' + err_report,'hv_error_report')
         log_comment = log_comment + ' : ' + err_report
      endif 
+;
+; Detect if this is a quicklook file
+;
+     if have_tag(details,'local_quicklook') then begin
+        qlyn = strpos(dir,details.local_quicklook)
+        if qlyn ne -1 then begin
+           hd = add_tag(hd,'TRUE','HV_QUICKLOOK')
+           print,progname + ': using quicklook data.'
+        endif
+     endif else begin
+        print,progname + ': no local quicklook tag detected in details structure.  Assuming data arises from non-quicklook FITS files.'
+     endelse
 ;
 ; HVS file
 ;

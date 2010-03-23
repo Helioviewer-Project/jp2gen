@@ -165,6 +165,10 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
 ;
               hd = add_tag(hd,error_report,'HV_ERROR_REPORT')
 ;
+; Add in a notfication that this is based on quicklook data
+;
+              hd = add_tag(hd,'TRUE','HV_QUICKLOOK')
+;
 ; Get the times
 ;           
               aaa = HV_PARSE_CCSDS(hd.date_obs)

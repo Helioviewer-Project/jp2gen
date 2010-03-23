@@ -217,7 +217,11 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
 ;
 ; Calculate the LASCO directory
 ;
-           lascodir = ''
+           if (strmid(this_filename,0,1) eq path_sep()) then begin
+              lascodir = path_sep()
+           endif else begin
+              lascodir = ''
+           endelse
            zzz = strsplit(this_filename,path_sep(),/extract)
            for iii = 0, n_elements(zzz)-2 do begin
               lascodir = lascodir + zzz[iii]+ '/'

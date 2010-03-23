@@ -27,7 +27,7 @@ PRO HV_COPY2OUTGOING,files,search = search
   if (files(0) eq '-1' and n eq 1) then begin
      print,progname + ': No files to be moved.'
   endif else begin
-     if files[0] eq '-1' then offset = long[1] else offset = long(0)
+     if files[0] eq '-1' then offset = long(1) else offset = long(0)
      for i = offset,n- long(1) do begin 
         if files[i] ne 'already_written' then begin
            z = STRSPLIT(files[i],path_sep(),/extract)
