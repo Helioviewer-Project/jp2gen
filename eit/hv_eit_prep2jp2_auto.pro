@@ -19,6 +19,7 @@
 ;
 PRO HV_EIT_PREP2JP2_AUTO,start = start, copy2outgoing = copy2outgoing
   progname = 'hv_eit_prep2jp2_auto' ; the program name
+  wait = 15*60.0
 ;
 ;
 ;
@@ -49,10 +50,8 @@ PRO HV_EIT_PREP2JP2_AUTO,start = start, copy2outgoing = copy2outgoing
 ; Wait 15 minutes before looking for more data
 ;
      count = count + long(1)
-     print,progname + ': started at '+timestart
-     print,progname + ': completed repeat number '+trim(count)
-     print,progname + ': Fixed wait time of 15 minutes now progressing.'
-     wait,60*15.0
+     HV_REPEAT_MESSAGE,progname,count,timestart,wait = wait
+     wait,wait
 
   endrep until 1 eq 0
 

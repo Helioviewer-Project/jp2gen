@@ -51,9 +51,8 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
 ;
 ; start the infinite loop
 ;
+  count = 0
   repeat begin
-
-
      t0 = systime(1)
      sttim = anytim2ints(ut_time(), offset=-2*86400)
      entim = ut_time()
@@ -84,11 +83,11 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
         timarr = anytim2ints(fid2ex( strmid(file, 16, 11)))
         ss = sel_timrange(timarr, sttim, entim, /between)
         if (ss(0) ne -1) then begin
+           output = strarr(n_elements(ss))
            for i=0,n_elements(ss)-1 do begin
 ;
 ; keep the file names
 ;
-              output = strarr(1 +n_elements(ss))
               error_report = ''
               infil = ff(ss(i))
               break_file, infil, dsk_log, dir00, filnam
@@ -199,7 +198,7 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
 ;
 ; Report time
 ;
-           HV_REPORT_WRITE_TIME,progname,t0,n_elements(output)-1
+           HV_REPORT_WRITE_TIME,progname,t0,n_elements(output)
 ;
 ; Copy to outgoing
 ;
@@ -209,6 +208,11 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
 
         endif ; check for at least one file
      endfor ; check for all types
+;
+; Wait for 15 minutes
+;
+     count = count + 1
+     wait,15*60
   endrep until 1 eq 0 ; infinite repeat
 
 end
