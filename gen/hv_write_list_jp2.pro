@@ -10,6 +10,7 @@
 ;
 ;-
 PRO HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_written
+  progname = 'hv_write_list_jp2'
 ;
 ; Check if we have already written this JP2 file
 ;
@@ -27,7 +28,7 @@ PRO HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_
      jp2_filename = loc + filename + '.jp2'
      HV_DB,hvs,/update
   endif else begin
-     print,'JP2 file was already written, so no new one was written'
+     print,progname + ': JP2 file was already written, so no new one was written'
   endelse
   return
 END

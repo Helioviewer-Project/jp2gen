@@ -51,6 +51,7 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
 ;
 ; start the infinite loop
 ;
+  timestart = systime(0)
   count = 0
   repeat begin
      t0 = systime(1)
@@ -120,7 +121,7 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
                     img = bytscl(img,smin,smax,top=!d.n_colors-1)
                     hd = add_tag(hd,'FD_Magnetogram','DPC_OBSR')
                     error_report = error_report + 'DPC_OBSR tag inserted and value set by '+progname +'.'
-                    measurement = info.details[0].measurement
+                    measurement = info.details[1].measurement
                  end
                  'igram_fd': begin
                     naxis=sxpar(h,'naxis1')
@@ -144,9 +145,9 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
                     tit = 'SOHO/MDI Continuum'
                     loadct = 3
                     img = bytscl(img,smin,smax,top=!d.n_colors-1)
-                    hd = add_tag(hd,'FD_Magnetogram','DPC_OBSR')
+                    hd = add_tag(hd,'FD_Continuum','DPC_OBSR')
                     error_report = error_report + 'DPC_OBSR tag inserted and value set by '+progname +'.'
-                    measurement = info.details[1].measurement
+                    measurement = info.details[0].measurement
                     
                  end
               endcase
@@ -212,7 +213,8 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
 ; Wait for 15 minutes
 ;
      count = count + 1
-     wait,15*60
+     HV_REPEAT_MESSAGE,progname,count,timestart
+     HV_WAIT,progname,15,/minutes
   endrep until 1 eq 0 ; infinite repeat
 
 end

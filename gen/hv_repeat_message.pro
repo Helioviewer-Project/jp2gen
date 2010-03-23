@@ -1,10 +1,13 @@
-PRO HV_REPEAT_MESSAGE, progname,n,t,wait=wait
+PRO HV_REPEAT_MESSAGE, progname,n,t, more = more
 ;
-; Wait 15 minutes before looking for more data
+; Standard repeat message
 ;
   print,progname + ': started at '+ t
   print,progname + ': completed repeat number '+trim(n)
-  if keyword_set(wait) then begin
-     print,progname + ': Fixed wait time of '+trim(wait)+' seconds now progressing.'
+  print,progname + ': most recent repeat finished at ' + systime(0)
+  if keyword_set(more) then begin
+     print,progname + ': ' + more
   endif
+  return
+end
 
