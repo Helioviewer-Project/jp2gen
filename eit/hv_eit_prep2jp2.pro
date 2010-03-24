@@ -7,6 +7,7 @@
 ;
 ; sudo /sbin/mount 129.165.40.191:/Volumes/eit /Users/ireland/SOHO/EIT
 ; from a X11 term
+; sudo mount 129.165.40.191:/Volumes/eit /home/ireland/soho/eit
 ;
 ; USER - set the start date and end date of the range of EIT data you
 ;        are interested in.  The program will then create JP2 files in

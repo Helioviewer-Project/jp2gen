@@ -1,16 +1,44 @@
 ;
+; Details on how to transfer data from the production machine to the
+; server
+;
+; As of 2010/03/24 the commands used are
+;
+; chown -R <local.group>:<remote.group> <filename>
+; rsync -Ravxz --exclude "*.DS_Store" <filename> -e ssh -l
+; <remote.user> @ <remote.machine> : <remote.incoming>
+;
+; Note that
+;
+; (1) local and remote computers MUST have the same group with the
+; SAME group IDs and group names
+; (2) the owner of the JP2 files MUST be member of that group on both
+; the LOCAL machine and the REMOTE machine
+;
+; Linux gotcha: Ubuntu 9.10 (2010/03/24) requires that the JP2
+; creation machine be RESTARTED before the group assignment for a user
+; is recognized by the system.  For example, if you attempt to put
+; a user into a group, then the change only "sticks" after a restart.
+; This is important for the current application as you want the
+; username on both the local and remote machines to be in the same groups.
+;
+;
+;
 ; Program to transfer files from the outgoing directory to a remote
 ; location.  The program first forms a list of the subdirectories and
 ; files, moves those files to the remote location, and then deletes
 ; those files from the outgoing directory.
 ;
 ;
-PRO HV_JP2_TRANSFER,nickname,transfer_details = transfer_details
+PRO HV_JP2_TRANSFER,nickname,details_file = details_file
   progname = 'hv_jp2_transfer'
 ;
+  if NOT(KEYWORD_SET(details_file)) THEN details_file = 'hvs_gen'
+; 
+  info = CALL_FUNCTION(details_file)
   if NOT(KEYWORD_SET(transfer_details)) THEN BEGIN
 ;     transfer_details = ' -e ssh -l ireland@delphi.nascom.nasa.gov:/var/www/jp2/v0.8/inc/test_transfer/'
-     transfer_details = ' -e ssh -l ireland@helioviewer.nascom.nasa.gov:/home/ireland/incoming_auto/v0.8/'
+     transfer_details = ' -e ssh -l ireland@helioviewer.nascom.nasa.gov:/home/ireland/incoming2/v0.8/'
   endif 
 ;
   storage = HV_STORAGE(nickname = nickname)
@@ -38,6 +66,8 @@ PRO HV_JP2_TRANSFER,nickname,transfer_details = transfer_details
 ; Open connection to the remote machine and start transferring
 ;
      for i = long(0), n-long(1) do begin
+;        file_chmod,b[i],/g_execute,/g_read,/g_write
+        spawn,'chown -R ireland:helioviewer ' + b[i]
         spawn,'rsync -Ravxz --exclude "*.DS_Store" ' + $
               b[i] + ' ' + $
               transfer_details
@@ -68,7 +98,7 @@ PRO HV_JP2_TRANSFER,nickname,transfer_details = transfer_details
      for i = nsep_max,nsep_max-4,-1 do begin
         z = where(nsep eq i)
         for j = 0,n_elements(z)-1 do begin
-           finfo = file_info(d[z[i]])
+           finfo = file_info(d[z[j]])
 
         endfor
      endfor
