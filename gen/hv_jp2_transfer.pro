@@ -53,7 +53,25 @@ PRO HV_JP2_TRANSFER,nickname,transfer_details = transfer_details
         spawn,'rm -f ' + b[i]
      endfor
      cd,old_dir
+;
+; Cleanup old directories that have been untouched for a long time
+;
+     d = find_all_dir(sdir)
+;
+; Reorder the returned directories to get the deepest ones first
+;
+     nsep = intarr(n_elements(d))
+     for i = 0,n_elements(d)-1 do begin
+        nsep[i] = n_elements(str_index(d[i],path_sep()))
+     endfor
+     nsep_max = max(nsep)
+     for i = nsep_max,nsep_max-4,-1 do begin
+        z = where(nsep eq i)
+        for j = 0,n_elements(z)-1 do begin
+           finfo = file_info(d[z[i]])
 
+        endfor
+     endfor
   endelse
 
   return
