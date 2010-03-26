@@ -17,7 +17,25 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details
                            copy2outgoing = copy2outgoing
   progname = 'HV_LASCO_PREP2JP2_AUTO'
 ;
+;
+; use the default LASCO file is no other one is specified
+;
+  if not(KEYWORD_SET(details_file)) then begin
+     if keyword_set(c2) then begin
+        details_file = 'hvs_default_lasco_c2'
+        progname = progname + '(C2)'
+     endif
+     if keyword_set(c3) then begin
+        details_file = 'hvs_default_lasco_c3'
+        progname = progname + '(C3)'
+     endif
+  endif
+;
+  info = CALL_FUNCTION(details_file)
+  nickname = info.nickname
+
   IF keyword_set(alternate_backgrounds) then begin
+     alternate_backgrounds = info.alternate_backgrounds
      progname = progname + '(used alternate backgrounds from ' + alternate_backgrounds + ')'
      setenv,'MONTHLY_IMAGES=' + alternate_backgrounds
   endif    
@@ -59,7 +77,7 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details
 ; Wait 15 minutes before looking for more data
 ;
      count = count + 1
-     HV_REPEAT_MESSAGE,progname,count,timestart, more = 'examined ' + ds + ' to ' + de + '.'
+     HV_REPEAT_MESSAGE,progname,count,timestart, more = 'examined ' + ds + ' to ' + de + '.',/web
      HV_WAIT,progname,30,/minutes
 
   endrep until 1 eq 0

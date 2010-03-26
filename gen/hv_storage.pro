@@ -32,6 +32,11 @@ FUNCTION HV_STORAGE,nickname = nickname, no_db = no_db, no_log = no_log, no_jp2 
   outgoing = hv_write + 'outgoing' + path_sep()
   if not(is_dir(outgoing)) then spawn,'mkdir -p '+ outgoing
 ;
+; Web - notices from JP2Gen that are made available via the web.
+;
+  web = hv_write + 'web' + path_sep()
+  if not(is_dir(web)) then spawn,'mkdir -p '+ web
+;
 ; Update the root for the version number and device nickname
 ;
   hvr = hv_write + 'v' + trim((HV_WRITTENBY()).source.jp2gen_version) + path_sep()
