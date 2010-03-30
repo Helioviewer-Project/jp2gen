@@ -14,8 +14,11 @@ PRO HV_WEBPAGE,cadence,details_file = details_file,search = search
 ;
   storage = HV_STORAGE()
   web = info.web
+  wrt = HV_WRITTENBY()
 ;
   br = '<BR>'
+  ii = '<i>'
+  iii = '</i>'
 ;
   filename = 'jp2gen_monitor.html'
 ;
@@ -30,11 +33,16 @@ PRO HV_WEBPAGE,cadence,details_file = details_file,search = search
   header[6] = '<body>'
   header[7] = '<h1 align="center">' + title +'</h1>' + br + br
 ;
-  footer = strarr(4)
-  footer[0] = '<i>File created by '+progname +' at ' + systime(0) + '</i>'+br
-  footer[1] = '<i>JP2Gen is part of the ESA/NASA Helioviewer Project</i>'
-  footer[2] = '</body>'
-  footer[3] = '</html>'
+  footer = strarr(1)
+  footer[0] = '<HR>'
+  footer = [footer,ii+'This file written at ' + wrt.local.institute + '. Contact ' + wrt.local.contact + '.' + iii + br]
+  footer = [footer,ii+wrt.source.contact+iii+br]
+  footer = [footer,ii+'All available source code for the Helioviewer Project hosted at ' + wrt.source.all_code+iii+br]
+  footer = [footer,ii+'JP2Gen source code hosted at ' + wrt.source.jp2gen_code+iii+br]
+  footer = [footer,ii+'Written by JP2Gen version ' + trim(wrt.source.jp2gen_version)+iii+br]
+  footer = [footer,ii+'Branch revision '+ trim(wrt.source.jp2gen_branch_revision)+iii+br] 
+  footer = [footer,'</body>']
+  footer = [footer,'</html>']
 ;
 ;
 ;
@@ -44,6 +52,7 @@ PRO HV_WEBPAGE,cadence,details_file = details_file,search = search
 ;
 ; Start the file
 ;
+     footer[0] = ii+'File created by '+progname +' at ' + systime(0) +iii+br
      text = strarr(1)
      HV_WRT_ASCII,header,web + filename
 ;
@@ -57,7 +66,7 @@ PRO HV_WEBPAGE,cadence,details_file = details_file,search = search
         text[0]= 'No files found with search term "'+ search + '"'
      endif else begin
         n = long(n_elements(a))
-        text[0] = '<I>Number of notifications found with search term "' + search + '"= ' + trim(n) +'</i>' + br + br + br
+        text[0] = ii+'Number of notifications found with search term "' + search + '"= ' + trim(n) + iii + br + br + br
         for i = 0, n-1 do begin
            text = [text,'<B>Notification # ' + trim(i+1)+'</B>']
            text = [text,readlist(a[i])]

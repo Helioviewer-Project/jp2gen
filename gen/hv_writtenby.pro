@@ -11,7 +11,7 @@ FUNCTION HV_WRITTENBY
                  contact:'Helioviewer Project (webmaster@helioviewer.org)',$
                  kdu_lib_location:'~/KDU/Kakadu/v6_1_1-00781N/bin/Mac-x86-64-gcc/'},$
           source:{institute:'NASA-GSFC',$
-                  contact:'Part of the Helioviewer Project as funded by ESA and NASA.  Contact the Helioviewer Project at webmaster@helioviewer.org',$
+                  contact:'Part of the ESA/NASA Helioviewer Project.  Contact the Helioviewer Project at webmaster@helioviewer.org',$
                   all_code:'https://launchpad.net/helioviewer',$
                   jp2gen_code:'https://launchpad.net/jp2gen',$
                   jp2gen_version:0.8,$

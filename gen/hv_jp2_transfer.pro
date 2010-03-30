@@ -111,12 +111,12 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
      z = where(nsep eq i)
      for j = 0,n_elements(z)-1 do begin
         diff = now - mr[z[j]]
-        print, trim(i) + ' '+ d[z[j]] + ' ' +trim(diff) + ' seconds.'
+
         if (diff ge (2.0*month)) then begin
+           print, progname + ': removing '+ d[z[j]] + '(' +trim(diff) + ' seconds).'
            spawn,'rmdir ' + d[z[j]]
         endif
      endfor
   endfor
-  stop
   return
 end
