@@ -84,26 +84,39 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
         spawn,'rm -f ' + b[i]
      endfor
      cd,old_dir
+
+  endelse
 ;
 ; Cleanup old directories that have been untouched for a long time
 ;
-     d = find_all_dir(sdir)
+  d = find_all_dir(sdir) ; get all the subdirectories
 ;
-; Reorder the returned directories to get the deepest ones first
+; get the creation time and depth if each sub-directory
 ;
-     nsep = intarr(n_elements(d))
-     for i = 0,n_elements(d)-1 do begin
-        nsep[i] = n_elements(str_index(d[i],path_sep()))
+  day = 60.0*60.0*24.0 ; day in seconds
+  month = day*28.0
+  now = systime(1)
+  nsep = intarr(n_elements(d))
+  mr = fltarr(n_elements(d))
+  for i = 0,n_elements(d)-1 do begin
+     nsep[i] = n_elements(str_index(d[i],path_sep()))
+     mr[i] = (file_info(d[i])).mtime
+  endfor
+;
+; Go through the directories, from deepest first and calculate how old
+; they are.  Remove them if they are more than two months old.
+;
+  nsep_max = max(nsep)
+  for i = nsep_max,nsep_max-2,-1 do begin
+     z = where(nsep eq i)
+     for j = 0,n_elements(z)-1 do begin
+        diff = now - mr[z[j]]
+        print, trim(i) + ' '+ d[z[j]] + ' ' +trim(diff) + ' seconds.'
+        if (diff ge (2.0*month)) then begin
+           spawn,'rmdir ' + d[z[j]]
+        endif
      endfor
-     nsep_max = max(nsep)
-     for i = nsep_max,nsep_max-4,-1 do begin
-        z = where(nsep eq i)
-        for j = 0,n_elements(z)-1 do begin
-           finfo = file_info(d[z[j]])
-
-        endfor
-     endfor
-  endelse
-
+  endfor
+  stop
   return
 end
