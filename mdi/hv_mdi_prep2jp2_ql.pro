@@ -217,8 +217,8 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
 ; Wait for 15 minutes
 ;
      count = count + 1
-     HV_REPEAT_MESSAGE,progname,count,timestart
-     HV_WAIT,progname,15,/minutes
+     HV_REPEAT_MESSAGE,progname,count,timestart,/web
+     HV_WAIT,progname,15,/minutes,/web
   endrep until 1 eq 0 ; infinite repeat
 
 end

@@ -30,7 +30,7 @@
 ; those files from the outgoing directory.
 ;
 ;
-PRO HV_JP2_TRANSFER,nickname,details_file = details_file
+PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
   progname = 'hv_jp2_transfer'
 ;
   if NOT(KEYWORD_SET(details_file)) THEN details_file = 'hvs_gen'
@@ -41,7 +41,7 @@ PRO HV_JP2_TRANSFER,nickname,details_file = details_file
      transfer_details = ' -e ssh -l ireland@helioviewer.nascom.nasa.gov:/home/ireland/incoming2/v0.8/'
   endif 
 ;
-  storage = HV_STORAGE(nickname = nickname)
+  storage = HV_STORAGE()
 ;
 ; Get a list of the JP2 files and their subdirectories in the outgoing directory
 ;
@@ -52,6 +52,7 @@ PRO HV_JP2_TRANSFER,nickname,details_file = details_file
      note = 'No files to transfer'
      print, note
      HV_LOG_WRITE,'transfer_log',note,/transfer
+     n= 0
   endif else begin
      n = long(n_elements(a))
      b = a

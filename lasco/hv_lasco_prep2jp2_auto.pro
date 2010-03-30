@@ -36,7 +36,7 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details
 
   IF keyword_set(alternate_backgrounds) then begin
      alternate_backgrounds = info.alternate_backgrounds
-     progname = progname + '(used alternate backgrounds from ' + alternate_backgrounds + ')'
+     progname = progname + '(used alternate backgrounds)'
      setenv,'MONTHLY_IMAGES=' + alternate_backgrounds
   endif    
 ;
@@ -77,8 +77,8 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details
 ; Wait 15 minutes before looking for more data
 ;
      count = count + 1
-     HV_REPEAT_MESSAGE,progname,count,timestart, more = 'examined ' + ds + ' to ' + de + '.',/web
-     HV_WAIT,progname,30,/minutes
+     HV_REPEAT_MESSAGE,progname,count,timestart, more = ['examined ' + ds + ' to ' + de + '.'],/web
+     HV_WAIT,progname,30,/minutes,/web
 
   endrep until 1 eq 0
 

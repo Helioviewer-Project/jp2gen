@@ -50,8 +50,8 @@ PRO HV_EIT_PREP2JP2_AUTO,start = start, copy2outgoing = copy2outgoing
 ; Wait 15 minutes before looking for more data
 ;
      count = count + long(1)
-     HV_REPEAT_MESSAGE,progname,count,timestart, more = 'examined ' + date_start + ' to ' + date_end + '.'
-     HV_WAIT,progname,15.0,/minutes
+     HV_REPEAT_MESSAGE,progname,count,timestart, more = ['examined ' + date_start + ' to ' + date_end],/web
+     HV_WAIT,progname,15.0,/minutes,/web
 
   endrep until 1 eq 0
 

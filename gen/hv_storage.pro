@@ -50,7 +50,7 @@ FUNCTION HV_STORAGE,nickname = nickname, no_db = no_db, no_log = no_log, no_jp2 
 ;
 ;
 ;
-  if (not(is_number(nickname))) or (strlowcase(trim(nickname)) ne 'dummy') then begin
+  if keyword_set(nickname) then begin
 ;
 ; JP2 files for a given nickname
 ;
@@ -78,10 +78,11 @@ FUNCTION HV_STORAGE,nickname = nickname, no_db = no_db, no_log = no_log, no_jp2 
            spawn,'mkdir -p '+ db_location
         endif
      endif
-
+     
      return,{hv_root:hv_root,$
              hv_write:hv_write,$
              outgoing:outgoing,$
+             web:web,$
              hvr:hvr,$
              hvr_jp2:hvr_jp2,$
              jp2_location:jp2_location,$
@@ -93,6 +94,7 @@ FUNCTION HV_STORAGE,nickname = nickname, no_db = no_db, no_log = no_log, no_jp2 
      return,{hv_root:hv_root,$
              hv_write:hv_write,$
              outgoing:outgoing,$
+             web:web,$
              hvr:hvr,$
              hvr_jp2:hvr_jp2,$
              NotGiven:'NotGiven'}

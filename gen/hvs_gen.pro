@@ -32,7 +32,7 @@ FUNCTION HVS_GEN
               remote:{user:'ireland',$
                       machine:'helioviewer.nascom.nasa.gov',$
                       incoming:'/home/ireland/incoming2/',$
-                      group:'helioviewer'}
+                      group:'helioviewer'}}
 
 ;
 ; Set up default values for JP2 compression
@@ -47,7 +47,8 @@ FUNCTION HVS_GEN
        observatory:'NotGiven',$
        instrument:'NotGiven',$
        detector:'NotGiven',$
-       transfer:transfer}
+       transfer:transfer,$
+       web:'~/Desktop/'}
 ;
 ; Default values for compression
 ;
