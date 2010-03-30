@@ -2,7 +2,7 @@
 ; Copy a set of given list of files to the outgoing directory
 ;
 ;
-PRO HV_COPY2OUTGOING,files,search = search
+PRO HV_COPY2OUTGOING,files,search = search,delete_original = delete_original
   progname = 'hv_copy2outgoing'
 ;
 ; get the outgoing directory for this nickname
@@ -43,8 +43,13 @@ PRO HV_COPY2OUTGOING,files,search = search
 ;
            cd,storage.hvr_jp2,current = old_dir
            spawn,'cp --parents ' + s + ' ' + outgoing_root
-           cd,old_dir
            print,progname + ': transferred ' + files[i] + ' to ' + outgoing_root
+           if keyword_set(delete_original) then begin
+              spawn,'rm ' + s
+              print,progname + ': deleted original file ' + files[i]
+           endif
+           cd,old_dir
+
         endif
      endfor
 
