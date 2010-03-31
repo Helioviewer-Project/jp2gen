@@ -14,7 +14,7 @@
 ;        the correct directory structure for use with the Helioviewer
 ;        project.
 ;
-PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file, copy2outgoing = copy2outgoing,output = output,called_by = called_by, prepped = prepped
+PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file, copy2outgoing = copy2outgoing,output = output,called_by = called_by, prepped = prepped,report = report
 ;
 ; Program name
 ;
@@ -24,6 +24,10 @@ PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file, copy2outgoing = copy2outg
 ;
   if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_eit'
   info = CALL_FUNCTION(details_file)
+;
+; Get general JP2Gen information
+;
+ginfo = CALL_FUNCTION('hvs_gen')
 ;
 ; If called_by information is given, pass it along.  Otherwise, just
 ; use this program name
@@ -64,10 +68,12 @@ PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file, copy2outgoing = copy2outg
 ;
   output = HV_EIT_WRITE(date_start,date_end,storage.jp2_location,info)
   prepped = output.hv_count
+  nawind = where(prepped eq ginfo.already_written,naw)
+  nnew = n_elements(prepped)- naw
 ;
 ; Report time taken
 ;
-  HV_REPORT_WRITE_TIME,progname,t0,n_elements(prepped)-1
+  HV_REPORT_WRITE_TIME,progname,t0,nnew,report = report
 ;
 ; Copy the new files to the outgoing directory
 ;

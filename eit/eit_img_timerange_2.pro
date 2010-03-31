@@ -151,7 +151,11 @@ END
 ;-
 
 PRO eit_img_timerange_2,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,hv_write = hv_write, hv_count = hv_count, hv_details = hv_details ; *** HV ***
-hv_count = ['-1'] ; *** HV ***
+;
+; Get general JP2Gen information
+;
+ginfo = CALL_FUNCTION('hvs_gen')
+hv_count = [ginfo.already_written] ; *** HV ***
 IF KEYWORD_SET(help) THEN BEGIN
    print,'This is eit_img_timerange.pro.'
 ; DM, 2010-01-25: copy calling sequence of eit_img_timerange here once
