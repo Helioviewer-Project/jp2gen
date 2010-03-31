@@ -48,7 +48,8 @@ FUNCTION HVS_GEN
        instrument:'NotGiven',$
        detector:'NotGiven',$
        transfer:transfer,$
-       web:'~/Desktop/'}
+       web:'~/Desktop/',$
+       already_written:'already_written'}
 ;
 ; Default values for compression
 ;

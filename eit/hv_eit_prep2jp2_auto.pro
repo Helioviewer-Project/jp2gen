@@ -45,12 +45,15 @@ PRO HV_EIT_PREP2JP2_AUTO,start = start, copy2outgoing = copy2outgoing
 ;
 ; Prep the data automagically.
 ;
-     HV_EIT_PREP2JP2,date_start,date_end, copy2outgoing = copy2outgoing, called_by = progname
+     HV_EIT_PREP2JP2,date_start,date_end, copy2outgoing = copy2outgoing, called_by = progname,prepped = prepped
 ;
 ; Wait 15 minutes before looking for more data
 ;
      count = count + long(1)
-     HV_REPEAT_MESSAGE,progname,count,timestart, more = ['examined ' + date_start + ' to ' + date_end],/web
+     HV_REPEAT_MESSAGE,progname,count,timestart, $
+                       more = ['examined ' + date_start + ' to ' + date_end,$
+                               'number of files written = '+trim(n_elements(prepped)-1)],$
+                       /web
      HV_WAIT,progname,15.0,/minutes,/web
 
   endrep until 1 eq 0

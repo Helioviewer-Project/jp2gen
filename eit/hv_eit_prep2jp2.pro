@@ -14,7 +14,7 @@
 ;        the correct directory structure for use with the Helioviewer
 ;        project.
 ;
-PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file, copy2outgoing = copy2outgoing,output = output,called_by = called_by
+PRO HV_EIT_PREP2JP2,ds,de,details_file = details_file, copy2outgoing = copy2outgoing,output = output,called_by = called_by, prepped = prepped
 ;
 ; Program name
 ;

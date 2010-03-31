@@ -62,11 +62,11 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details
      print,progname + ': Processing... ' + ds + ' to ' + de
 
      if keyword_set(c2) then begin
-        HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds
+        HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds,report=report
      endif
 
      if keyword_set(c3) then begin
-        HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds
+        HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds,report=report
      endif
 
      if NOT(keyword_set(c2)) and NOT(keyword_set(c3)) then begin
@@ -77,7 +77,7 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details
 ; Wait 15 minutes before looking for more data
 ;
      count = count + 1
-     HV_REPEAT_MESSAGE,progname,count,timestart, more = ['examined ' + ds + ' to ' + de + '.'],/web
+     HV_REPEAT_MESSAGE,progname,count,timestart, more = ['examined ' + ds + ' to ' + de + '.',report],/web
      HV_WAIT,progname,30,/minutes,/web
 
   endrep until 1 eq 0

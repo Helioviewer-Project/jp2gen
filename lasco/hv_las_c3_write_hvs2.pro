@@ -12,6 +12,10 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;
   observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
 ;
+; get general information
+;
+  ginfo = CALL_FUNCTION('hvs_gen')
+;
 ; Get further image processing details
 ;
   gamma_correction = details.gamma_correction
@@ -193,7 +197,7 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
      if not(already_written) then begin
         HV_LOG_WRITE,hvs,log_comment + ' : wrote ' + jp2_filename
      endif else begin
-        jp2_filename = 'already_written'
+        jp2_filename = ginfo.already_written
      endelse
   endif else begin
      print,'ld was not a structure.  something funny with this LASCO C2 fits file'

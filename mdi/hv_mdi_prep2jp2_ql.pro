@@ -49,6 +49,10 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
   info = CALL_FUNCTION(details_file)
   nickname = info.nickname
 ;
+; get general information
+;
+  ginfo = CALL_FUNCTION('hvs_gen')
+;
 ; start the infinite loop
 ;
   timestart = systime(0)
@@ -196,14 +200,16 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
                                ' ; at ' + systime(0)
                  HV_LOG_WRITE,hvs,log_comment + ' ; wrote ' + jp2_filename
               endif else begin
-                 jp2_filename = 'already_written'
+                 jp2_filename = ginfo.already_written
               endelse
               output[i] = jp2_filename
            endfor ; end of file loop
+           nawind = where(output eq ginfo.already_written,naw)
+           nnew = n_elements(output)- naw
 ;
 ; Report time
 ;
-           HV_REPORT_WRITE_TIME,progname,t0,n_elements(output)
+           HV_REPORT_WRITE_TIME,progname,t0,nnew,report=report
 ;
 ; Copy to outgoing
 ;
@@ -217,7 +223,7 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
 ; Wait for 15 minutes
 ;
      count = count + 1
-     HV_REPEAT_MESSAGE,progname,count,timestart,/web
+     HV_REPEAT_MESSAGE,progname,count,timestart,/web,more = report
      HV_WAIT,progname,15,/minutes,/web
   endrep until 1 eq 0 ; infinite repeat
 

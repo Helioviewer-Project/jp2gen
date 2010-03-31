@@ -13,7 +13,7 @@
 ;        create JP2 files in the correct directory structure for use
 ;        with the Helioviewer project.
 
-PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by, copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds
+PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by, copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds,prepped = prepped,report=report
   progname = 'HV_LASCO_C2_PREP2JP2'
 ;
   date_start = ds + 'T00:00:00'
@@ -29,9 +29,12 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
 ; use the default LASCO-C2 file is no other one is specified
 ;
   if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_lasco_c2'
-;
   info = CALL_FUNCTION(details_file)
   nickname = info.nickname
+;
+; get general information
+;
+  ginfo = CALL_FUNCTION('hvs_gen')
 ;
 ; If called_by information is given, pass it along.  Otherwise, just
 ; use this program name
@@ -47,6 +50,8 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
   list = HV_LASCO_GET_FILENAMES(date_start,date_end,nickname,info)
   if (list[0] eq '-1') then begin
      print,'No files to process: returning'
+     prepped = strarr(0)
+     prepped[0] = '-1'
   endif else begin
 ;
 ; Setup some defaults - usually there is NO user contribution below here
@@ -64,10 +69,12 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
      prev = fltarr(1024,1024)
      output = HV_LAS_WRITE_HVS3(list,storage.jp2_location,nickname,date_start,date_end,/bf_process,details = info)
      prepped = output.hv_count
+     nawind = where(prepped eq ginfo.already_written,naw)
+     nnew = n_elements(prepped)- naw
 ;
 ; Report time taken
 ;
-     HV_REPORT_WRITE_TIME,progname,t0,n_elements(prepped)-1
+     HV_REPORT_WRITE_TIME,progname,t0,nnew,report=report
 ;
 ; Copy2outgoing
 ;
