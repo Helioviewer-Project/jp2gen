@@ -5,16 +5,13 @@
 ; and the location of the Kakadu library
 ;
 FUNCTION HV_WRITTENBY
-  loc = getenv("HV_JP2GEN")
-  bzr_revno = HV_BZR_REVNO_HANDLER(loc)
   return,{local:{institute:'NASA-GSFC',$
                  contact:'Helioviewer Project (webmaster@helioviewer.org)',$
                  kdu_lib_location:'~/KDU/Kakadu/v6_1_1-00781N/bin/Mac-x86-64-gcc/'},$
-          source:{institute:'NASA-GSFC',$
-                  contact:'Part of the ESA/NASA Helioviewer Project.  Contact the Helioviewer Project at webmaster@helioviewer.org',$
-                  all_code:'https://launchpad.net/helioviewer',$
-                  jp2gen_code:'https://launchpad.net/jp2gen',$
-                  jp2gen_version:0.8,$
-                  jp2gen_branch_revision:bzr_revno}}
-
+          transfer:{local:{group:'ireland'},$
+                    remote:{user:'ireland',$
+                            machine:'helioviewer.nascom.nasa.gov',$
+                            incoming:'/home/ireland/incoming2/',$
+                            group:'helioviewer'}}}
 END
+

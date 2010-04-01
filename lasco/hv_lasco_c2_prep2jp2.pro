@@ -49,8 +49,9 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
 ;
   list = HV_LASCO_GET_FILENAMES(date_start,date_end,nickname,info)
   if (list[0] eq '-1') then begin
-     print,'No files to process: returning'
-     prepped = strarr(0)
+     report = ['No files to process']
+     print,report[0]
+     prepped = strarr(1)
      prepped[0] = '-1'
   endif else begin
 ;

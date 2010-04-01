@@ -28,12 +28,19 @@ FUNCTION HVS_GEN
 ; username on both the local and remote machines to be in the same groups.
 ;
 ;
-  transfer = {local:{group:'ireland'},$
-              remote:{user:'ireland',$
-                      machine:'helioviewer.nascom.nasa.gov',$
-                      incoming:'/home/ireland/incoming2/',$
-                      group:'helioviewer'}}
-
+; Everything below here should not be changed except by the JP2Gen source
+; -----------------------------------------------------------------------
+;
+; Get the source details
+;
+  loc = getenv("HV_JP2GEN")
+  bzr_revno = HV_BZR_REVNO_HANDLER(loc)
+  source = {institute:'NASA-GSFC',$
+            contact:'Part of the ESA/NASA Helioviewer Project.  Contact the Helioviewer Project at webmaster@helioviewer.org',$
+            all_code:'https://launchpad.net/helioviewer',$
+            jp2gen_code:'https://launchpad.net/jp2gen',$
+            jp2gen_version:0.8,$
+            jp2gen_branch_revision:bzr_revno}
 ;
 ; Set up default values for JP2 compression
 ;
@@ -49,7 +56,11 @@ FUNCTION HVS_GEN
        detector:'NotGiven',$
        transfer:transfer,$
        web:'~/Desktop/',$
-       already_written:'already_written'}
+       already_written:'already_written',$
+       na:'not_applicable',$
+       exact:'exact',$
+       range:'range',$
+       source:source}
 ;
 ; Default values for compression
 ;
