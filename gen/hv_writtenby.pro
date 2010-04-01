@@ -12,6 +12,7 @@ FUNCTION HV_WRITTENBY
                     remote:{user:'ireland',$
                             machine:'helioviewer.nascom.nasa.gov',$
                             incoming:'/home/ireland/incoming2/',$
-                            group:'helioviewer'}}}
+                            group:'helioviewer'}},$
+          webpage:'~/Desktop/'}
 END
 

@@ -5,16 +5,14 @@
 ; Program to create a monitoring webpage for JP2Gen
 ;
 ;
-PRO HV_WEBPAGE,cadence,details_file = details_file,search = search
+PRO HV_WEBPAGE,cadence,search = search
   progname = 'hv_webpage'
 ;
-  if NOT(KEYWORD_SET(details_file)) THEN details_file = 'hvs_gen'
-; 
-  info = CALL_FUNCTION(details_file)
-;
+  g = HVS_GEN()
   storage = HV_STORAGE()
-  web = info.web
   wrt = HV_WRITTENBY()
+
+  webpage = wrt.webpage
 ;
   br = '<BR>'
   ii = '<i>'
@@ -36,11 +34,11 @@ PRO HV_WEBPAGE,cadence,details_file = details_file,search = search
   footer = strarr(1)
   footer[0] = '<HR>'
   footer = [footer,ii+'This file written at ' + wrt.local.institute + '. Contact ' + wrt.local.contact + '.' + iii + br]
-  footer = [footer,ii+wrt.source.contact+iii+br]
-  footer = [footer,ii+'All available source code for the Helioviewer Project hosted at ' + wrt.source.all_code+iii+br]
-  footer = [footer,ii+'JP2Gen source code hosted at ' + wrt.source.jp2gen_code+iii+br]
-  footer = [footer,ii+'Written by JP2Gen version ' + trim(wrt.source.jp2gen_version)+iii+br]
-  footer = [footer,ii+'Branch revision '+ trim(wrt.source.jp2gen_branch_revision)+iii+br] 
+  footer = [footer,ii+g.source.contact+iii+br]
+  footer = [footer,ii+'All available source code for the Helioviewer Project hosted at ' + g.source.all_code+iii+br]
+  footer = [footer,ii+'JP2Gen source code hosted at ' + g.source.jp2gen_code+iii+br]
+  footer = [footer,ii+'Written by JP2Gen version ' + trim(g.source.jp2gen_version)+iii+br]
+  footer = [footer,ii+'Branch revision '+ trim(g.source.jp2gen_branch_revision)+iii+br] 
   footer = [footer,'</body>']
   footer = [footer,'</html>']
 ;
@@ -54,7 +52,7 @@ PRO HV_WEBPAGE,cadence,details_file = details_file,search = search
 ;
      footer[0] = ii+'File created by '+progname +' at ' + systime(0) +iii+br
      text = strarr(1)
-     HV_WRT_ASCII,header,web + filename
+     HV_WRT_ASCII,header,webpage + filename
 ;
 ; Get a list of the txt files and their subdirectories in the web directory
 ;
@@ -74,11 +72,11 @@ PRO HV_WEBPAGE,cadence,details_file = details_file,search = search
         endfor
      endelse
      print,progname + ':' + text[0]
-     HV_WRT_ASCII,text,web + filename,/append
+     HV_WRT_ASCII,text,webpage + filename,/append
 ;
 ; End the file
 ;
-     HV_WRT_ASCII,footer,web + filename,/append
+     HV_WRT_ASCII,footer,webpage + filename,/append
 ;
 ; Wait "cadence" minutes before re-creating the web page
 ;
