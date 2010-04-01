@@ -36,7 +36,7 @@ FUNCTION HVS_GEN
   loc = getenv("HV_JP2GEN")
   bzr_revno = HV_BZR_REVNO_HANDLER(loc)
   source = {institute:'NASA-GSFC',$
-            contact:'Part of the ESA/NASA Helioviewer Project.  Contact the Helioviewer Project at webmaster@helioviewer.org',$
+            contact:'ESA/NASA Helioviewer Project [contact the Helioviewer Project at webmaster@helioviewer.org]',$
             all_code:'https://launchpad.net/helioviewer',$
             jp2gen_code:'https://launchpad.net/jp2gen',$
             jp2gen_version:0.8,$
@@ -54,12 +54,12 @@ FUNCTION HVS_GEN
        observatory:'NotGiven',$
        instrument:'NotGiven',$
        detector:'NotGiven',$
-       transfer:transfer,$
        web:'~/Desktop/',$
        already_written:'already_written',$
        na:'not_applicable',$
        exact:'exact',$
        range:'range',$
+       time:['ccsds'],$
        source:source}
 ;
 ; Default values for compression

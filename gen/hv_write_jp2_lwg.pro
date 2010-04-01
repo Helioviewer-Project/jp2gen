@@ -89,7 +89,10 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; Line feed character:
 ;
   lf=string(10b)
-
+;
+; Load in some general details
+;
+  g = HVS_GEN()
 ;
 ; set keyword "quiet" to suppress kdu_compress output
 ;
@@ -180,11 +183,11 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; Source code attribution
 ;
         hv_comment = hv_comment + $
-                     'FITS to JP2 source code provided by ' + wby.source.contact + $
-                     '[' + wby.source.institute + ']'+ $
-                     ' and is available for download at ' + wby.source.jp2gen_code + '.' + lf + $
+                     'FITS to JP2 source code provided by ' + g.source.contact + $
+                     '[' + g.source.institute + ']'+ $
+                     ' and is available for download at ' + g.source.jp2gen_code + '.' + lf + $
                      'Please contact the source code providers if you suspect an error in the source code.' + lf + $
-                     'Full source code for the entire Helioviewer Project can be found at ' + wby.source.all_code + '.'
+                     'Full source code for the entire Helioviewer Project can be found at ' + g.source.all_code + '.'
         if tag_exist(header,'hv_comment') then begin
            hv_comment = header.hv_comment + lf + hv_comment
         endif
@@ -277,11 +280,11 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; JP2GEN version
 ;
-        xh+='<HV_JP2GEN_VERSION>'+trim(wby.source.jp2gen_version)+'</HV_JP2GEN_VERSION>'+lf
+        xh+='<HV_JP2GEN_VERSION>'+trim(g.source.jp2gen_version)+'</HV_JP2GEN_VERSION>'+lf
 ;
 ; JP2GEN branch revision
 ;
-        xh+='<HV_JP2GEN_BRANCH_REVISION>'+trim(wby.source.jp2gen_branch_revision)+'</HV_JP2GEN_BRANCH_REVISION>'+lf
+        xh+='<HV_JP2GEN_BRANCH_REVISION>'+trim(g.source.jp2gen_branch_revision)+'</HV_JP2GEN_BRANCH_REVISION>'+lf
 ;
 ; HVS setup file
 ;

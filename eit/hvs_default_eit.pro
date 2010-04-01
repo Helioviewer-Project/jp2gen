@@ -93,17 +93,17 @@ FUNCTION HVS_DEFAULT_EIT
 ;
 ; Verify
 ;
-  verify = { naxis1:  { default:1024, accept:{type:g.exact,value=[1024]} },$
-             naxis2:  { default:1024, accept:{type:g.exact,value=[1024]} },$
-             date_obs:{ default:g.na, accept:{type:g.exact,value=[g.ccsds]} },$
-             telescop:{ default:'SOHO', accept:{type:g.exact,value=['SOHO']} },$
-             instrume:{ default:'EIT', accept:{type:g.exact,value=['EIT']} },$
-             wavelnth:{ default:g.na, accept:{type:g.exact,value= [b.details[*].measurement]} },$
-             crpix1:  { default:512, accept:{type:g.exact,value=[512]} },$
-             crpix2:  { default:512, accept:{type:g.exact,value=[512]} },$
-             cdelt1:  { default:2.63, accept:{type:g.range,value=[2.4,3.0]} },$
-             cdelt2:  { default:2.63, accept:{type:g.range,value=[2.4,3.0]} },$
-             solar_r: { default:369.88, accept:{type:g.range,value=[350.0,400.0]} }   }
+  verify = { naxis1:  { default:1024, accept:{type:g.exact,value:[1024]} },$
+             naxis2:  { default:1024, accept:{type:g.exact,value:[1024]} },$
+             date_obs:{ default:g.na, accept:{type:g.exact,value:g.time} },$
+             telescop:{ default:'SOHO', accept:{type:g.exact,value:['SOHO']} },$
+             instrume:{ default:'EIT', accept:{type:g.exact,value:['EIT']} },$
+             wavelnth:{ default:g.na, accept:{type:g.exact,value: [b.details[*].measurement]} },$
+             crpix1:  { default:512, accept:{type:g.exact,value:[512]} },$
+             crpix2:  { default:512, accept:{type:g.exact,value:[512]} },$
+             cdelt1:  { default:2.63, accept:{type:g.range,value:[2.4,3.0]} },$
+             cdelt2:  { default:2.63, accept:{type:g.range,value:[2.4,3.0]} },$
+             solar_r: { default:369.88, accept:{type:g.range,value:[350.0,400.0]} }   }
 
   b = add_tag(b,verify,'verify')
   return,b

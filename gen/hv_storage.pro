@@ -39,7 +39,7 @@ FUNCTION HV_STORAGE,nickname = nickname, no_db = no_db, no_log = no_log, no_jp2 
 ;
 ; Update the root for the version number and device nickname
 ;
-  hvr = hv_write + 'v' + trim((HV_WRITTENBY()).source.jp2gen_version) + path_sep()
+  hvr = hv_write + 'v' + trim((HVS_GEN()).source.jp2gen_version) + path_sep()
   if not(is_dir(hvr)) then spawn,'mkdir -p '+ hvr
 ;
 ; Create the necessary subdirectory locations
