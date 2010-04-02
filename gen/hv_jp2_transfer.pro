@@ -58,6 +58,9 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
      b = a
      for i = long(0), n-long(1) do begin
         b[i] = strmid(a[i],strlen(sdir),strlen(a[i])-strlen(sdir)) 
+        if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
+           b[i] = strmid(b[i],1)
+        endif
      endfor
 ;
 ; Connect to the remote machine and transfer files plus their structure
@@ -69,9 +72,13 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
      for i = long(0), n-long(1) do begin
 ;        file_chmod,b[i],/g_execute,/g_read,/g_write
         spawn,'chown -R ireland:helioviewer ' + b[i]
-        spawn,'rsync -Ravxz --exclude "*.DS_Store" ' + $
-              b[i] + ' ' + $
-              transfer_details
+        if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
+           spawn,'rsync -Ravxz ' + transfer_details + ' ' + b[i]
+        endif else begin
+           spawn,'rsync -Ravxz --exclude "*.DS_Store" ' + $
+                 b[i] + ' ' + $
+                 transfer_details
+        endelse
      endfor
 ;
 ; Write a logfile describing what was transferred
