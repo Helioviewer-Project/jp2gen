@@ -58,7 +58,6 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
   storage = HV_STORAGE()
 ;
 ;     transfer_details = ' -e ssh -l ireland@delphi.nascom.nasa.gov:/var/www/jp2/v0.8/inc/test_transfer/'
-;     transfer_details = ireland@helioviewer.nascom.nasa.gov:/home/ireland/incoming2/v0.8/
 ;
 ; define the transfer script
 ;
