@@ -95,22 +95,22 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
 ; Open connection to the remote machine and start transferring
 ;
      for i = long(0), n-long(1) do begin
-;        file_chmod,b[i],/g_execute,/g_read,/g_write
-        spawn,'chown -R ireland:helioviewer ' + b[i]
+; change ownership of the file into the helioviewer group
+        grpchng = wby.transfer.local.group + ':' + $
+                  wby.transfer.remote.group
+        spawn,'chown -R ' + grpchng + ' ' + b[i]
+; OS specific commands
         if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
-           spawn,'rsync -Ravxz ' + transfer_details + ' ' + b[i]
-        endif else begin
-           spawn,'rsync -Ravxz --exclude "*.DS_Store" ' + $
-                 b[i] + ' ' + $
-                 transfer_details
-        endelse
-        if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
-           spawn,'/usr/local/bin/rsync -Ravxz --exclude "*.DS_Store" ' + b[i] + ' ' + transfer_details
-        endif else begin
-           spawn,'rsync -Ravxz --exclude "*.DS_Store" ' + $
-                 b[i] + ' ' + $
-                 transfer_details
-        endelse
+           tcmd = wby.transfer.local.tcmd_osx
+        endif
+        if (!VERSION.OS_NAME) eq 'linux' then begin
+           tcmd = wby.transfer.local.tcmd_linux
+        endif
+; transfer
+        spawn,tcmd + $
+              ' -Ravxz --exclude "*.DS_Store" ' + $
+              b[i] + ' ' + $
+              transfer_details
      endfor
 ;
 ; Write a logfile describing what was transferred
