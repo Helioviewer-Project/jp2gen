@@ -90,6 +90,15 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
      for i = long(0), n-long(1) do begin
 ;        file_chmod,b[i],/g_execute,/g_read,/g_write
         spawn,'chown -R ireland:helioviewer ' + b[i]
+<<<<<<< TREE
+        if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
+           spawn,'rsync -Ravxz ' + transfer_details + ' ' + b[i]
+        endif else begin
+           spawn,'rsync -Ravxz --exclude "*.DS_Store" ' + $
+                 b[i] + ' ' + $
+                 transfer_details
+        endelse
+=======
         if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
            spawn,'/usr/local/bin/rsync -Ravxz --exclude "*.DS_Store" ' + b[i] + ' ' + transfer_details
         endif else begin
@@ -97,6 +106,7 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
                  b[i] + ' ' + $
                  transfer_details
         endelse
+>>>>>>> MERGE-SOURCE
      endfor
 ;
 ; Write a logfile describing what was transferred

@@ -12,7 +12,7 @@
 ; The program gets all the relevant FITS files and writes them out as
 ; required. 
 ;
-; HV_MDI_PREP2JP2,'~/hv_dat/dat/mdi/2003/','2003/10/01','2003/10/15',/int,mag
+; HV_MDI_PREP2JP2,'~/hv_dat/dat/mdi/2003/','2003/10/01','2003/10/15',/int,/mag
 ;
 ;
 
