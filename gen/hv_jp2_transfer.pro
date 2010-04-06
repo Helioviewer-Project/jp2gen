@@ -22,8 +22,26 @@
 ; This is important for the current application as you want the
 ; username on both the local and remote machines to be in the same groups.
 ;
+; 2010/04/06
+;
+; Use with Mac OS X
+;
+; The functionality as implemented requires use of version 3.0.7 of
+; rsync as downloaded from http://rsync.samba.org/ .  This utility was
+; compiled on the local Mac OS X machine and installed into
+; /usr/local/bin .  This was done since the version of rsync supplied
+; on the local machine was at version 2.0.0 and so was long out of
+; date.
+;
+; We recommend using the same procedure:  download, compile and
+; install rsync from the above link and use the script below to
+; transfer the JP2 files from a local OS X machine (where the FITS to
+; JP2 process is running) to where your instance of the JP2 database
+; is stored.
 ;
 ;
+; Summary
+; -------
 ; Program to transfer files from the outgoing directory to a remote
 ; location.  The program first forms a list of the subdirectories and
 ; files, moves those files to the remote location, and then deletes
@@ -73,7 +91,7 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
 ;        file_chmod,b[i],/g_execute,/g_read,/g_write
         spawn,'chown -R ireland:helioviewer ' + b[i]
         if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
-           spawn,'rsync -Ravxz ' + transfer_details + ' ' + b[i]
+           spawn,'/usr/local/bin/rsync -Ravxz --exclude "*.DS_Store" ' + b[i] + ' ' + transfer_details
         endif else begin
            spawn,'rsync -Ravxz --exclude "*.DS_Store" ' + $
                  b[i] + ' ' + $
