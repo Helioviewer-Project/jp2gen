@@ -51,15 +51,22 @@
 PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
   progname = 'hv_jp2_transfer'
 ;
-  if NOT(KEYWORD_SET(details_file)) THEN details_file = 'hvs_gen'
-; 
-  info = CALL_FUNCTION(details_file)
-  if NOT(KEYWORD_SET(transfer_details)) THEN BEGIN
-;     transfer_details = ' -e ssh -l ireland@delphi.nascom.nasa.gov:/var/www/jp2/v0.8/inc/test_transfer/'
-     transfer_details = ' -e ssh -l ireland@helioviewer.nascom.nasa.gov:/home/ireland/incoming2/v0.8/'
-  endif 
+; Get various details about the setup
 ;
+  wby = HV_WRITTENBY()
+  g = HVS_GEN()
   storage = HV_STORAGE()
+;
+;     transfer_details = ' -e ssh -l ireland@delphi.nascom.nasa.gov:/var/www/jp2/v0.8/inc/test_transfer/'
+;     transfer_details = ireland@helioviewer.nascom.nasa.gov:/home/ireland/incoming2/v0.8/
+;
+; define the transfer script
+;
+  transfer_details = ' -e ssh -l ' + $
+                     wby.transfer.remote.user + '@' + $
+                     wby.transfer.remote.machine + ':' + $
+                     wby.transfer.remote.incoming + $
+                     'v' + g.source.jp2gen_version + path_sep()
 ;
 ; Get a list of the JP2 files and their subdirectories in the outgoing directory
 ;
@@ -90,7 +97,6 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
      for i = long(0), n-long(1) do begin
 ;        file_chmod,b[i],/g_execute,/g_read,/g_write
         spawn,'chown -R ireland:helioviewer ' + b[i]
-<<<<<<< TREE
         if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
            spawn,'rsync -Ravxz ' + transfer_details + ' ' + b[i]
         endif else begin
@@ -98,7 +104,6 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
                  b[i] + ' ' + $
                  transfer_details
         endelse
-=======
         if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
            spawn,'/usr/local/bin/rsync -Ravxz --exclude "*.DS_Store" ' + b[i] + ' ' + transfer_details
         endif else begin
@@ -106,7 +111,6 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
                  b[i] + ' ' + $
                  transfer_details
         endelse
->>>>>>> MERGE-SOURCE
      endfor
 ;
 ; Write a logfile describing what was transferred

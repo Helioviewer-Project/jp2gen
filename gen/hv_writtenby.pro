@@ -11,7 +11,7 @@ FUNCTION HV_WRITTENBY
           transfer:{local:{group:'ireland'},$
                     remote:{user:'ireland',$
                             machine:'helioviewer.nascom.nasa.gov',$
-                            incoming:'/home/ireland/incoming2/',$
+                            incoming:'/home/ireland/incoming/',$
                             group:'helioviewer'}},$
           webpage:'~/Desktop/'}
 END
