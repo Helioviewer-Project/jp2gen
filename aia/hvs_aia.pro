@@ -68,83 +68,83 @@ FUNCTION HVS_DEFAULT_AIA
 ;
 ; 131
 ;
-  b.details[0].measurement = '131'; REQUIRED
-  b.details[0].n_levels = 8 ; REQUIRED
-  b.details[0].n_layers = 8 ; REQUIRED
-  b.details[0].idl_bitdepth = 8 ; REQUIRED
-  b.details[0].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[1].measurement = '131'; REQUIRED
+  b.details[1].n_levels = 8 ; REQUIRED
+  b.details[1].n_layers = 8 ; REQUIRED
+  b.details[1].idl_bitdepth = 8 ; REQUIRED
+  b.details[1].bit_rate = [0.5,0.01] ; REQUIRED
 
 ;
 ; 171
 ;
-  b.details[1].measurement = '171'
-  b.details[1].n_levels = 8
-  b.details[1].n_layers = 8
-  b.details[1].idl_bitdepth = 8
-  b.details[1].bit_rate = [0.5,0.01]
-
-;
-; 193
-;
-  b.details[2].measurement = '193'
+  b.details[2].measurement = '171'
   b.details[2].n_levels = 8
   b.details[2].n_layers = 8
   b.details[2].idl_bitdepth = 8
   b.details[2].bit_rate = [0.5,0.01]
 
 ;
-; 211
+; 193
 ;
-  b.details[3].measurement = '211'
+  b.details[3].measurement = '193'
   b.details[3].n_levels = 8
   b.details[3].n_layers = 8
   b.details[3].idl_bitdepth = 8
   b.details[3].bit_rate = [0.5,0.01]
 
 ;
+; 211
+;
+  b.details[4].measurement = '211'
+  b.details[4].n_levels = 8
+  b.details[4].n_layers = 8
+  b.details[4].idl_bitdepth = 8
+  b.details[4].bit_rate = [0.5,0.01]
+
+;
 ; 304
 ;
-  b.details[0].measurement = '304'; REQUIRED
-  b.details[0].n_levels = 8 ; REQUIRED
-  b.details[0].n_layers = 8 ; REQUIRED
-  b.details[0].idl_bitdepth = 8 ; REQUIRED
-  b.details[0].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[5].measurement = '304'; REQUIRED
+  b.details[5].n_levels = 8 ; REQUIRED
+  b.details[5].n_layers = 8 ; REQUIRED
+  b.details[5].idl_bitdepth = 8 ; REQUIRED
+  b.details[5].bit_rate = [0.5,0.01] ; REQUIRED
 
 ;
 ; 335
 ;
-  b.details[0].measurement = '335'; REQUIRED
-  b.details[0].n_levels = 8 ; REQUIRED
-  b.details[0].n_layers = 8 ; REQUIRED
-  b.details[0].idl_bitdepth = 8 ; REQUIRED
-  b.details[0].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[6].measurement = '335'; REQUIRED
+  b.details[6].n_levels = 8 ; REQUIRED
+  b.details[6].n_layers = 8 ; REQUIRED
+  b.details[6].idl_bitdepth = 8 ; REQUIRED
+  b.details[6].bit_rate = [0.5,0.01] ; REQUIRED
 
 ;
 ; 1600
 ;
-  b.details[0].measurement = '1600'; REQUIRED
-  b.details[0].n_levels = 8 ; REQUIRED
-  b.details[0].n_layers = 8 ; REQUIRED
-  b.details[0].idl_bitdepth = 8 ; REQUIRED
-  b.details[0].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[7].measurement = '1600'; REQUIRED
+  b.details[7].n_levels = 8 ; REQUIRED
+  b.details[7].n_layers = 8 ; REQUIRED
+  b.details[7].idl_bitdepth = 8 ; REQUIRED
+  b.details[7].bit_rate = [0.5,0.01] ; REQUIRED
 
 ;
 ; 1700
 ;
-  b.details[0].measurement = '1700'; REQUIRED
-  b.details[0].n_levels = 8 ; REQUIRED
-  b.details[0].n_layers = 8 ; REQUIRED
-  b.details[0].idl_bitdepth = 8 ; REQUIRED
-  b.details[0].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[8].measurement = '1700'; REQUIRED
+  b.details[8].n_levels = 8 ; REQUIRED
+  b.details[8].n_layers = 8 ; REQUIRED
+  b.details[8].idl_bitdepth = 8 ; REQUIRED
+  b.details[8].bit_rate = [0.5,0.01] ; REQUIRED
 
 ;
 ; 4500
 ;
-  b.details[0].measurement = '4500'; REQUIRED
-  b.details[0].n_levels = 8 ; REQUIRED
-  b.details[0].n_layers = 8 ; REQUIRED
-  b.details[0].idl_bitdepth = 8 ; REQUIRED
-  b.details[0].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[9].measurement = '4500'; REQUIRED
+  b.details[9].n_levels = 8 ; REQUIRED
+  b.details[9].n_layers = 8 ; REQUIRED
+  b.details[9].idl_bitdepth = 8 ; REQUIRED
+  b.details[9].bit_rate = [0.5,0.01] ; REQUIRED
 
 
 ;
