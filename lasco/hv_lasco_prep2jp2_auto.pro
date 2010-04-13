@@ -12,7 +12,7 @@
 ; and pick an instrument
 ;
 
-PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details_file,$
+PRO HV_LASCO_PREP2JP2_AUTO,ds = ds,de = de,c2 = c2, c3 = c3,details_file = details_file,$
                            alternate_backgrounds = alternate_backgrounds,$
                            copy2outgoing = copy2outgoing
   progname = 'HV_LASCO_PREP2JP2_AUTO'
@@ -49,15 +49,12 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details
 ;
      get_utc,utc,/ecs,/date_only
      if (count eq 0) then begin
-        if keyword_set(start) then begin 
-           ds = start
-        endif else begin
-           ds = utc
-        endelse
+        if not(keyword_set(ds)) then ds = utc
+        if not(keyword_set(de)) then de = utc
      endif else begin
         ds = utc
+        de = utc
      endelse
-     de = utc
      print,' '
      print,progname + ': Processing... ' + ds + ' to ' + de
 

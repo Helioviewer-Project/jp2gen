@@ -46,17 +46,21 @@ FUNCTION HVS_GEN
 ;
   d = {measurement: "", n_levels: 8, n_layers: 8, idl_bitdepth: 8, bit_rate: [0.5,0.01]}
   a = replicate( d , 1 )
-
+;
+; Not given flag
+;
+  notgiven = 'NotGiven'
 ;
 ; Construct the return value
 ;
   b = {details:a,$
-       observatory:'NotGiven',$
-       instrument:'NotGiven',$
-       detector:'NotGiven',$
+       observatory:notgiven,$
+       instrument:notgiven,$
+       detector:notgiven,$
        web:'~/Desktop/',$
        already_written:'already_written',$
        na:'not_applicable',$
+       notgiven:notgiven,$
        exact:'exact',$
        range:'range',$
        time:['ccsds'],$
