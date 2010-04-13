@@ -1,7 +1,14 @@
 ;
 ; April 13, 2010: first edit by JI of Greg Slater's file
 ;
+; All the directory creation, etc, should be handled by the JP2Gen installation.
+;
+;
 pro mk_jp2000_queue_ji, q_days=q_days, cadence=cadence, top_dir=top_dir
+;
+; This is the start time for the FITS to JP2 conversion process
+;
+  process_start = systime(1)
 ;
 ; Load in JP2Gen required constants
 ;
@@ -11,7 +18,13 @@ pro mk_jp2000_queue_ji, q_days=q_days, cadence=cadence, top_dir=top_dir
 ;
   hv_count = [g.already_written]
 ;
+; Call AIA specfic details
 ;
+  if not(keyword_set(details_file)) then details_file = 'hvs_default_aia'
+  info = CALL_FUNCTION(details_file)
+
+;
+; *** Start: Fix time range we are interested in
 ;
 
   if not exist(q_days) then q_days = 30d0
@@ -24,6 +37,10 @@ pro mk_jp2000_queue_ji, q_days=q_days, cadence=cadence, top_dir=top_dir
   if not exist(t1) then t1 = t_now_sec
 
   if not exist(size_chunk) then size_chunk = 1000
+;
+; *** END:
+;
+
 
   if not exist(top_dir) then top_dir = '/archive/sdo/testdata_lev1_5/jpeg2000_server/AIA'
 ;if not exist(top_dir) then top_dir = '/net/castor/Users/slater/data/jpeg2000_server/AIA'
@@ -36,6 +53,14 @@ pro mk_jp2000_queue_ji, q_days=q_days, cadence=cadence, top_dir=top_dir
   n_wave = n_elements(wave_arr)
   t_off_wave = dindgen(n_wave)*0.125
 
+;
+; *** Start: Get the FITS files we are interested in.  The current
+;            plan is for us to have JP2 files in each wavelength about
+;            once every 30 seconds.  With an approximate cadence of
+;            about 10 seconds this means writing one JP2 file for
+;            every 3 FITS files.
+;
+
   if not exist(index_ref) then begin
      if not exist(fn_ref) then $
         fn_ref = [ '/cache/sdo/AIA/lev0/2010/04/04/H0400/AIA20100404_043817_0094.fits', $
@@ -46,8 +71,19 @@ pro mk_jp2000_queue_ji, q_days=q_days, cadence=cadence, top_dir=top_dir
                    '/cache/sdo/AIA/lev0/2010/04/04/H0400/AIA20100404_043808_0304.fits', $
                    '/cache/sdo/AIA/lev0/2010/04/04/H0400/AIA20100404_043819_0335.fits', $
                    '/cache/sdo/AIA/lev0/2010/04/04/H0400/AIA20100404_043817_1700.fits']
+
+;
+; *** START: AIA_prep ?
+;
      mreadfits, fn_ref, index_ref, data_ref
+;
+; *** END: AIA_prep ?
+;
   endif
+
+;
+; *** END
+;
 
 ;if not exist(n_layers) then n_layers = 5
 ;if not exist(n_levels) then n_levels = 5
@@ -63,7 +99,7 @@ pro mk_jp2000_queue_ji, q_days=q_days, cadence=cadence, top_dir=top_dir
         q_paths_full = [q_paths_full, top_dir + '/' + strtrim(wave_arr[i],2) + q_paths]
   
   n_dirs = n_elements(q_paths_full)
-  mk_dir, q_paths_full
+;  mk_dir, q_paths_full
   
   t_grid = anytim(timegrid(t0, t1, seconds=cadence), /ccsds)
   n_times = n_elements(t_grid)
@@ -165,7 +201,10 @@ pro mk_jp2000_queue_ji, q_days=q_days, cadence=cadence, top_dir=top_dir
 ;      ji_hv_write_jp2_lwg, fn0, data_ref0, bit_rate=bit_rate, n_layers=n_layers, n_levels=n_levels, $
 ;        fitsheader=index_chunk[k], quiet=quiet,
 ;        kdu_lib_location=kdu_lib_location, _extra = _extra
-           
+
+           ;
+           ; See the procedure bebelo for the meaning of each parameter
+           ;
            HV_AIA_D2JP2,fitsname,reform(data_ref0),index_chunk[k],$
                         jp2_filename = jp2_filename,$
                         already_written = already_written
@@ -184,7 +223,7 @@ pro mk_jp2000_queue_ji, q_days=q_days, cadence=cadence, top_dir=top_dir
 ;
   nawind = where(hv_count eq g.already_written,naw)
   nnew = n_elements(hv_count)- naw
-  HV_REPORT_WRITE_TIME,progname,t0,nnew,report = report
+  HV_REPORT_WRITE_TIME,progname,process_start,nnew,report = report
 ;
 ; Copy the new files to the outgoing directory
 ;

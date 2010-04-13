@@ -38,13 +38,16 @@ PRO hv_aia_d2jp2, fitsname, img, header, $
 ;
   if not(keyword_set(dir)) then begin dir = g.notgiven
 ;
+; All the supported measurements
+;
+  wave_arr = info.details[*].measurement
+;
 ; Create the hvs structure
 ;
   hvs = {dir:dir,$
          fitsname:fitsname,$
          img:img,$
          header:header,$
-         measurement:wave_arr(this_wave),$
          yy:,tobs.yy,$
          mm:,tobs.mm,$
          dd:,tobs.dd,$
@@ -54,14 +57,11 @@ PRO hv_aia_d2jp2, fitsname, img, header, $
          milli:,tobs.milli,$
          details:info}
 ;
-; All the supported measurements
-;
-  wave_arr = info.details[*].measurement
-;
 ; Check that this FITS file is supported
 ;
   this_wave = where(wave_arr eq header.wavelnth,this_wave_count)
   if this_wave_count eq 0 then begin
+     hvs = add_tag(hvs,wave_arr(this_wave),'measurement')
      print,progname + ': this wavelength is not supported by JP2Gen.'
      print,progname + ': requested wavelength = ' + this_wave
      HV_LOG_WRITE,hvs,'read ' + fitsname + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0) + ' requested wavelength  = ' + this_wave + ' is not supported by JP2Gen'
@@ -71,6 +71,7 @@ PRO hv_aia_d2jp2, fitsname, img, header, $
 ;
 ; Write the JP2 file
 ;
+     hvs = add_tag(hvs,wave_arr(this_wave),'measurement')
      HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename, already_written = already_written
      if not(already_written) then begin
         HV_LOG_WRITE,hvs,'read ' + fitsname + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0) + ' : wrote to ' + jp2_filename
