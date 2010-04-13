@@ -1,18 +1,15 @@
 ;
 ; April 13, 2010: first edit by JI of Greg Slater's file
 ;
-pro mk_jp2000_queue_ji, q_days=q_days, cadence=cadence, top_dir=top_dir,$
-                        details_file = details_file
+pro mk_jp2000_queue_ji, q_days=q_days, cadence=cadence, top_dir=top_dir
 ;
-; Call general JP2Gen setup
+; Load in JP2Gen required constants
 ;
   g = HVS_GEN()
 ;
-; Call AIA specfic details
+; Keep a list of the files that where written
 ;
-  if not(keyword_set(details_file)) then details_file = 'hvs_default_aia'
-  info = CALL_FUNCTION(details_file)
-
+  hv_count = [g.already_written]
 ;
 ;
 ;
@@ -91,109 +88,110 @@ pro mk_jp2000_queue_ji, q_days=q_days, cadence=cadence, top_dir=top_dir,$
         strmid(t_grid_wave0,17,2) + '_' + $
         strmid(t_grid_wave0,20,3) + '__'  
 
-  t_grid_fn0 = t_grid_fn0 + fn_suffix[i]
+     t_grid_fn0 = t_grid_fn0 + fn_suffix[i]
 
-  s_len = strlen(t_grid_wave0[0])
+     s_len = strlen(t_grid_wave0[0])
 
-  index_ref0 = index_ref[i]
-  data_ref0 = data_ref[*,*,i]
+     index_ref0 = index_ref[i]
+     data_ref0 = data_ref[*,*,i]
 
-  if n_chunks gt 0 then begin
-    index_chunk = replicate(index_ref0, size_chunk)
-    for j=0,n_chunks-1 do begin
+     if n_chunks gt 0 then begin
+        index_chunk = replicate(index_ref0, size_chunk)
+        for j=0,n_chunks-1 do begin
 
-      t_grid_wave_chunk = t_grid_wave0[(j*size_chunk):((j+1)*size_chunk - 1)]
-      fn_chunk = t_grid_fn0[(j*size_chunk):((j+1)*size_chunk - 1)]
+           t_grid_wave_chunk = t_grid_wave0[(j*size_chunk):((j+1)*size_chunk - 1)]
+           fn_chunk = t_grid_fn0[(j*size_chunk):((j+1)*size_chunk - 1)]
 
-      date_obs_chunk = strmid(t_grid_wave_chunk, 0, s_len-2) + 'Z'
-      date_d$obs_chunk = date_obs_chunk
-      t_obs_chunk = strmid(anytim(anytim(t_grid_wave_chunk) + index_ref0.exptime, /ccsds), 0, s_len-2) + 'Z'
-      date_chunk = strmid(anytim(anytim(t_grid_wave_chunk) + 3600d0, /ccsds), 0, s_len-5) + 'Z'
+           date_obs_chunk = strmid(t_grid_wave_chunk, 0, s_len-2) + 'Z'
+           date_d$obs_chunk = date_obs_chunk
+           t_obs_chunk = strmid(anytim(anytim(t_grid_wave_chunk) + index_ref0.exptime, /ccsds), 0, s_len-2) + 'Z'
+           date_chunk = strmid(anytim(anytim(t_grid_wave_chunk) + 3600d0, /ccsds), 0, s_len-5) + 'Z'
 
-      index_chunk.date_obs = date_obs_chunk
-      index_chunk.date_d$obs = date_d$obs_chunk
-      index_chunk.t_obs = t_obs_chunk
-      index_chunk.date = date_chunk
-      index_chunk.wavelnth = long(wave_arr[i])
+           index_chunk.date_obs = date_obs_chunk
+           index_chunk.date_d$obs = date_d$obs_chunk
+           index_chunk.t_obs = t_obs_chunk
+           index_chunk.date = date_chunk
+           index_chunk.wavelnth = long(wave_arr[i])
 
 ;      if j eq 0 then index_arr = index_chunk else index_arr = concat_struct(index_arr, index_chunk)
 
-      for k=0, size_chunk-1 do begin
-        fn0 = top_dir + '/' + strtrim(wave_arr[i],2) + $
-          ssw_time2paths(index_chunk[k].date_obs, index_chunk[k].date_obs, /daily, parent='/') + '/' + fn_chunk[k]
+           for k=0, size_chunk-1 do begin
+              fn0 = top_dir + '/' + strtrim(wave_arr[i],2) + $
+                    ssw_time2paths(index_chunk[k].date_obs, index_chunk[k].date_obs, /daily, parent='/') + '/' + fn_chunk[k]
 ;        mwritefits, fn0, index_chunk[k], data_ref0
-        ji_hv_write_jp2_lwg, fn0, data_ref0, bit_rate=bit_rate, n_layers=n_layers, n_levels=n_levels, $
-          fitsheader=index_chunk[k], quiet=quiet, kdu_lib_location=kdu_lib_location, _extra = _extra
-      endfor
+;        ji_hv_write_jp2_lwg, fn0, data_ref0, bit_rate=bit_rate, n_layers=n_layers, n_levels=n_levels, $
+;          fitsheader=index_chunk[k], quiet=quiet, kdu_lib_location=kdu_lib_location, _extra = _extra
 
-    endfor
-  endif
+              HV_AIA_D2JP2,fitsname,reform(data_ref0),index_chunk[k],$
+                           jp2_filename = jp2_filename,$
+                           already_written = already_written
+              if not(already_written) then begin
+                 hv_count = [hv_count,jp2_filename]
+              endif
 
-  if remainder gt 0 then begin
-    index_chunk = replicate(index_ref0, remainder)
+           endfor
+           
+        endfor
+     endif
 
-    if n_chunks gt 0 then begin
-      t_grid_wave_chunk = t_grid_wave0[(n_chunks*size_chunk):*]
-      fn_chunk = t_grid_fn0[(n_chunks*size_chunk):*]
-    endif else begin
-      t_grid_wave_chunk = t_grid_wave0
-      fn_chunk = t_grid_fn0
-    endelse
+     if remainder gt 0 then begin
+        index_chunk = replicate(index_ref0, remainder)
 
-    date_obs_chunk = strmid(t_grid_wave_chunk, 0, s_len-2) + 'Z'
-    date_d$obs_chunk = date_obs_chunk
-    t_obs_chunk = strmid(anytim(anytim(t_grid_wave_chunk) + index_ref0.exptime, /ccsds), 0, s_len-2) + 'Z'
-    date_chunk = strmid(anytim(anytim(t_grid_wave_chunk) + 3600d0, /ccsds), 0, s_len-5) + 'Z'
+        if n_chunks gt 0 then begin
+           t_grid_wave_chunk = t_grid_wave0[(n_chunks*size_chunk):*]
+           fn_chunk = t_grid_fn0[(n_chunks*size_chunk):*]
+        endif else begin
+           t_grid_wave_chunk = t_grid_wave0
+           fn_chunk = t_grid_fn0
+        endelse
 
-    index_chunk.date_obs = date_obs_chunk
-    index_chunk.date_d$obs = date_d$obs_chunk
-    index_chunk.t_obs = t_obs_chunk
-    index_chunk.date = date_chunk
-    index_chunk.wavelnth = long(wave_arr[i])
+        date_obs_chunk = strmid(t_grid_wave_chunk, 0, s_len-2) + 'Z'
+        date_d$obs_chunk = date_obs_chunk
+        t_obs_chunk = strmid(anytim(anytim(t_grid_wave_chunk) + index_ref0.exptime, /ccsds), 0, s_len-2) + 'Z'
+        date_chunk = strmid(anytim(anytim(t_grid_wave_chunk) + 3600d0, /ccsds), 0, s_len-5) + 'Z'
 
-;    if n_chunks eq 0 then index_arr = index_chunk else index_arr = concat_struct(index_arr, index_chunk)
+        index_chunk.date_obs = date_obs_chunk
+        index_chunk.date_d$obs = date_d$obs_chunk
+        index_chunk.t_obs = t_obs_chunk
+        index_chunk.date = date_chunk
+        index_chunk.wavelnth = long(wave_arr[i])
 
-    for k=0, remainder-1 do begin
-      fn0 = top_dir + '/' + strtrim(wave_arr[i],2) + $
-        ssw_time2paths(index_chunk[k].date_obs, index_chunk[k].date_obs, /daily, parent='/') + '/' + fn_chunk[k]
-;      mwritefits, fn_chunk[k], index_chunk[k], data_ref0
+;;    if n_chunks eq 0 then index_arr = index_chunk else index_arr = concat_struct(index_arr, index_chunk)
+        
+        for k=0, remainder-1 do begin
+           fn0 = top_dir + '/' + strtrim(wave_arr[i],2) + $
+                 ssw_time2paths(index_chunk[k].date_obs, index_chunk[k].date_obs, /daily, parent='/') + '/' + fn_chunk[k]
+;;      mwritefits, fn_chunk[k], index_chunk[k], data_ref0
 ;      ji_hv_write_jp2_lwg, fn0, data_ref0, bit_rate=bit_rate, n_layers=n_layers, n_levels=n_levels, $
 ;        fitsheader=index_chunk[k], quiet=quiet,
 ;        kdu_lib_location=kdu_lib_location, _extra = _extra
-
-;
-; Parse the observation time
-;
-      tobs = HV_PARSE_CCSDS(?)
-;
-; Create the hvs structure
-;
-      hvs = {dir:dir,$
-             fitsname:fitsname,$
-             img:reform(data_ref0),$
-             header:header,$
-             measurement:this_wave,$
-             yy:,tobs.yy,$
-             mm:,tobs.mm,$
-             dd:,tobs.dd,$
-             hh:,tobs.hh,$
-             mmm:,tobs.mmm,$
-             ss:,tobs.ss,$
-             milli:,tobs.milli,$
-             details:info}
-;
-; Write the JP2 file
-;
-      HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename, already_written = already_written
-      if not(already_written) then begin
-         HV_LOG_WRITE,hvs,'read ' + fitsname + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0) + ' : wrote to ' + jp2_filename
-      endif
+           
+           HV_AIA_D2JP2,fitsname,reform(data_ref0),index_chunk[k],$
+                        jp2_filename = jp2_filename,$
+                        already_written = already_written
+           if not(already_written) then begin
+              hv_count = [hv_count,jp2_filename]
+           endif
       
 
-    endfor
+        endfor
 
+     endif
+
+  endfor
+;
+; Report time taken
+;
+  nawind = where(hv_count eq g.already_written,naw)
+  nnew = n_elements(hv_count)- naw
+  HV_REPORT_WRITE_TIME,progname,t0,nnew,report = report
+;
+; Copy the new files to the outgoing directory
+;
+  if keyword_set(copy2outgoing) then begin
+     HV_COPY2OUTGOING,hv_count
   endif
 
-endfor
 
+  return
 end
