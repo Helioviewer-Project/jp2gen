@@ -50,7 +50,7 @@ pro HV_WRT_ASCII, text, file, err_msg=err_msg, append = append
 ;  check input
 ;
   if n_params() lt 2 then begin
-     print,'Use:  IDL> JI_HV_WRT_ASCII, text, file (, /append)'
+     print,'Use:  IDL> HV_WRT_ASCII, text, file (, /append)'
      return
   endif
 

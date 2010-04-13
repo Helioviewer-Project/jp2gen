@@ -12,17 +12,7 @@
 ;
 ;
 FUNCTION HV_LAS_WRITE_HVS3,list,rootdir,nickname,date_start,date_end,bf_process = bf_process,standard_process = standard_process,details = details
-;
-; Read in the first and last FITS file
-;
-;  dummy = readfits(list[0],h1)
-;  date_start = (fitshead2struct(h1)).obt_time
 
-;  dummy = readfits(list[n_elements(list)-1],h2)
-;  date_end = (fitshead2struct(h2)).obt_time
-
-;  HV_LOG_CREATE_SUBDIRECTORY,nickname,date = date_start,subdir = subdir
-  logfilename = 'dummy';HV_LOG_FILENAME_CONVENTION(nickname, date_start, date_end)
   done =  HV_LAS_PROCESS_LIST_BF2(list,rootdir,nickname,'dummy',details = details)
 
 RETURN,done

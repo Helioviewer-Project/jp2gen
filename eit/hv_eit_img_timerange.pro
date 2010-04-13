@@ -1,4 +1,4 @@
-PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,dir_im,hv_write,details
+PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_written = already_written, jp2_filename = jp2_filename
 ;
 ; Turn the header into a structure
 ;
@@ -9,9 +9,6 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,dir_im,hv_write,details
   if ffhr then b0 = rebin(b0,512,512)
 ;
   header = fitshead2struct(h)
-;  header = add_tag(header,observatory,'hv_observatory')
-;  header = add_tag(header,instrument,'hv_instrument')
-;  header = add_tag(header,detector,'hv_detector')
   header = add_tag(header,this_wave,'hv_measurement')
   header = add_tag(header, header.date_obs,'hv_date_obs')
   header = add_tag(header,-header.SC_ROLL,'hv_rotation')
@@ -28,12 +25,17 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,dir_im,hv_write,details
 ;
 ; create the hvs structure and pass it along to JP2Gen
 ;
-  hvs = {img:b0, $
+  hvs = {dir:dir,$
+         fitsname:fitsname,$
+         img:b0, $
          header:header,$
          measurement:this_wave,$
-         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli, details:details}
+         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli,$
+         details:details}
 
-  HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename
-  HV_WRITE_LOG,hvs,'read ' + s + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0) + ' : wrote to ' + jp2_filename
+  HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename, already_written = already_written
+  if not(already_written) then begin
+     HV_LOG_WRITE,hvs,'read ' + s + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0) + ' : wrote to ' + jp2_filename
+  endif
   return
 end

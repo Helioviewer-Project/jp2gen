@@ -82,14 +82,17 @@
 ;
 ;-
 
-PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,quiet=quiet,kdu_lib_location=kdu_lib_location,details = details,_extra = _extra
+PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,quiet=quiet,kdu_lib_location=kdu_lib_location,details = details,measurement = measurement,_extra = _extra
 ;
   progname = 'HV_WRITE_JP2_LWG'
 ;
 ; Line feed character:
 ;
   lf=string(10b)
-
+;
+; Load in some general details
+;
+  g = HVS_GEN()
 ;
 ; set keyword "quiet" to suppress kdu_compress output
 ;
@@ -114,44 +117,12 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
      nx = sz[0]
      ny = sz[1]
      IF not(is_struct(fitsheader)) THEN header = fitshead2struct(fitsheader) ELSE header = fitsheader
-
-;     IF keyword_set(head2struct) THEN header = fitshead2struct(fitsheader) ELSE header = fitsheader
-;
-; Hierarchy Scales
-;
-; Equatorial solar radius in kilometers - constant for ALL observations
-;
-;     km_per_rsun = 695500.0d0
-;
-; Arcseconds per pixel
-;
-;     arcsec_per_pixel = 2.63
-;
-; Pixels per solar radius
-;
-;     pixel_per_rsun = 371.480
-;
-; The fixed hierarchy of length-scales
-;
-;     km_per_pixel = km_per_rsun / pixel_per_rsun
-;     km_per_pixel_hierarchy = km_per_pixel*2.0^(findgen(51)-20)
-;     arcsec_per_px_hierarchy = arcsec_per_pixel*2.0^(findgen(51)-20)
-;     pprs =  pixel_per_rsun*2.0^(findgen(51)-20)
-;
-; The observed kilometers per pixel
-;
-;     km_per_pixel_observed = km_per_rsun / header.hv_original_rsun
-;
-; The observed arcseconds per pixel
-;
-;     arcsec_per_px_observed = header.hv_original_cdelt1
 ;
 ; Find which observation we are looking at
 ;
      observatory = details.observatory
      instrument = details.instrument
      detector = details.detector
-     measurement = header.hv_measurement
 ;
      observer = observatory + '_' + instrument + '_' + detector
      observation = observer + '_' + measurement
@@ -190,163 +161,11 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         print,'Unsupported observer.  Stopping.'
         stop
      endif else begin
-
-;
-; Find the qualities of the embedding for the new image
-;
-;        a = HV_FIND_EMBED(km_per_pixel_hierarchy,$
-;                             km_per_pixel_observed,$
-;                             header.hv_original_naxis1,$
-;                             header.hv_original_naxis2,rescaleby='LOG')
-
-;
-; This one was used
-;
-;         a = HV_FIND_EMBED(arcsec_per_px_hierarchy,$
-;                              arcsec_per_px_observed,$
-;                              header.hv_original_naxis1,$
-;                              header.hv_original_naxis2,rescaleby='LOG')
-
-;;          a = HV_FIND_EMBED(pprs,$
-;;                               header.hv_original_rsun,$
-;;                               header.hv_original_naxis1,$
-;;                               header.hv_original_naxis2)
-
-;        hv_xlen = a.hv_xlen
-;        hv_ylen = a.hv_ylen
-;        nx_embed = a.nx_embed
-;        ny_embed = a.ny_embed
-;        zoom = a.sc
-;
-; ---------------- CREATE THE NEW IMAGE -----------------------------------------------
-;
-;
-; Ratio of old pixel size to new
-;
-;        ratio = a.frescale
-;
-; New pixel size
-;
-;        xpx_new = arcsec_per_px_hierarchy(zoom)
-;        ypx_new = arcsec_per_px_hierarchy(zoom)
-
-;
-; Images which are supposed to have the centre of the Sun at the
-; centre of the image have these offsets
-;
-;        if (header.hv_centering eq 1) then begin
-; For sun-centred images, the centre is at the middle of the full
-; image
-;           hv_crpix1 = nx_embed/2.0
-;           hv_crpix2 = ny_embed/2.0
-
-;           hv_xcen = hv_crpix1
-;           hv_ycen = hv_crpix2
-; The rescaled data is placed at the exact centre of the embedding
-; larger image
-;           offset_new_x = hv_crpix1 - hv_xlen/2.0
-;           offset_new_y = hv_crpix2 - hv_ylen/2.0
-; The centre of the original image was probably not pointed at the
-; centre of the Sun.  Calculate this correction in units of the new
-; pixel size 
-;           xr = (header.hv_original_crpix1 - header.hv_original_naxis1/2.0 )*ratio
-;           yr = (header.hv_original_crpix2 - header.hv_original_naxis2/2.0 )*ratio
-;
-; Calculate where the rescaled data should be placed in the larger
-; embedding. 
-;           if (abs(header.hv_crota1) le 1.0) then begin
-;              x1 = -xr + offset_new_x
-;              x2 = -xr + offset_new_x + hv_xlen-1
-;              y1 = -yr + offset_new_y
-;              y2 = -yr + offset_new_y + hv_ylen-1
-;              hv_xdis = -xr
-;              hv_ydis = -yr
-;           endif else begin
-;              x1 = xr + offset_new_x
-;              x2 = xr + offset_new_x + hv_xlen-1
-;              y1 = yr + offset_new_y
-;              y2 = yr + offset_new_y + hv_ylen-1
-;              hv_xdis = xr
-;              hv_ydis = yr
-;           endelse
-;        endif
-;
-; Put the loaded image in appropriate place in the new image
-;   
-;       image_congrid = congrid(image,hv_xlen,hv_ylen)
-;        image_new = bytarr(nx_embed,ny_embed)
 ;
 ; Set one colour to be transparent
 ;
         transcol = 0
-;
-; Recenter the image
-;
-;        image_new(x1:x2,y1:y2) = image_congrid(*,*)
-
-;
-; Extract only the bit with data, plus a small border
-;
-;        mlen = 1+nint(max([abs(xr),abs(yr)]))
-;;         a0 = max([0,nx_embed/2.0 - hv_xlen/2.0 - mlen])
-;;         a1 = min([nx_embed-1,nx_embed/2.0 + hv_xlen/2.0 + mlen-1])
-;;         b0 = max([0,ny_embed/2.0 - hv_ylen/2.0 - mlen])
-;;         b1 = min([ny_embed-1,ny_embed/2.0 + hv_ylen/2.0 + mlen-1])
-;        a0 = nx_embed/2 - hv_xlen/2 - mlen
-;        a1 = nx_embed/2 + hv_xlen/2 + mlen-1
-;        b0 = ny_embed/2 - hv_ylen/2 - mlen
-;        b1 = ny_embed/2 + hv_ylen/2 + mlen-1
-;        image_new = image_new( a0:a1,b0:b1 )
-;
-; Update
-;     length of the embedding image
-;        sz = size(image_new,/dim)
-;        nx_new = sz[0]
-;        ny_new = sz[1]
-;     centre of the image
-;        hv_crpix1 = nx_new/2.0
-;        hv_crpix2 = ny_new/2.0
-;     sun centre
-;        hv_xcen =  hv_crpix1
-;        hv_ycen =  hv_crpix2
-;
-; Bit rate re-adjustment factor
-;
-;        bit_rate_factor = float(header.hv_original_naxis1)*float(header.hv_original_naxis2)/(float(hv_xlen)*float(hv_ylen))
-;        bit_rate = bit_rate*bit_rate_factor
-;        obsdet.jp2.bit_rate = bit_rate
         kdu_bit_rate = trim(bit_rate[0]) + ',' + trim(bit_rate[1])
-;
-; ********************************************************************************************************
-;
-; Create new HV XML tags to reflect the changes we have made.
-;
-; Centre of the data
-;        header = add_tag(header,hv_crpix1,'hv_crpix1')
-;        header = add_tag(header,hv_crpix2,'hv_crpix2')
-; Extent of the non-zero portion of the embedded image
-;        header = add_tag(header,hv_xlen,'hv_xlen')
-;        header = add_tag(header,hv_ylen,'hv_ylen')
-; Position of the centre of the image
-;        header = add_tag(header,hv_xcen,'hv_xcen')
-;        header = add_tag(header,hv_ycen,'hv_ycen')
-; Full extent of the embedding image
-;        header = add_tag(header,nx_new,'hv_naxis1')
-;        header = add_tag(header,ny_new,'hv_naxis2')
-; Size of the new pixels in arcseconds
-;        header = add_tag(header,xpx_new,'hv_cdelt1')
-;        header = add_tag(header,ypx_new,'hv_cdelt2')
-; Add the displacement used to recenter the image
-;        header = add_tag(header,hv_xdis,'hv_xdis')
-;        header = add_tag(header,hv_ydis,'hv_ydis')
-; Add in the maximum size of the embedding 
-;        header = add_tag(header,mlen,'hv_mlen')
-; Size of the Sun in new pixels 
-;        header = add_tag(header,header.hv_original_rsun*ratio,'hv_rsun')
-; Zoom level 
-;        header = add_tag(header,zoom,'hv_zoom')
-;
-; Create and add an information string
 ;
 ; Who created this file and where
 ;
@@ -364,17 +183,14 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; Source code attribution
 ;
         hv_comment = hv_comment + $
-                     'FITS to JP2 source code provided by ' + wby.source.contact + $
-                     '[' + wby.source.institute + ']'+ $
-                     ' and is available for download at ' + wby.source.jp2gen_code + '.' + lf + $
+                     'FITS to JP2 source code provided by ' + g.source.contact + $
+                     '[' + g.source.institute + ']'+ $
+                     ' and is available for download at ' + g.source.jp2gen_code + '.' + lf + $
                      'Please contact the source code providers if you suspect an error in the source code.' + lf + $
-                     'Full source code for the entire Helioviewer Project can be found at ' + wby.source.all_code + '.'
+                     'Full source code for the entire Helioviewer Project can be found at ' + g.source.all_code + '.'
         if tag_exist(header,'hv_comment') then begin
            hv_comment = header.hv_comment + lf + hv_comment
-        endif; else begin
-             ;header = add_tag(header,hv_comment,'hv_comment')
-             ;endelse
-
+        endif
 ;
 ; ********************************************************************************************************
 ;
@@ -454,7 +270,7 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 
 
 ;
-; Helioviewer JP2 tags
+; Explicitly encode the allowed Helioviewer JP2 tags
 ;
 
 ;
@@ -464,11 +280,11 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; JP2GEN version
 ;
-        xh+='<HV_JP2GEN_VERSION>'+trim(wby.source.jp2gen_version)+'</HV_JP2GEN_VERSION>'+lf
+        xh+='<HV_JP2GEN_VERSION>'+trim(g.source.jp2gen_version)+'</HV_JP2GEN_VERSION>'+lf
 ;
 ; JP2GEN branch revision
 ;
-        xh+='<HV_JP2GEN_BRANCH_REVISION>'+trim(wby.source.jp2gen_branch_revision)+'</HV_JP2GEN_BRANCH_REVISION>'+lf
+        xh+='<HV_JP2GEN_BRANCH_REVISION>'+trim(g.source.jp2gen_branch_revision)+'</HV_JP2GEN_BRANCH_REVISION>'+lf
 ;
 ; HVS setup file
 ;
@@ -489,6 +305,15 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         ENDIF ELSE BEGIN
            xh+='<HV_SUPPORTED>FALSE</HV_SUPPORTED>'+lf           
         ENDELSE
+;
+; Is this a quicklook file or not?
+;
+        IF have_tag(header,'hv_quicklook') then begin
+           xh+='<HV_QUICKLOOK>TRUE</HV_QUICKLOOK>'+lf
+        ENDIF ELSE BEGIN
+           xh+='<HV_QUICKLOOK>FALSE</HV_QUICKLOOK>'+lf
+        ENDELSE
+
 ;
 ;        xh+='<BIT_RATE_FACTOR>'+trim(bit_rate_factor)+'</BIT_RATE_FACTOR>'+lf
 ;

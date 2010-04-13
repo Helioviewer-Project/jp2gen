@@ -38,6 +38,14 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
   progname = 'HV_LASCO_GET_FILENAMES'
 
   ldr = getenv('LZ_IMG') + '/' + 'level_05/' ; where the LASCO data is
+;
+; If we are calling this program to get the quicklooks, change ldr
+;
+  if tag_exist(info,'called_by') then begin
+     if (strpos(info.called_by,'HV_LASCO_PREP2JP2_AUTO') ge 0) then begin
+        ldr = info.local_quicklook
+     endif
+  endif
 
   if nickname eq 'LASCO-C2' then begin
      filter = 'Orange'
@@ -50,7 +58,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
 
   date1 = anytim2utc(t1)
   date2 = anytim2utc(t2)
-  image_list=' '
+  image_list='-1'
   FOR mjd=date1.mjd,date2.mjd DO BEGIN
      newday = {mjd:mjd,time:0.0}
      nds = utc2str(newday,/date_only)
@@ -84,7 +92,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
            if (n_elements(words) lt 12) then begin
               log_comment = progname + ': img_hdr.txt malformed for this file: '+sourcefile
               print, log_comment
-              HV_WRITE_LOG,hvs,log_comment
+              HV_LOG_WRITE,hvs,log_comment
            endif else begin
               file=strsplit(words[0],'.',/extract)
               newfile = sdir + words[0]
@@ -93,16 +101,15 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
            endelse
         endfor
      ENDIF ELSE BEGIN 
-        HV_WRITE_LOG,hvs,progname + ': Could not open '+sourcefile
+        HV_LOG_WRITE,hvs,progname + ': Could not open '+sourcefile
      ENDELSE
   ENDFOR                        ; juldays
 
   if n_elements(image_list) eq  1 then  begin
      print,' NO IMAGES ARE FOUND: CHECK YOUR INPUT DATES'
-     stop
   endif else begin
      image_list=image_list[1:*]
-     HV_WRITE_LOG,hvs,image_list
+     HV_LOG_WRITE,hvs,image_list
 
 ;     printf, log, ' Number of images that will be downloaded: ',n_elements(image_list) 
 ;     save, filename=dir.work+detector+'_image_list.sav', image_list

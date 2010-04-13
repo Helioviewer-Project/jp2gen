@@ -16,7 +16,7 @@ function HV_MDI_MAG_WRITE_HVS2,infile,rootdir,details = details
   detector = details.detector
   measurement = 'magnetogram'
 ;
-observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
+  observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
 
 ;
 ;  Read in the file and pertinent image header keywords. 
@@ -99,14 +99,20 @@ observation =  observatory + '_' + instrument + '_' + detector + '_' + measureme
 ;
 ; save
 ;
-  hvs = {img:image_new, header:hd, details: details,$
+  hvs = {dir:'NotGiven',$
+         fitsname:hd.datafile,$
+         img:image_new, header:hd, details: details,$
          measurement:measurement,$
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-  HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename
-  log_comment = 'read ' + infile + $
-            ' ; ' + HV_JP2GEN_CURRENT(/verbose) + $
-            ' ; at ' + systime(0)
-  HV_WRITE_LOG,hvs,log_comment + ' ; wrote ' + jp2_filename
+  HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
+  if not(already_written) then begin
+     log_comment = 'read ' + infile + $
+                   ' ; ' + HV_JP2GEN_CURRENT(/verbose) + $
+                   ' ; at ' + systime(0)
+     HV_LOG_WRITE,hvs,log_comment + ' ; wrote ' + jp2_filename
+  endif else begin
+     jp2_filename = 'already_written'
+  endelse
 
-  return,log_comment
+  return,jp2_filename
 end

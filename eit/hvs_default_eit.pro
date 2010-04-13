@@ -34,6 +34,10 @@
 
 FUNCTION HVS_DEFAULT_EIT
 ;
+; Get some general setup details.
+;
+  g = HVS_GEN()
+;
 ; Each measurement requires some details to control the creation of
 ; JP2 files
 ;
@@ -86,6 +90,21 @@ FUNCTION HVS_DEFAULT_EIT
   b.details[3].n_layers = 8
   b.details[3].idl_bitdepth = 8
   b.details[3].bit_rate = [0.5,0.01]
+;
+; Verify
+;
+  verify = { naxis1:  { default:1024, accept:{type:g.exact,value:[1024]} },$
+             naxis2:  { default:1024, accept:{type:g.exact,value:[1024]} },$
+             date_obs:{ default:g.na, accept:{type:g.exact,value:g.time} },$
+             telescop:{ default:'SOHO', accept:{type:g.exact,value:['SOHO']} },$
+             instrume:{ default:'EIT', accept:{type:g.exact,value:['EIT']} },$
+             wavelnth:{ default:g.na, accept:{type:g.exact,value: [b.details[*].measurement]} },$
+             crpix1:  { default:512, accept:{type:g.exact,value:[512]} },$
+             crpix2:  { default:512, accept:{type:g.exact,value:[512]} },$
+             cdelt1:  { default:2.63, accept:{type:g.range,value:[2.4,3.0]} },$
+             cdelt2:  { default:2.63, accept:{type:g.range,value:[2.4,3.0]} },$
+             solar_r: { default:369.88, accept:{type:g.range,value:[350.0,400.0]} }   }
 
+  b = add_tag(b,verify,'verify')
   return,b
 end 

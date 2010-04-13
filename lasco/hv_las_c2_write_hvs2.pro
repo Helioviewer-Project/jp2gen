@@ -4,7 +4,7 @@
 ; 2009-05-26.  Added error log file for data files with bad header information
 ;
 ;
-FUNCTION HV_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
+FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
   progname = 'HV_LAS_C2_WRITE_HVS2'
 ;
   observatory = details.observatory
@@ -13,6 +13,10 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
   measurement = details.details[0].measurement
 ;
   observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
+;
+; get general information
+;
+  ginfo = CALL_FUNCTION('hvs_gen')
 ;
 ; Proceed if input is a structure
 ;
@@ -149,16 +153,32 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
         log_comment = log_comment + ' : ' + err_report
      endif
 ;
+; Detect if this is a quicklook file
+;
+     if have_tag(details,'local_quicklook') then begin
+        qlyn = strpos(dir,details.local_quicklook)
+        if qlyn ne -1 then begin
+           hd = add_tag(hd,'TRUE','HV_QUICKLOOK')
+           print,progname + ': using quicklook data.'
+        endif
+     endif else begin
+        print,progname + ': no local quicklook tag detected in details structure.  Assuming data arises from non-quicklook FITS files.'
+     endelse
+;
 ; HVS file
 ;
-     hvs = {img:image_new, header:hd,details:details,$
+     hvs = {dir:dir,fitsname:hd.filename,img:image_new, header:hd,details:details,$
             measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-     HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename
-     HV_WRITE_LOG,hvs, log_comment + ' : wrote ' + jp2_filename
+     HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename,already_written = already_written
+     if not(already_written) then begin
+        HV_LOG_WRITE,hvs, log_comment + ' : wrote ' + jp2_filename
+     endif else begin
+        jp2_filename = ginfo.already_written
+     endelse
   endif else begin
      print,'ld was not a structure.  something funny with this LASCO C2 fits file'
      stop
   endelse
-  return,log_comment
+  return,jp2_filename
 end

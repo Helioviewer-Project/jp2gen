@@ -51,7 +51,14 @@ FUNCTION HVS_DEFAULT_MDI
        detector:'MDI',$ ; REQUIRED
        nickname:'MDI',$ ; REQUIRED
        hvs_details_filename:'hvs_default_mdi.pro',$ ; REQUIRED
-       hvs_details_filename_version:'1.0'} ; REQUIRED
+       hvs_details_filename_version:'1.0',$ ; REQUIRED
+       quicklook_directory:'/service/soho-archive/soho/private/data/planning/mdi',$ ; OPTIONAL - if you have quicklooks available, store their location in this variable.  This variable is required to run HV_MDI_PREP2JP2_QL.PRO
+       flatfield_file:'/service/soho-archive/sdb/soho/mdi/flatfield/flat_Dec2009.fits'} ; OPTIONAL - use this flat field file if it is not in the rest of your IDL path.  This variable is required to run HV_MDI_PREP2JP2_QL.PRO
+
+;
+; Warning!  Do not swap the order of these measurements.  White-light
+; must remain at b.details[0] and continuum at b.details[1]
+;
 ;
 ; white-light
 ;

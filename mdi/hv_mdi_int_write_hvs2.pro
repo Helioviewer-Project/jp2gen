@@ -43,12 +43,6 @@ FUNCTION HV_MDI_INT_WRITE_HVS2,infile,rootdir,details = details
   ss = strmid(obs_time,17,2)
   milli = strmid(obs_time,20,3)
 ;
-; Convert T_OBS into the required date format
-;
-  hv_date_obs = yy + '-' + mm + '-' + dd + 'T' + $
-                hh + ':' + mmm +':' + ss + $
-                '.' + milli + 'Z'
-;
 ; Convert T_OBS into the file format time
 ;
 ;  obs_time = yy + '_' + mm + '_' + dd + '_' + hh + mmm + ss + '.' + milli
@@ -77,10 +71,10 @@ FUNCTION HV_MDI_INT_WRITE_HVS2,infile,rootdir,details = details
 ; change the header to a structure, and add HV tags
 ;
   hd = fitshead2struct(hd)
-  hd = add_tag(hd,observatory,'hv_observatory')
-  hd = add_tag(hd,instrument,'hv_instrument')
-  hd = add_tag(hd,detector,'hv_detector')
-  hd = add_tag(hd,measurement,'hv_measurement')
+;  hd = add_tag(hd,observatory,'hv_observatory')
+;  hd = add_tag(hd,instrument,'hv_instrument')
+;  hd = add_tag(hd,detector,'hv_detector')
+;  hd = add_tag(hd,measurement,'hv_measurement')
   hd = add_tag(hd,'wavelength','hv_measurement_type')
   hd = add_tag(hd,0.0,'hv_rotation')
   hd = add_tag(hd,progname,'hv_source_program')
@@ -97,14 +91,23 @@ FUNCTION HV_MDI_INT_WRITE_HVS2,infile,rootdir,details = details
 ;
 ; save
 ;
-  hvs = {img:image_new, header:hd, details:details,$
+  hvs = {dir:'NotGiven',$
+         fitsname:hd.datafile,$
+         img:image_new,$
+         header:hd,$
          measurement:measurement,$
-         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-  HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename
-  log_comment = 'read ' + infile + $
-            ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
-            ' ; at ' + systime(0)
-  HV_WRITE_LOG,hvs,log_comment + ' ; wrote ' + jp2_filename
+         yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli,$
+         details:details}
 
-  return,log_comment
+  HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
+  if not(already_written) then begin
+     log_comment = 'read ' + infile + $
+                   ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
+                   ' ; at ' + systime(0)
+     HV_LOG_WRITE,hvs,log_comment + ' ; wrote ' + jp2_filename
+  endif else begin
+     jp2_filename = 'already_written'
+  endelse
+
+  return,jp2_filename
 end

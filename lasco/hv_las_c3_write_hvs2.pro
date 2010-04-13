@@ -1,7 +1,7 @@
 ;
 ; Write the HVS file for a LASCO C2 image
 ;
-FUNCTION HV_LAS_C3_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
+FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
   COMMON C3_BLOCK, pylonim, ctr, pylon,pylonima
   progname = 'HV_LAS_C3_WRITE_HVS2'
 ;
@@ -11,6 +11,10 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
   measurement = details.details[0].measurement
 ;
   observation =  observatory + '_' + instrument + '_' + detector + '_' + measurement
+;
+; get general information
+;
+  ginfo = CALL_FUNCTION('hvs_gen')
 ;
 ; Get further image processing details
 ;
@@ -166,23 +170,38 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,filename,rootdir,ld,logfilename,details = details
 ;
 ; Write the jp2
 ;
-
      log_comment = progname + '; source ; ' +hd.filename + ' ; ' + HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
      if total(err_hd gt 0) then begin
         hd = add_tag(hd,'Warning ' + err_report,'hv_error_report')
         log_comment = log_comment + ' : ' + err_report
      endif 
 ;
+; Detect if this is a quicklook file
+;
+     if have_tag(details,'local_quicklook') then begin
+        qlyn = strpos(dir,details.local_quicklook)
+        if qlyn ne -1 then begin
+           hd = add_tag(hd,'TRUE','HV_QUICKLOOK')
+           print,progname + ': using quicklook data.'
+        endif
+     endif else begin
+        print,progname + ': no local quicklook tag detected in details structure.  Assuming data arises from non-quicklook FITS files.'
+     endelse
+;
 ; HVS file
 ;
-     hvs = {img:image_new, header:hd,details: details,$
+     hvs = {dir:dir,fitsname:hd.filename,img:image_new, header:hd,details: details,$
             measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-     HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename
-     HV_WRITE_LOG,hvs,log_comment + ' : wrote ' + jp2_filename
+     HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_written
+     if not(already_written) then begin
+        HV_LOG_WRITE,hvs,log_comment + ' : wrote ' + jp2_filename
+     endif else begin
+        jp2_filename = ginfo.already_written
+     endelse
   endif else begin
      print,'ld was not a structure.  something funny with this LASCO C2 fits file'
      stop
   endelse
-  return,log_comment
+  return,jp2_filename
 end
