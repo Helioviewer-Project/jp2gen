@@ -61,6 +61,7 @@ FUNCTION HVS_GEN
        already_written:'already_written',$
        na:'not_applicable',$
        notgiven:notgiven,$
+       minusonestring:'1',$
        exact:'exact',$
        range:'range',$
        time:['ccsds'],$

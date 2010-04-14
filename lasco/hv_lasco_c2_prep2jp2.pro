@@ -48,11 +48,11 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
 ; Get the list of files
 ;
   list = HV_LASCO_GET_FILENAMES(date_start,date_end,nickname,info)
-  if (list[0] eq '-1') then begin
+  if (list[0] eq ginfo.MinusOneString) then begin
      report = ['No files to process']
      print,report[0]
      prepped = strarr(1)
-     prepped[0] = '-1'
+     prepped[0] = ginfo.MinusOneString
   endif else begin
 ;
 ; Setup some defaults - usually there is NO user contribution below here
@@ -71,7 +71,8 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
      output = HV_LAS_WRITE_HVS3(list,storage.jp2_location,nickname,date_start,date_end,/bf_process,details = info)
      prepped = output.hv_count
      nawind = where(prepped eq ginfo.already_written,naw)
-     nnew = n_elements(prepped)- naw
+     nm1ind = where(prepped eq ginfo.MinusOneString,nm1)
+     nnew = n_elements(prepped) - naw - nm1
 ;
 ; Report time taken
 ;

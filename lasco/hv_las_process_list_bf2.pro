@@ -6,6 +6,14 @@
 FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAIND=staind, AGAIN=again, GIFS=gifs, $
 		ALLSTARS=allstars, ROOT=root,details = details
 ;
+; program name
+;
+  progname = 'HV_LAS_PROCESS_LIST_BF2'
+;
+; JP2Gen constants
+;
+  g = HVS_GEN()
+;
 ; set this for proper scaling
 ;
   gifs=1
@@ -106,101 +114,116 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
   IF datatype(allstarims) NE 'UND' THEN replaced_all = lonarr(12000,n1-1)
   IF do_crem THEN no_img=0 ELSE no_img=1
   IF keyword_set(ROOT) THEN prfx=root
-
-  junk = lasco_readfits(list1[0],h)
+;
+; make sure the entire list of files contains 1024 x 1024 images ONLY
+;
+  good = [-1]
+  for i = 0,n_elements(list1)-1 do begin
+     junk = size(lasco_readfits(list1[i],h))
+     if (junk[1] eq 1024) and (junk[2] eq 1024) then begin
+        good = [good,i]
+     endif
+  endfor
+  if (n_elements(good) eq 1) then begin
+     print,progname + ': LASCO_READFITS there are no 1024 x 1024 pixel files in the given list.  JP2 Processing aborted'
+     outfile = g.MinusOneString
+  endif else begin
+     good = good[1:*]
+     list1 = list1[good]
+     junk = lasco_readfits(list1[0],h)
 ;
 ; junk will return an array if we get an image.
 ;
-  junk_sz = size(junk)
-  if ( (isarray(junk)) and (junk_sz[0] eq 2)) then begin
-     if ( (junk_sz[1] eq 1024) and (junk_sz[2] eq 1024) ) then begin
+;     junk_sz = size(junk)
+;     if ( (isarray(junk)) and (junk_sz[0] eq 2)) then begin
+;        if ( (junk_sz[1] eq 1024) and (junk_sz[2] eq 1024) ) then begin
 
-        IF h.detector EQ 'C3' THEN BEGIN
-           print,'using camera C3'
-           model=2              ; 1=any_year, 2=local year
-           hide=1
-           minim = 0.99
-           maxim = 1.30
+     IF h.detector EQ 'C3' THEN BEGIN
+        print,'using camera C3'
+        model=2                 ; 1=any_year, 2=local year
+        hide=1
+        minim = 0.99
+        maxim = 1.30
                                 ;box=[260,780,900,1020]
                                 ;box=[540,780,40,1000]
-           cam='c3'
-        ENDIF ELSE BEGIN
-           print,'using camera C2'
-           model=2
-           hide=0
-           minim=0.95
-           maxim=2.00
-           cam='c2'
-        ENDELSE
+        cam='c3'
+     ENDIF ELSE BEGIN
+        print,'using camera C2'
+        model=2
+        hide=0
+        minim=0.95
+        maxim=2.00
+        cam='c2'
+     ENDELSE
 
-        IF keyword_set(AGAIN) THEN use_roi='y' ELSE use_roi='n'
-        initval=0
-        IF keyword_set(STAIND) THEN startind = staind ELSE startind = 0
+     IF keyword_set(AGAIN) THEN use_roi='y' ELSE use_roi='n'
+     initval=0
+     IF keyword_set(STAIND) THEN startind = staind ELSE startind = 0
      
-        IF not(keyword_set(DIR)) THEN dir = './'
-        length=strlen(dir)
-        IF strmid(dir,length-1,1) NE '/' THEN dir = dir+'/'
+     IF not(keyword_set(DIR)) THEN dir = './'
+     length=strlen(dir)
+     IF strmid(dir,length-1,1) NE '/' THEN dir = dir+'/'
 ;prfx = strlowcase(h.detector)+month
-        print,'Processing',n1-startind+1,' files...'
-
-        FOR i=startind,n1-1 DO BEGIN
-           print,i,' of ',n1-1
-           print,'Reading ',list1[i]
-           im = lasco_readfits(list1[i],h,NO_IMG=no_img)
-           this_filename = list1[i]
-           IF h.naxis1 eq 1024 and h.naxis2 eq 1024 then begin
-              IF do_crem and i GE startind THEN $
-                 imc = remove_cr(dprev,dhprev,im,h,use_roi,init=initval) $
-              ELSE 	imc = im
+     print,'Processing',n1-startind+1,' files...'
+     
+     FOR i=startind,n1-1 DO BEGIN
+        print,i,' of ',n1-1
+        print,'Reading ',list1[i]
+        im = lasco_readfits(list1[i],h,NO_IMG=no_img)
+        this_filename = list1[i]
+        IF h.naxis1 eq 1024 and h.naxis2 eq 1024 then begin
+           IF do_crem and i GE startind THEN $
+              imc = remove_cr(dprev,dhprev,im,h,use_roi,init=initval) $
+           ELSE 	imc = im
 ;print,'Pausing...'
 ;wait,2
-              dprev = im
-              dhprev = h
-              help,boxref
-
-              IF h.detector NE 'EIT' THEN BEGIN
-                 set_plot,'x'
-                 im = mk_img(list1[i],minim,maxim,hstr,ratio=rat,fixgaps=fixg,use_model=model, $
-                             dO_BYTSCL=bytes,distort=distort, ref_box=boxref, box=box, norm=norm, $
-                             lee_filt=lee, hide_pylon=hide,crem=0, MASK_OCC=mask, /LIST, $
-                             EXPFAC=efac, times=times) 
+           dprev = im
+           dhprev = h
+           help,boxref
+           
+           IF h.detector NE 'EIT' THEN BEGIN
+              set_plot,'x'
+              im = mk_img(list1[i],minim,maxim,hstr,ratio=rat,fixgaps=fixg,use_model=model, $
+                          dO_BYTSCL=bytes,distort=distort, ref_box=boxref, box=box, norm=norm, $
+                          lee_filt=lee, hide_pylon=hide,crem=0, MASK_OCC=mask, /LIST, $
+                          EXPFAC=efac, times=times) 
 ;                 im = mk_img(list1[i],minim,maxim,hstr,ratio=rat,fixgaps=fixg,use_model=model, $
 ;                             dO_BYTSCL=bytes,distort=distort, ref_box=boxref, box=box, norm=norm, $
 ;                             lee_filt=lee, hide_pylon=hide,crem=0, MASK_OCC=mask, /LIST, $
 ;                             EXPFAC=efac, times=times) 
-                 
+              
                                 ;hist1 = 'MK_IMG(/RATIO,USE_MODEL='+trim(string(model))+')'
-              ENDIF ELSE BEGIN
-                 im= float(mk_img(list1(i),minim,maxim,hstr,do_bytscl=bytes, $
-                                  times=times, /flat_field,/degrid, /automax,/log_scl,/LIST))
+           ENDIF ELSE BEGIN
+              im= float(mk_img(list1(i),minim,maxim,hstr,do_bytscl=bytes, $
+                               times=times, /flat_field,/degrid, /automax,/log_scl,/LIST))
                                 ;hist1 = 'MK_IMG(/NO_BYTSCL,/FLAT_FIELD,/DEGRID,/LOG_SCL)'
-                 minim= -1
-                 maxim= 3
-              ENDELSE
+              minim= -1
+              maxim= 3
+           ENDELSE
                                 ;stop
-              IF datatype(allstarims) NE 'UND' THEN BEGIN
-                 IF i EQ startind THEN  help,replaced_all
-                 IF i GE startind THEN replaced_all[0,i]=coords
-              ENDIF
-              imc=float(im)
-              
-              maxmin,imc
-              ;tvscl,imc
+           IF datatype(allstarims) NE 'UND' THEN BEGIN
+              IF i EQ startind THEN  help,replaced_all
+              IF i GE startind THEN replaced_all[0,i]=coords
+           ENDIF
+           imc=float(im)
+           
+           maxmin,imc
+                                ;tvscl,imc
                                 ;med = median(imc)
-              
+           
                                 ;IF i GE startind or i EQ 0 THEN BEGIN
-              IF NOT(keyword_set(ROOT)) THEN $
-                 fname = utc2yymmdd(str2utc(h.date_obs+'t'+h.time_obs),/hhmmss,/yy)+cam+'.fts' ELSE $
-                    fname = prfx+'_'+string(format='(I4.4)',i)+'.fts' 
+           IF NOT(keyword_set(ROOT)) THEN $
+              fname = utc2yymmdd(str2utc(h.date_obs+'t'+h.time_obs),/hhmmss,/yy)+cam+'.fts' ELSE $
+                 fname = prfx+'_'+string(format='(I4.4)',i)+'.fts' 
                                 ;fname = h.filename
                                 ;strput,fname,'4',1
-              IF keyword_set(GIFS) THEN BEGIN
+           IF keyword_set(GIFS) THEN BEGIN
                                 ;tv,imc
                                 ;fname = STRMID(fname,0,8)+'a.gif'
 ;           gifname = utc2yymmdd(str2utc(h.date_obs+'t'+h.time_obs),/hhmmss,/yy)+cam+'.gif'
 ;           print,'Saving ',dir+gifname
 ;           write_gif,gifname,im
-              ENDIF 
+           ENDIF 
                                 ;get_utc,now,/ecs
                                 ;fxaddpar,hstr,'DATE',now,' '
                                 ;nhist = n_elements(hist)
@@ -213,37 +236,32 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
 ;        print,'Saving ',dir+fname
 ;        writefits,outdir+fname,imc,hstr
                                 ;ENDIF
-           ENDIF
+        ENDIF
 ;
 ; Calculate the LASCO directory
 ;
-           if (strmid(this_filename,0,1) eq path_sep()) then begin
-              lascodir = path_sep()
-           endif else begin
-              lascodir = ''
-           endelse
-           zzz = strsplit(this_filename,path_sep(),/extract)
-           for iii = 0, n_elements(zzz)-2 do begin
-              lascodir = lascodir + zzz[iii]+ '/'
-           endfor
-
-           if (nickname eq 'LASCO-C2') then begin
-              outfile(i) = HV_LAS_C2_WRITE_HVS2(lascodir,{cimg:imc,header:h},details = details)
-           endif
-           if (nickname eq 'LASCO-C3') then begin
-              outfile(i) = HV_LAS_C3_WRITE_HVS2(lascodir,{cimg:imc,header:h},details = details)
-           endif
-
-
-        ENDFOR
+        if (strmid(this_filename,0,1) eq path_sep()) then begin
+           lascodir = path_sep()
+        endif else begin
+           lascodir = ''
+        endelse
+        zzz = strsplit(this_filename,path_sep(),/extract)
+        for iii = 0, n_elements(zzz)-2 do begin
+           lascodir = lascodir + zzz[iii]+ '/'
+        endfor
+        
+        if (nickname eq 'LASCO-C2') then begin
+           outfile(i) = HV_LAS_C2_WRITE_HVS2(lascodir,{cimg:imc,header:h},details = details)
+        endif
+        if (nickname eq 'LASCO-C3') then begin
+           outfile(i) = HV_LAS_C3_WRITE_HVS2(lascodir,{cimg:imc,header:h},details = details)
+        endif
+        print,i,' this file ',nickname
+        
+     ENDFOR
      
-        IF datatype(allstarims) NE 'UND' THEN allstars=allstarims
-
-        return,{hv_count:outfile}
-     endif
-  endif else begin
-     print,'LASCO_READFITS reports that this file is not a LASCO file.  JP2 Processing aborted'
-     return,'-1'
+     IF datatype(allstarims) NE 'UND' THEN allstars=allstarims
+     
+     return,{hv_count:outfile}
   endelse
-
 END

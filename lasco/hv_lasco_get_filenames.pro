@@ -36,7 +36,11 @@
 ;========================== end header =====================================================
 FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
   progname = 'HV_LASCO_GET_FILENAMES'
-
+;
+; JP2Gen required
+;
+  g = HVS_GEN()
+;
   ldr = getenv('LZ_IMG') + '/' + 'level_05/' ; where the LASCO data is
 ;
 ; If we are calling this program to get the quicklooks, change ldr
@@ -58,7 +62,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
 
   date1 = anytim2utc(t1)
   date2 = anytim2utc(t2)
-  image_list='-1'
+  image_list = g.MinusOneString
   FOR mjd=date1.mjd,date2.mjd DO BEGIN
      newday = {mjd:mjd,time:0.0}
      nds = utc2str(newday,/date_only)
