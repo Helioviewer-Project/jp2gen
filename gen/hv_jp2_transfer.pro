@@ -80,11 +80,26 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
   endif else begin
      n = long(n_elements(a))
      b = a
+     these_inst = [g.MinusOneString]
      for i = long(0), n-long(1) do begin
         b[i] = strmid(a[i],strlen(sdir),strlen(a[i])-strlen(sdir)) 
         if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
            b[i] = strmid(b[i],1)
         endif
+        split = strsplit(b[i],path_sep(),/extract)
+        dummy = where(split[0] eq these_inst,already_seen)
+        if (already_seen eq 0) then begin
+           these_inst = [these_inst,split[0]]
+        endif
+     endfor
+     these_inst = these_inst[1:*]
+;
+; Convert all the directories to the remote group
+;
+     grpchng = wby.transfer.local.group + ':' + $
+               wby.transfer.remote.group
+     for i = 0,n_elements(these_inst)-1 do begin
+        spawn,'chown -R ' + grpchng + ' ' + storage.outgoing + these_inst[i]
      endfor
 ;
 ; Connect to the remote machine and transfer files plus their structure
@@ -94,9 +109,9 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
 ; Open connection to the remote machine and start transferring
 ;
      for i = long(0), n-long(1) do begin
+; change permission of the files
+        spawn,'chmod 775 '+ b[i]
 ; change ownership of the file into the helioviewer group
-        grpchng = wby.transfer.local.group + ':' + $
-                  wby.transfer.remote.group
         spawn,'chown -R ' + grpchng + ' ' + b[i]
 ; OS specific commands
         if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
