@@ -100,6 +100,7 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
                wby.transfer.remote.group
      for i = 0,n_elements(these_inst)-1 do begin
         spawn,'chown -R ' + grpchng + ' ' + storage.outgoing + these_inst[i]
+        spawn,'chmod 775 -R ' + storage.outgoing + these_inst[i]
      endfor
 ;
 ; Connect to the remote machine and transfer files plus their structure
@@ -109,7 +110,7 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
 ; Open connection to the remote machine and start transferring
 ;
      for i = long(0), n-long(1) do begin
-; change permission of the files
+; change permission of the subdirectories and files
         spawn,'chmod 775 '+ b[i]
 ; change ownership of the file into the helioviewer group
         spawn,'chown -R ' + grpchng + ' ' + b[i]
