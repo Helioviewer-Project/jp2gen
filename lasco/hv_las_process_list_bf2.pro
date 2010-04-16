@@ -158,8 +158,15 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
 
      IF keyword_set(AGAIN) THEN use_roi='y' ELSE use_roi='n'
      initval=0
-     IF keyword_set(STAIND) THEN startind = staind ELSE startind = 0
-     
+;     IF keyword_set(STAIND) THEN startind = staind ELSE startind = 0
+;
+; All the filenames are of the required type, so the starting index is
+; zero and the number of good files is the same as the number of
+; elements in good
+;
+     startind = 0
+     n1 = n_elements(good)
+
      IF not(keyword_set(DIR)) THEN dir = './'
      length=strlen(dir)
      IF strmid(dir,length-1,1) NE '/' THEN dir = dir+'/'
