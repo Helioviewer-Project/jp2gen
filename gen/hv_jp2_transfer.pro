@@ -126,6 +126,9 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
               ' -Ravxz --exclude "*.DS_Store" ' + $
               b[i] + ' ' + $
               transfer_details
+        print,progname + ': transferred ' + sdir + b[i] + ' to ' + $
+              wby.transfer.remote.machine + ':' + $
+              wby.transfer.remote.incoming
      endfor
 ;
 ; Write a logfile describing what was transferred
