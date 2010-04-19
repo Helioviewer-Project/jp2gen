@@ -12,14 +12,15 @@
 ;
 FUNCTION HV_STORAGE,nickname = nickname, no_db = no_db, no_log = no_log, no_jp2 = no_jp2
 ;
+  wby = HV_WRITTENBY()
 ;
 ; Where the HV programs are kept
 ;
-  hv_progs = getenv("HV_JP2GEN") + path_sep()
+  hv_progs = wby.local.jp2gen
 ;
 ; Where the output from the HV progs go.
 ;
-  hv_root = getenv("HV_JP2GEN_WRITE") + path_sep()
+  hv_root = wby.local.jp2dir
 ;
 ; ----------- No user changes required below here ----------------
 ; The write subdirectory 

@@ -12,7 +12,7 @@
 ; and pick an instrument
 ;
 
-PRO HV_LASCO_PREP2JP2_AUTO,ds = ds,de = de,c2 = c2, c3 = c3,details_file = details_file,$
+PRO HV_LASCO_PREP2JP2_AUTO,date_start = ds,date_end = de,c2 = c2, c3 = c3,details_file = details_file,$
                            alternate_backgrounds = alternate_backgrounds,$
                            copy2outgoing = copy2outgoing
   progname = 'HV_LASCO_PREP2JP2_AUTO'
