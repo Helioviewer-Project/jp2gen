@@ -20,7 +20,7 @@ FUNCTION HV_STORAGE,nickname = nickname, no_db = no_db, no_log = no_log, no_jp2 
 ;
 ; Where the output from the HV progs go.
 ;
-  hv_root = wby.local.jp2dir
+  hv_root = wby.local.jp2gen_write
 ;
 ; ----------- No user changes required below here ----------------
 ; The write subdirectory 

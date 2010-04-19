@@ -34,7 +34,7 @@ FUNCTION HVS_GEN
 ; Get the source details
 ;
   wby = HV_WRITTENBY()
-  loc = wby.local.jp2gendir
+  loc = wby.local.jp2gen
   bzr_revno = HV_BZR_REVNO_HANDLER(loc)
   source = {institute:'NASA-GSFC',$
             contact:'ESA/NASA Helioviewer Project [contact the Helioviewer Project at webmaster@helioviewer.org]',$
