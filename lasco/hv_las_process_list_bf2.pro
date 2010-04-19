@@ -84,7 +84,9 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
 ;
 ; Read the file if necessary
 ;
-  IF sz(0) EQ 0 THEN list1 = readlist(listfile,n1) ELSE BEGIN
+  IF sz(0) EQ 0 THEN BEGIN
+     list1 = readlist(listfile,n1) 
+  ENDIF ELSE BEGIN
      list1=listfile
      n1=sz(1)
   ENDELSE
@@ -158,8 +160,15 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
 
      IF keyword_set(AGAIN) THEN use_roi='y' ELSE use_roi='n'
      initval=0
-     IF keyword_set(STAIND) THEN startind = staind ELSE startind = 0
-     
+;     IF keyword_set(STAIND) THEN startind = staind ELSE startind = 0
+;
+; All the filenames are of the required type, so the starting index is
+; zero and the number of good files is the same as the number of
+; elements in good
+;
+     startind = 0
+     n1 = n_elements(good)
+
      IF not(keyword_set(DIR)) THEN dir = './'
      length=strlen(dir)
      IF strmid(dir,length-1,1) NE '/' THEN dir = dir+'/'

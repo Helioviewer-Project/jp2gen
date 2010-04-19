@@ -48,11 +48,11 @@ PRO HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
 ; Get the list of files
 ;
   list = HV_LASCO_GET_FILENAMES(date_start,date_end,nickname,info)
-  if (list[0] eq '-1') then begin
+  if (list[0] eq ginfo.MinusOneString) then begin
      report = ['No files to process']
      print,report[0]
      prepped = strarr(1)
-     prepped[0] = '-1'
+     prepped[0] = ginfo.MinusOneString
   endif else begin
 ;
 ; Start a clock

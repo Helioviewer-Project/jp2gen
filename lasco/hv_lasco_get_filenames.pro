@@ -62,7 +62,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
 
   date1 = anytim2utc(t1)
   date2 = anytim2utc(t2)
-  image_list = g.MinusOneString
+  image_list = [g.MinusOneString]
   FOR mjd=date1.mjd,date2.mjd DO BEGIN
      newday = {mjd:mjd,time:0.0}
      nds = utc2str(newday,/date_only)
