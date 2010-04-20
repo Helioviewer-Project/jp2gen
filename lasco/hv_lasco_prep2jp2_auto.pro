@@ -14,7 +14,8 @@
 
 PRO HV_LASCO_PREP2JP2_AUTO,date_start = ds,date_end = de,c2 = c2, c3 = c3,details_file = details_file,$
                            alternate_backgrounds = alternate_backgrounds,$
-                           copy2outgoing = copy2outgoing
+                           copy2outgoing = copy2outgoing,$
+                           once_only = once_only
   progname = 'HV_LASCO_PREP2JP2_AUTO'
 ;
 ;
@@ -77,7 +78,7 @@ PRO HV_LASCO_PREP2JP2_AUTO,date_start = ds,date_end = de,c2 = c2, c3 = c3,detail
      HV_REPEAT_MESSAGE,progname,count,timestart, more = ['examined ' + ds + ' to ' + de + '.',report],/web
      HV_WAIT,progname,30,/minutes,/web
 
-  endrep until 1 eq 0
+  endrep until 1 eq keyword_set(once_only)
 
   return
 end
