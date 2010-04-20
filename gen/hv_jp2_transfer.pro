@@ -71,7 +71,7 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
 ;
   sdir = storage.outgoing
   a = file_list(find_all_dir(sdir),'*.jp2')
-
+  print,progname + ': looking in '+sdir
   if not(isarray(a)) then begin
      note = 'No files to transfer'
      print, note
@@ -141,39 +141,40 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
         spawn,'rm -f ' + b[i]
      endfor
      cd,old_dir
-
-  endelse
 ;
 ; Cleanup old directories that have been untouched for a long time
 ;
-  d = find_all_dir(sdir) ; get all the subdirectories
+     d = find_all_dir(sdir)     ; get all the subdirectories
 ;
 ; get the creation time and depth if each sub-directory
 ;
-  day = 60.0*60.0*24.0 ; day in seconds
-  month = day*28.0
-  now = systime(1)
-  nsep = intarr(n_elements(d))
-  mr = fltarr(n_elements(d))
-  for i = 0,n_elements(d)-1 do begin
-     nsep[i] = n_elements(str_index(d[i],path_sep()))
-     mr[i] = (file_info(d[i])).mtime
-  endfor
+     day = 60.0*60.0*24.0       ; day in seconds
+     month = day*28.0
+     now = systime(1)
+     nsep = intarr(n_elements(d))
+     mr = fltarr(n_elements(d))
+     for i = 0,n_elements(d)-1 do begin
+        nsep[i] = n_elements(str_index(d[i],path_sep()))
+        mr[i] = (file_info(d[i])).mtime
+     endfor
 ;
 ; Go through the directories, from deepest first and calculate how old
 ; they are.  Remove them if they are more than two months old.
 ;
-  nsep_max = max(nsep)
-  for i = nsep_max,nsep_max-2,-1 do begin
-     z = where(nsep eq i)
-     for j = 0,n_elements(z)-1 do begin
-        diff = now - mr[z[j]]
+     nsep_max = max(nsep)
+     for i = nsep_max,nsep_max-2,-1 do begin
+        z = where(nsep eq i)
+        for j = 0,n_elements(z)-1 do begin
+           diff = now - mr[z[j]]
 
-        if (diff ge (2.0*month)) then begin
-           print, progname + ': removing '+ d[z[j]] + '(' +trim(diff) + ' seconds).'
-           spawn,'rmdir ' + d[z[j]]
-        endif
+           if (diff ge (2.0*month)) then begin
+              print, progname + ': removing '+ d[z[j]] + '(' +trim(diff) + ' seconds).'
+              spawn,'rmdir ' + d[z[j]]
+           endif
+        endfor
      endfor
-  endfor
+
+  endelse
+  
   return
 end
