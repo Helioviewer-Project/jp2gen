@@ -79,7 +79,7 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
   if not(isarray(a)) then begin
      note = 'No files to transfer'
      print, note
-     HV_LOG_WRITE,'transfer_log',note,/transfer
+     HV_LOG_WRITE,'transfer_log',note,transfer = transfer_start_time + '_'
      n= 0
   endif else begin
      n = long(n_elements(a))
