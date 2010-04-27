@@ -31,7 +31,7 @@ PRO HV_LOG_WRITE,hvs, log_comment, log_filename = log_filename,$
 ; Write the logfile
 ;
         log = HV_WRITE_LIST_JP2_MKDIR({yy:yy,mm:mm,dd:dd,measurement:''},storage.log_location)
-        log_filename = log + 'transfer.' + ji_systime() + '.log'
+        log_filename = log + 'transfer.' + transfer + ji_systime() + '.log'
         HV_WRT_ASCII,log_comment,log_filename
         
      endif else begin

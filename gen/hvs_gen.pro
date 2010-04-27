@@ -33,7 +33,8 @@ FUNCTION HVS_GEN
 ;
 ; Get the source details
 ;
-  loc = getenv("HV_JP2GEN")
+  wby = HV_WRITTENBY()
+  loc = wby.local.jp2gen
   bzr_revno = HV_BZR_REVNO_HANDLER(loc)
   source = {institute:'NASA-GSFC',$
             contact:'ESA/NASA Helioviewer Project [contact the Helioviewer Project at webmaster@helioviewer.org]',$
@@ -46,17 +47,22 @@ FUNCTION HVS_GEN
 ;
   d = {measurement: "", n_levels: 8, n_layers: 8, idl_bitdepth: 8, bit_rate: [0.5,0.01]}
   a = replicate( d , 1 )
-
+;
+; Not given flag
+;
+  notgiven = 'NotGiven'
 ;
 ; Construct the return value
 ;
   b = {details:a,$
-       observatory:'NotGiven',$
-       instrument:'NotGiven',$
-       detector:'NotGiven',$
+       observatory:notgiven,$
+       instrument:notgiven,$
+       detector:notgiven,$
        web:'~/Desktop/',$
        already_written:'already_written',$
        na:'not_applicable',$
+       notgiven:notgiven,$
+       minusonestring:'1',$
        exact:'exact',$
        range:'range',$
        time:['ccsds'],$

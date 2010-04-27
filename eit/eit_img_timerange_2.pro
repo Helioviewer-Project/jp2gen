@@ -152,10 +152,13 @@ END
 
 PRO eit_img_timerange_2,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,hv_write = hv_write, hv_count = hv_count, hv_details = hv_details ; *** HV ***
 ;
-; Get general JP2Gen information
+; HV Project: get general JP2Gen information
 ;
-ginfo = CALL_FUNCTION('hvs_gen')
-hv_count = [ginfo.already_written] ; *** HV ***
+If keyword_set(hv_write) then begin
+   ginfo = HVS_GEN()
+   hv_count = [ginfo.already_written]
+ENDIF
+
 IF KEYWORD_SET(help) THEN BEGIN
    print,'This is eit_img_timerange.pro.'
 ; DM, 2010-01-25: copy calling sequence of eit_img_timerange here once
@@ -458,7 +461,7 @@ ENDIF
 ;
                 if KEYWORD_SET(hv_write) then begin ; *** HV ***
                    sep = STRSPLIT(s(i_file),' ',/extract)
-                   HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s(i_file),this_wave,hv_details,'NOTGIVEN',sep[n_elements(sep)-1],already_written = already_written,jp2_filename = jp2_filename
+                   HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s(i_file),this_wave,hv_details,ginfo.notgiven,sep[n_elements(sep)-1],already_written = already_written,jp2_filename = jp2_filename
                    if NOT(already_written) then begin
                       hv_count = [hv_count,jp2_filename]
                    endif

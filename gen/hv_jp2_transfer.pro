@@ -57,6 +57,10 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
   g = HVS_GEN()
   storage = HV_STORAGE()
 ;
+; Transfer start-time
+;
+  transfer_start_time = JI_SYSTIME()
+;
 ;     transfer_details = ' -e ssh -l ireland@delphi.nascom.nasa.gov:/var/www/jp2/v0.8/inc/test_transfer/'
 ;
 ; define the transfer script
@@ -71,20 +75,36 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
 ;
   sdir = storage.outgoing
   a = file_list(find_all_dir(sdir),'*.jp2')
-
+  print,progname + ': looking in '+sdir
   if not(isarray(a)) then begin
      note = 'No files to transfer'
      print, note
-     HV_LOG_WRITE,'transfer_log',note,/transfer
+     HV_LOG_WRITE,'transfer_log',note,transfer = transfer_start_time + '_'
      n= 0
   endif else begin
      n = long(n_elements(a))
      b = a
+     these_inst = [g.MinusOneString]
      for i = long(0), n-long(1) do begin
         b[i] = strmid(a[i],strlen(sdir),strlen(a[i])-strlen(sdir)) 
         if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
            b[i] = strmid(b[i],1)
         endif
+        split = strsplit(b[i],path_sep(),/extract)
+        dummy = where(split[0] eq these_inst,already_seen)
+        if (already_seen eq 0) then begin
+           these_inst = [these_inst,split[0]]
+        endif
+     endfor
+     these_inst = these_inst[1:*]
+;
+; Convert all the directories to the remote group
+;
+     grpchng = wby.transfer.local.group + ':' + $
+               wby.transfer.remote.group
+     for i = 0,n_elements(these_inst)-1 do begin
+        spawn,'chown -R ' + grpchng + ' ' + storage.outgoing + these_inst[i]
+        spawn,'chmod 775 -R ' + storage.outgoing + these_inst[i]
      endfor
 ;
 ; Connect to the remote machine and transfer files plus their structure
@@ -94,9 +114,9 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
 ; Open connection to the remote machine and start transferring
 ;
      for i = long(0), n-long(1) do begin
+; change permission of the subdirectories and files
+        spawn,'chmod 775 '+ b[i]
 ; change ownership of the file into the helioviewer group
-        grpchng = wby.transfer.local.group + ':' + $
-                  wby.transfer.remote.group
         spawn,'chown -R ' + grpchng + ' ' + b[i]
 ; OS specific commands
         if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
@@ -110,11 +130,14 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
               ' -Ravxz --exclude "*.DS_Store" ' + $
               b[i] + ' ' + $
               transfer_details
+        print,progname + ': transferred ' + sdir + b[i] + ' to ' + $
+              wby.transfer.remote.machine + ':' + $
+              wby.transfer.remote.incoming
      endfor
 ;
 ; Write a logfile describing what was transferred
 ;
-     HV_LOG_WRITE,'transfer_log',b,/transfer
+     HV_LOG_WRITE,'transfer_log',b,transfer = transfer_start_time + '_'
 ;
 ; Remove files from the outgoing that have been transferred
 ;
@@ -122,39 +145,40 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
         spawn,'rm -f ' + b[i]
      endfor
      cd,old_dir
-
-  endelse
 ;
 ; Cleanup old directories that have been untouched for a long time
 ;
-  d = find_all_dir(sdir) ; get all the subdirectories
+     d = find_all_dir(sdir)     ; get all the subdirectories
 ;
 ; get the creation time and depth if each sub-directory
 ;
-  day = 60.0*60.0*24.0 ; day in seconds
-  month = day*28.0
-  now = systime(1)
-  nsep = intarr(n_elements(d))
-  mr = fltarr(n_elements(d))
-  for i = 0,n_elements(d)-1 do begin
-     nsep[i] = n_elements(str_index(d[i],path_sep()))
-     mr[i] = (file_info(d[i])).mtime
-  endfor
+     day = 60.0*60.0*24.0       ; day in seconds
+     month = day*28.0
+     now = systime(1)
+     nsep = intarr(n_elements(d))
+     mr = fltarr(n_elements(d))
+     for i = 0,n_elements(d)-1 do begin
+        nsep[i] = n_elements(str_index(d[i],path_sep()))
+        mr[i] = (file_info(d[i])).mtime
+     endfor
 ;
 ; Go through the directories, from deepest first and calculate how old
 ; they are.  Remove them if they are more than two months old.
 ;
-  nsep_max = max(nsep)
-  for i = nsep_max,nsep_max-2,-1 do begin
-     z = where(nsep eq i)
-     for j = 0,n_elements(z)-1 do begin
-        diff = now - mr[z[j]]
+     nsep_max = max(nsep)
+     for i = nsep_max,nsep_max-2,-1 do begin
+        z = where(nsep eq i)
+        for j = 0,n_elements(z)-1 do begin
+           diff = now - mr[z[j]]
 
-        if (diff ge (2.0*month)) then begin
-           print, progname + ': removing '+ d[z[j]] + '(' +trim(diff) + ' seconds).'
-           spawn,'rmdir ' + d[z[j]]
-        endif
+           if (diff ge (2.0*month)) then begin
+              print, progname + ': removing '+ d[z[j]] + '(' +trim(diff) + ' seconds).'
+              spawn,'rmdir ' + d[z[j]]
+           endif
+        endfor
      endfor
-  endfor
+
+  endelse
+  
   return
 end

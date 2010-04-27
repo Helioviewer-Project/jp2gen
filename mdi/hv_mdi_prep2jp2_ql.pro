@@ -37,7 +37,7 @@
 ;     04-Dec-2009 (SEG) - Updating the flat_field file from flat_Dec2008.fits to flat_Dec2009.fits
 ;-
 
-PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoing,output = output
+PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoing,output = output, ds = ds
 ;
 ; Program name
 ;
@@ -59,8 +59,17 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
   count = 0
   repeat begin
      t0 = systime(1)
-     sttim = anytim2ints(ut_time(), offset=-2*86400)
+     if count eq 0 then begin
+        if not(keyword_set(ds)) then begin
+           sttim = anytim2ints(ut_time(), offset=-2*86400)
+        endif else begin
+           sttim = anytim2ints(ds)
+        endelse
+     endif else begin
+        sttim = anytim2ints(ut_time(), offset=-2*86400)
+     endelse
      entim = ut_time()
+
 ;; ------ temporyary fix for network switch problems where igram and doppl cannot be read from soho-archive 11-Jul-2007 (SEG) 
 ;;dir = '/soho-archive/private/data/planning/mdi' ;;--- 11-Jul-2007 (SEG)
 ;;dir = '/sas12/temp' ;------16-nov-2007 (SEG) On the new network, not saving fits to sas4/temp anymore 

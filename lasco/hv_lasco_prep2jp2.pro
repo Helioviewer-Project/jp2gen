@@ -12,7 +12,7 @@
 ; and pick an instrument
 ;
 
-PRO HV_LASCO_PREP2JP2,ds,de,c2 = c2, c3 = c3,details_file = details_file, copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds
+PRO HV_LASCO_PREP2JP2,date_start = ds,date_end = de,c2 = c2, c3 = c3,details_file = details_file, copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds
   progname = 'HV_LASCO_PREP2JP2'
 
   if (anytim2tai(ds) gt anytim2tai(de)) then begin

@@ -12,9 +12,10 @@
 ; and pick an instrument
 ;
 
-PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details_file,$
+PRO HV_LASCO_PREP2JP2_AUTO,date_start = ds,date_end = de,c2 = c2, c3 = c3,details_file = details_file,$
                            alternate_backgrounds = alternate_backgrounds,$
-                           copy2outgoing = copy2outgoing
+                           copy2outgoing = copy2outgoing,$
+                           once_only = once_only
   progname = 'HV_LASCO_PREP2JP2_AUTO'
 ;
 ;
@@ -49,15 +50,12 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details
 ;
      get_utc,utc,/ecs,/date_only
      if (count eq 0) then begin
-        if keyword_set(start) then begin 
-           ds = start
-        endif else begin
-           ds = utc
-        endelse
+        if not(keyword_set(ds)) then ds = utc
+        if not(keyword_set(de)) then de = utc
      endif else begin
         ds = utc
+        de = utc
      endelse
-     de = utc
      print,' '
      print,progname + ': Processing... ' + ds + ' to ' + de
 
@@ -80,7 +78,7 @@ PRO HV_LASCO_PREP2JP2_AUTO,start = start,c2 = c2, c3 = c3,details_file = details
      HV_REPEAT_MESSAGE,progname,count,timestart, more = ['examined ' + ds + ' to ' + de + '.',report],/web
      HV_WAIT,progname,30,/minutes,/web
 
-  endrep until 1 eq 0
+  endrep until 1 eq keyword_set(once_only)
 
   return
 end
