@@ -25,14 +25,14 @@ FUNCTION HV_WRITTENBY
   return,{local:{institute:'NASA-GSFC',$
                  contact:'Helioviewer Project (webmaster@helioviewer.org)',$
                  kdu_lib_location:'~/KDU/Kakadu/v6_1_1-00781N/bin/Mac-x86-64-gcc/',$
-                 jp2gen_write:'/home/ireland/hv_lasco_JanFebMar2010/',$
+                 jp2gen_write:'/home/ireland/hv_latest/',$
                  jp2gen:'/home/ireland/hv/jp2gen-jack/'},$
           transfer:{local:{group:'ireland',$
                            tcmd_linux:'rsync',$
                            tcmd_osx:'/usr/local/bin/rsync'},$
                     remote:{user:'ireland',$
                             machine:'helioviewer.nascom.nasa.gov',$
-                            incoming:'/home/ireland/lasco_JanFebMar2010/',$
+                            incoming:'/home/ireland/incoming/',$
                             group:'helioviewer'}},$
           webpage:'/service/www/'}
 END
