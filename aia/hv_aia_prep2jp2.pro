@@ -2,7 +2,9 @@
 ; 22 April 2010
 ;
 ; Version 1 of conversion of SDO data to JP2
+; Based on the AIA data analysis guide.
 ;
+; Initial version only - will probably need significant edits
 ;
 PRO hv_aia_prep2jp2,date_start = date_start,$
                     date_end = date_end,$
