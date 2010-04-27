@@ -57,6 +57,10 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
   g = HVS_GEN()
   storage = HV_STORAGE()
 ;
+; Transfer start-time
+;
+  transfer_start_time = JI_SYSTIME()
+;
 ;     transfer_details = ' -e ssh -l ireland@delphi.nascom.nasa.gov:/var/www/jp2/v0.8/inc/test_transfer/'
 ;
 ; define the transfer script
@@ -133,7 +137,7 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
 ;
 ; Write a logfile describing what was transferred
 ;
-     HV_LOG_WRITE,'transfer_log',b,/transfer
+     HV_LOG_WRITE,'transfer_log',b,transfer = transfer_start_time + '_'
 ;
 ; Remove files from the outgoing that have been transferred
 ;
