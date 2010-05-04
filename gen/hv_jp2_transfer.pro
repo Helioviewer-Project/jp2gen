@@ -78,9 +78,8 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web
   a = file_list(find_all_dir(sdir),'*.jp2')
   print,progname + ': looking in '+sdir
   if not(isarray(a)) then begin
-     note = 'No files to transfer'
-     print, note
-     HV_LOG_WRITE,'transfer_log',note,transfer = transfer_start_time + '_'
+     transfer_results = ['No files to transfer']
+     print, transfer_results
      n= 0
   endif else begin
 ;
@@ -138,7 +137,7 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web
               ' -Ravxz --exclude "*.DS_Store" ' + $
               b[i] + ' ' + $
               transfer_details, result,error, exit_status = exit_status
-        transfer_results = [transfer_results,' ','-- start --',filenumber + ' out of ' + filetotal,b[i],result,error,'exit_status='+trim(exit_status)]
+        transfer_results = [transfer_results,' ','-- start --',filenumber + ' out of ' + filetotal,b[i],systime(0),result,error,'exit_status='+trim(exit_status)]
 ;
 ; Remove files ONLY if there has been an error-free transfer
 ;
@@ -150,6 +149,7 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web
                  wby.transfer.remote.machine + ':' + $
                  wby.transfer.remote.incoming
            print,progname +': deleting '+b[i]
+           transfer_results = [transfer_results,progname +': deleting ' + sdir + b[i]]
         endif else begin
            print,' '
            print,filenumber + ' out of ' + filetotal
@@ -159,10 +159,6 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web
            print,progname +': check logs.'
         endelse
      endfor
-;
-; Write a logfile describing what was transferred
-;
-     HV_LOG_WRITE,'transfer_log',transfer_results,transfer = transfer_start_time + '_'
      cd,old_dir
 ;
 ; Cleanup old directories that have been untouched for a long time
@@ -198,6 +194,15 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web
      endfor
 
   endelse
-  
+;
+; Write a logfile describing what was transferred
+;
+  HV_LOG_WRITE,'transfer_log',transfer_results,transfer = transfer_start_time + '_'
+;
+; Write a file for the web, if required
+;
+  IF keyword_set(web) then begin
+     HV_WEB_TXTNOTE,progname,transfer_results,/details
+  ENDIF
   return
 end
