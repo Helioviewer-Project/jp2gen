@@ -48,7 +48,7 @@
 ; those files from the outgoing directory.
 ;
 ;
-PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
+PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web
   progname = 'hv_jp2_transfer'
 ;
 ; Get various details about the setup
@@ -56,6 +56,7 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
   wby = HV_WRITTENBY()
   g = HVS_GEN()
   storage = HV_STORAGE()
+  storage2 = HV_STORAGE(nickname = 'HV_TRANSFER_LOGS',/no_db,/no_jp2)
 ;
 ; Transfer start-time
 ;
@@ -82,6 +83,10 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
      HV_LOG_WRITE,'transfer_log',note,transfer = transfer_start_time + '_'
      n= 0
   endif else begin
+;
+; Open a transfer details file
+;
+     transfer_results = [g.MinusOneString]
      n = long(n_elements(a))
      b = a
      these_inst = [g.MinusOneString]
@@ -113,7 +118,10 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
 ;
 ; Open connection to the remote machine and start transferring
 ;
+     filetotal = trim(n)
      for i = long(0), n-long(1) do begin
+;
+        filenumber = trim(i+1)
 ; change permission of the subdirectories and files
         spawn,'chmod 775 '+ b[i]
 ; change ownership of the file into the helioviewer group
@@ -129,21 +137,32 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n
         spawn,tcmd + $
               ' -Ravxz --exclude "*.DS_Store" ' + $
               b[i] + ' ' + $
-              transfer_details
-        print,progname + ': transferred ' + sdir + b[i] + ' to ' + $
-              wby.transfer.remote.machine + ':' + $
-              wby.transfer.remote.incoming
+              transfer_details, result,error, exit_status = exit_status
+        transfer_results = [transfer_results,' ','-- start --',filenumber + ' out of ' + filetotal,b[i],result,error,'exit_status='+trim(exit_status)]
+;
+; Remove files ONLY if there has been an error-free transfer
+;
+        if exit_status eq 0 then begin
+           spawn,'rm -f ' + b[i]
+           print,' '
+           print,filenumber + ' out of ' + filetotal
+           print,progname + ': no error reported on transfer of ' + sdir + b[i] + ' to ' + $
+                 wby.transfer.remote.machine + ':' + $
+                 wby.transfer.remote.incoming
+           print,progname +': deleting '+b[i]
+        endif else begin
+           print,' '
+           print,filenumber + ' out of ' + filetotal
+           print,progname +': error in transfer of ' + sdir + b[i] + ' to ' + $
+                 wby.transfer.remote.machine + ':' + $
+                 wby.transfer.remote.incoming
+           print,progname +': check logs.'
+        endelse
      endfor
 ;
 ; Write a logfile describing what was transferred
 ;
-     HV_LOG_WRITE,'transfer_log',b,transfer = transfer_start_time + '_'
-;
-; Remove files from the outgoing that have been transferred
-;
-     for i = long(0), n-long(1) do begin
-        spawn,'rm -f ' + b[i]
-     endfor
+     HV_LOG_WRITE,'transfer_log',transfer_results,transfer = transfer_start_time + '_'
      cd,old_dir
 ;
 ; Cleanup old directories that have been untouched for a long time
