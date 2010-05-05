@@ -48,7 +48,8 @@
 ; those files from the outgoing directory.
 ;
 ;
-PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web
+PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web, delete_transferred = delete_transferred,$
+                    sdir = sdir
   progname = 'hv_jp2_transfer'
 ;
 ; Get various details about the setup
@@ -74,14 +75,26 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web
 ;
 ; Get a list of the JP2 files and their subdirectories in the outgoing directory
 ;
-  sdir = storage.outgoing
-  a = file_list(find_all_dir(sdir),'*.jp2')
+  if not(keyword_set(sdir)) then begin
+     sdir = storage.outgoing
+  endif
+  sdir = EXPAND_TILDE(sdir)
   print,progname + ': looking in '+sdir
+  a = file_list(find_all_dir(sdir),'*.jp2')
   if not(isarray(a)) then begin
      transfer_results = ['No files to transfer']
      print, transfer_results
      n= 0
   endif else begin
+;
+; Get the full path
+;
+     sdir_full = HV_PARSE_LOCATION(a[0],/location)
+;
+; Part of the command to change groups
+;
+     grpchng = wby.transfer.local.group + ':' + $
+               wby.transfer.remote.group
 ;
 ; Open a transfer details file
 ;
@@ -90,30 +103,35 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web
      b = a
      these_inst = [g.MinusOneString]
      for i = long(0), n-long(1) do begin
-        b[i] = strmid(a[i],strlen(sdir),strlen(a[i])-strlen(sdir)) 
-        if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
-           b[i] = strmid(b[i],1)
-        endif
+;        b[i] = strmid(a[i],strlen(sdir),strlen(a[i])-strlen(sdir)) 
+        b[i] = HV_PARSE_LOCATION(a[i],/transfer_path)
+;        stop
+;        if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
+;           b[i] = strmid(b[i],1)
+;        endif
         split = strsplit(b[i],path_sep(),/extract)
         dummy = where(split[0] eq these_inst,already_seen)
         if (already_seen eq 0) then begin
            these_inst = [these_inst,split[0]]
         endif
+;        stop
+;
+        spawn,'chown -R ' + grpchng + ' ' + sdir_full + b[i]
+        spawn,'chmod 775 -R ' + sdir_full + b[i]
+;
      endfor
-     these_inst = these_inst[1:*]
+;     these_inst = these_inst[1:*]
 ;
 ; Convert all the directories to the remote group
 ;
-     grpchng = wby.transfer.local.group + ':' + $
-               wby.transfer.remote.group
-     for i = 0,n_elements(these_inst)-1 do begin
-        spawn,'chown -R ' + grpchng + ' ' + storage.outgoing + these_inst[i]
-        spawn,'chmod 775 -R ' + storage.outgoing + these_inst[i]
-     endfor
+;     for i = 0,n_elements(these_inst)-1 do begin
+;        spawn,'chown -R ' + grpchng + ' ' + sdir_full + these_inst[i]
+;        spawn,'chmod 775 -R ' + sdir_full + these_inst[i]
+;     endfor
 ;
 ; Connect to the remote machine and transfer files plus their structure
 ;
-     cd,sdir,current = old_dir
+     cd,sdir_full,current = old_dir
 ;
 ; Open connection to the remote machine and start transferring
 ;
@@ -142,18 +160,28 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web
 ; Remove files ONLY if there has been an error-free transfer
 ;
         if exit_status eq 0 then begin
-           spawn,'rm -f ' + b[i]
-           print,' '
-           print,filenumber + ' out of ' + filetotal
-           print,progname + ': no error reported on transfer of ' + sdir + b[i] + ' to ' + $
-                 wby.transfer.remote.machine + ':' + $
-                 wby.transfer.remote.incoming
-           print,progname +': deleting '+b[i]
-           transfer_results = [transfer_results,progname +': deleting ' + sdir + b[i]]
+           if keyword_set(delete_transferred) then begin
+              spawn,'rm -i ' + b[i] ; TEMPORARY inquiry to make sure the user really wants to delete the originals
+              print,' '
+              print,filenumber + ' out of ' + filetotal
+              print,progname + ': no error reported on transfer of ' + sdir_full + b[i] + ' to ' + $
+                    wby.transfer.remote.machine + ':' + $
+                    wby.transfer.remote.incoming
+              print,progname +': deleting '+b[i]
+              transfer_results = [transfer_results,progname +': deleting ' + sdir_full + b[i]]
+           endif else begin
+              print,' '
+              print,filenumber + ' out of ' + filetotal
+              print,progname + ': no error reported on transfer of ' + sdir_full + b[i] + ' to ' + $
+                    wby.transfer.remote.machine + ':' + $
+                    wby.transfer.remote.incoming
+              print,progname +': keeping '+b[i]
+              transfer_results = [transfer_results,progname +': keeping ' + sdir_full + b[i]]
+           endelse
         endif else begin
            print,' '
            print,filenumber + ' out of ' + filetotal
-           print,progname +': error in transfer of ' + sdir + b[i] + ' to ' + $
+           print,progname +': error in transfer of ' + sdir_full + b[i] + ' to ' + $
                  wby.transfer.remote.machine + ':' + $
                  wby.transfer.remote.incoming
            print,progname +': check logs.'
@@ -163,36 +191,37 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web
 ;
 ; Cleanup old directories that have been untouched for a long time
 ;
-     d = find_all_dir(sdir)     ; get all the subdirectories
+     if keyword_set(delete_transferred) then begin
+        d = find_all_dir(sdir)  ; get all the subdirectories
 ;
 ; get the creation time and depth if each sub-directory
 ;
-     day = 60.0*60.0*24.0       ; day in seconds
-     month = day*28.0
-     now = systime(1)
-     nsep = intarr(n_elements(d))
-     mr = fltarr(n_elements(d))
-     for i = 0,n_elements(d)-1 do begin
-        nsep[i] = n_elements(str_index(d[i],path_sep()))
-        mr[i] = (file_info(d[i])).mtime
-     endfor
+        day = 60.0*60.0*24.0    ; day in seconds
+        month = day*28.0
+        now = systime(1)
+        nsep = intarr(n_elements(d))
+        mr = fltarr(n_elements(d))
+        for i = 0,n_elements(d)-1 do begin
+           nsep[i] = n_elements(str_index(d[i],path_sep()))
+           mr[i] = (file_info(d[i])).mtime
+        endfor
 ;
 ; Go through the directories, from deepest first and calculate how old
 ; they are.  Remove them if they are more than two months old.
 ;
-     nsep_max = max(nsep)
-     for i = nsep_max,nsep_max-2,-1 do begin
-        z = where(nsep eq i)
-        for j = 0,n_elements(z)-1 do begin
-           diff = now - mr[z[j]]
-
-           if (diff ge (2.0*month)) then begin
-              print, progname + ': removing '+ d[z[j]] + '(' +trim(diff) + ' seconds).'
-              spawn,'rmdir ' + d[z[j]]
-           endif
+        nsep_max = max(nsep)
+        for i = nsep_max,nsep_max-2,-1 do begin
+           z = where(nsep eq i)
+           for j = 0,n_elements(z)-1 do begin
+              diff = now - mr[z[j]]
+              
+              if (diff ge (2.0*month)) then begin
+                 print, progname + ': removing '+ d[z[j]] + '(' +trim(diff) + ' seconds).'
+                 spawn,'rmdir ' + d[z[j]]
+              endif
+           endfor
         endfor
-     endfor
-
+     endif
   endelse
 ;
 ; Write a logfile describing what was transferred

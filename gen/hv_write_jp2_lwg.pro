@@ -504,6 +504,9 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
      OBJ_DESTROY, oJP2
      print,' '
      print,progname + ' created ' + file + '.jp2'
+;
+; Change the permissions on the file
+;
 
   ENDIF ELSE BEGIN
 ;
