@@ -26,6 +26,12 @@ PRO HV_WEBPAGE,search = search,filename = filename,link = link,title = title
      title = filename
   endif
 ;
+; Move the existing file if it already exists
+;
+  IF file_exist(webpage + filename) then begin
+     spawn,'mv ' + webpage + filename + ' ' + webpage + filename + '.previous'
+  ENDIF
+;
   header = strarr(8)
   header[0] = '<html>'
   header[1] = '<head>'

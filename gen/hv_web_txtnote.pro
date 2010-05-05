@@ -22,7 +22,7 @@ PRO HV_WEB_TXTNOTE, progname,message,latest = latest,details = details
      b[i] = message[i-1] + '<BR>'
   endfor
   b[nb-1] = '</P>'
-  HV_WRT_ASCII,b,dir + filename,/append
+  HV_WRT_ASCII,b,dir + filename
 
   return
 end
