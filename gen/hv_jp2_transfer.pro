@@ -84,7 +84,7 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
   sdir = EXPAND_TILDE(sdir)
   print,progname + ': looking in '+sdir
   a = file_list(find_all_dir(sdir),'*.jp2')
-  if not(isarray(a)) then begin
+  if (not(isarray(a)) or (a[0] eq 'aaa.jp2')) then begin
      transfer_results = ['No files to transfer']
      print, transfer_results
      n= 0
@@ -120,6 +120,7 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
            dummy = where(c[j] eq uniq,count)
            if (count eq 0) then begin
               uniq = [uniq,c[j]]
+              print,progname + ': will change permission on directory '+ c[j]
            endif
         endfor
      endfor
@@ -129,8 +130,8 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
 ;
      nu = n_elements(uniq)
      for i = long(0), nu-long(1) do begin
-        spawn,'chown -R ' + grpchng + ' ' + sdir_full + uniq[i]
-        spawn,'chmod 775 -R ' + sdir_full + uniq[i]
+        spawn,'chown ' + grpchng + ' ' + sdir_full + uniq[i]
+;        spawn,'chmod 775 -R ' + sdir_full + uniq[i]
      endfor
 ;
 ; Connect to the remote machine and transfer files plus their structure
@@ -147,6 +148,7 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
         spawn,'chmod 775 '+ b[i]
 ; change ownership of the file into the helioviewer group
         spawn,'chown -R ' + grpchng + ' ' + b[i]
+
 ; OS specific commands
         if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
            tcmd = wby.transfer.local.tcmd_osx

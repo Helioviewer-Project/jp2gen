@@ -8,6 +8,8 @@ FUNCTION HV_PARSE_LOCATION,a, $
                            location = location,$
                            all_subdir = all_subdir
 ;
+  progname = 'HV_PARSE_LOCATION'
+;
   z = STRSPLIT(EXPAND_TILDE(a),path_sep(),/extract)
   nz = n_elements(z)
 ;
@@ -19,7 +21,7 @@ FUNCTION HV_PARSE_LOCATION,a, $
         print,progname + ': not enough information to create a transfer path. Stopping.'
         stop
      ENDIF ELSE BEGIN
-        FOR i = nz-1,5,-1 DO BEGIN
+        FOR i = nz-1,nz-6,-1 DO BEGIN
            IF (i eq (nz-1)) THEN BEGIN
               eee = ''
            ENDIF ELSE BEGIN

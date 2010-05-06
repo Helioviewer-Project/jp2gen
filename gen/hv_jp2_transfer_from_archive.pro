@@ -9,8 +9,9 @@ PRO HV_JP2_TRANSFER_FROM_ARCHIVE,nickname,measurement,ds,de,$
 ;
 ; Get the information
 ;
+  nname = ji_txtrep(nickname,'-','_')
   if not(keyword_set(details_file)) then begin
-     info = CALL_FUNCTION('hvs_default_' + strlowcase(nickname))
+     info = CALL_FUNCTION('hvs_default_' + strlowcase(nname))
   endif
 ;
 ; Get the directory
