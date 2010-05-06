@@ -131,7 +131,7 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
      nu = n_elements(uniq)
      for i = long(0), nu-long(1) do begin
         spawn,'chown ' + grpchng + ' ' + sdir_full + uniq[i]
-;        spawn,'chmod 775 -R ' + sdir_full + uniq[i]
+        spawn,'chmod 775 ' + sdir_full + uniq[i]
      endfor
 ;
 ; Connect to the remote machine and transfer files plus their structure
@@ -147,7 +147,7 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
 ; change permission of the subdirectories and files
         spawn,'chmod 775 '+ b[i]
 ; change ownership of the file into the helioviewer group
-        spawn,'chown -R ' + grpchng + ' ' + b[i]
+        spawn,'chown ' + grpchng + ' ' + b[i]
 
 ; OS specific commands
         if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
