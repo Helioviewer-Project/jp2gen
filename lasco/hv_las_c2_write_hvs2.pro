@@ -60,7 +60,20 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
      r_sun = asolr/arcs
      r_occ = 2.3                ; C2 occulter inner radius in solar radii
      r_occ_out = 8.0            ; C2 occulter outer radius in solar radii
-;     alpha_mask = 1.0 + 0.0*image_new  ; transparency mask: 0 = transparent, 1 = not transparent
+;     alpha_mask = 1.0 + 0.0*image_new  ; transparency mask: 0 =
+;     transparent, 1 = not transparent
+;
+; Quicklook files seem to be have the SOHO roll included in them, so
+; no need to take care of the rotation
+;
+     using_quicklook =  STRPOS(details.called_by,'HV_LASCO_PREP2JP2_AUTO')
+     if (using_quicklook ge 0) then begin
+        rotate_by_this = 0.0
+        print,progname + ': quicklook FITS files.'
+     endif else begin
+        rotate_by_this = hd.crota1
+        print,progname + ': using archived FITS files.'
+     endelse
 ;
 ; block out the inner occulting disk
 ;
@@ -69,7 +82,8 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 
      a = xim - sunc.xcen
      b = yim - sunc.ycen
-     if (abs(hd.crota1) ge 170.0) then begin
+;     if (abs(hd.crota1) ge 170.0) then begin
+     if (abs(rotate_by_this) ge 170.0) then begin
         image_new = circle_mask(image_new, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
 ;        alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
      endif else begin
@@ -79,7 +93,8 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ;
 ; remove the outer corner areas which have no data
 ;
-     if (abs(hd.crota1) ge 170.0) then begin
+;     if (abs(hd.crota1) ge 170.0) then begin
+     if (abs(rotate_by_this) ge 170.0) then begin
         image_new = circle_mask(image_new, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
 ;        alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
      endif else begin
@@ -93,7 +108,7 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
      hd = add_tag(hd,instrument,'hv_instrument')
      hd = add_tag(hd,detector,'hv_detector')
      hd = add_tag(hd,measurement,'hv_measurement')
-     hd = add_tag(hd,hd.crota1,'hv_rotation')
+     hd = add_tag(hd,rotate_by_this,'hv_rotation')
      hd = add_tag(hd,r_occ,'hv_rocc_inner')
      hd = add_tag(hd,r_occ_out,'hv_rocc_outer')
      hd = add_tag(hd,progname,'hv_source_program') 

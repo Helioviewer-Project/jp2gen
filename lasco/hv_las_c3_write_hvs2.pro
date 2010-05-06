@@ -75,10 +75,22 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
      a = xim - sunc.xcen
      b = yim - sunc.ycen
 ;
+; Quicklook files seem to be have the SOHO roll included in them, so
+; no need to take care of the rotation
+;
+     using_quicklook =  STRPOS(details.called_by,'HV_LASCO_PREP2JP2_AUTO')
+     if (using_quicklook ge 0) then begin
+        rotate_by_this = 0.0
+        print,progname + ': quicklook FITS files.'
+     endif else begin
+        rotate_by_this = hd.crota1
+        print,progname + ': using archived FITS files.'
+     endelse
+;
 ; Pylon Image
 ;
 ;     pylonima_rotated = rot(pylonima, hd.crota1, 1, xim,yim)
-     pylonima_rotated = rot(pylonima, hd.crota1, 1, sunc.xcen,sunc.ycen,/pivot)
+     pylonima_rotated = rot(pylonima, rotate_by_this, 1, sunc.xcen,sunc.ycen,/pivot)
      transparent_index = where(pylonima_rotated eq 2)
 ;     alpha_mask(transparent_index) = 0
      zero_index = where(pylonima_rotated ge 2)
@@ -109,7 +121,7 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;;         image_new = circle_mask(image_new, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
 ;;         alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
 ;;      endelse      
-     
+;     stop
 ;
 ; add the tag_name 'R_SUN' to the hd information
 ;
@@ -117,7 +129,7 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
      hd = add_tag(hd,instrument,'hv_instrument')
      hd = add_tag(hd,detector,'hv_detector')
      hd = add_tag(hd,measurement,'hv_measurement')
-     hd = add_tag(hd,hd.crota1,'hv_rotation')
+     hd = add_tag(hd,rotate_by_this,'hv_rotation')
      hd = add_tag(hd,r_occ,'hv_rocc_inner')
      hd = add_tag(hd,r_occ_out,'hv_rocc_outer')
      hd = add_tag(hd,progname,'hv_source_program')
