@@ -103,9 +103,8 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web, delete_
      b = a
      these_inst = [g.MinusOneString]
      for i = long(0), n-long(1) do begin
-;        b[i] = strmid(a[i],strlen(sdir),strlen(a[i])-strlen(sdir)) 
         b[i] = HV_PARSE_LOCATION(a[i],/transfer_path)
-;        stop
+
 ;        if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
 ;           b[i] = strmid(b[i],1)
 ;        endif
@@ -114,16 +113,14 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web, delete_
         if (already_seen eq 0) then begin
            these_inst = [these_inst,split[0]]
         endif
-;        stop
+;
+; Convert all the directories to the remote group
 ;
         spawn,'chown -R ' + grpchng + ' ' + sdir_full + b[i]
         spawn,'chmod 775 -R ' + sdir_full + b[i]
 ;
      endfor
 ;     these_inst = these_inst[1:*]
-;
-; Convert all the directories to the remote group
-;
 ;     for i = 0,n_elements(these_inst)-1 do begin
 ;        spawn,'chown -R ' + grpchng + ' ' + sdir_full + these_inst[i]
 ;        spawn,'chmod 775 -R ' + sdir_full + these_inst[i]
@@ -160,7 +157,7 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web, delete_
 ; Remove files ONLY if there has been an error-free transfer
 ;
         if exit_status eq 0 then begin
-           if keyword_set(delete_transferred) then begin
+           if (keyword_set(delete_transferred) and (sdir eq expand_tilde(storage.outgoing))) then begin ; ensure that the user has made a request to delete from the outgoing directory; this directory is the only one from which files may be deleted.  Intended to make the deletion process harder to activate and so keeps the JP2 files safe.
               spawn,'rm -i ' + b[i] ; TEMPORARY inquiry to make sure the user really wants to delete the originals
               print,' '
               print,filenumber + ' out of ' + filetotal
