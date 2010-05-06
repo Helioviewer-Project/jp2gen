@@ -48,8 +48,11 @@
 ; those files from the outgoing directory.
 ;
 ;
-PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web, delete_transferred = delete_transferred,$
-                    sdir = sdir
+PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
+                    web = web, $ ; wrote the details of the transfer toa text file that can be picked up by HV_JP2GEN_MONITOR
+                    delete_transferred = delete_transferred,$ ; delete the transferred files from the outgoing directory
+                    force_delete = force_delete,$ ; force the delete of the JP2 file
+                    sdir = sdir ; directory where the JP2 files are stored
   progname = 'hv_jp2_transfer'
 ;
 ; Get various details about the setup
@@ -96,35 +99,39 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web, delete_
      grpchng = wby.transfer.local.group + ':' + $
                wby.transfer.remote.group
 ;
-; Open a transfer details file
+; Open a transfer details array
 ;
      transfer_results = [g.MinusOneString]
      n = long(n_elements(a))
      b = a
-     these_inst = [g.MinusOneString]
+;     these_inst = [g.MinusOneString]
+;
+; Go through the entire list and find all the unique subdirectories
+;
+     uniq = [g.MinusOneString]
      for i = long(0), n-long(1) do begin
         b[i] = HV_PARSE_LOCATION(a[i],/transfer_path)
-
 ;        if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
 ;           b[i] = strmid(b[i],1)
 ;        endif
-        split = strsplit(b[i],path_sep(),/extract)
-        dummy = where(split[0] eq these_inst,already_seen)
-        if (already_seen eq 0) then begin
-           these_inst = [these_inst,split[0]]
-        endif
-;
-; Convert all the directories to the remote group
-;
-        spawn,'chown -R ' + grpchng + ' ' + sdir_full + b[i]
-        spawn,'chmod 775 -R ' + sdir_full + b[i]
-;
+        c = HV_PARSE_LOCATION(a[i],/transfer_path,/all_subdir)
+        test = 0
+        for j = 0,n_elements(c)-2 do begin
+           dummy = where(c[j] eq uniq,count)
+           if (count eq 0) then begin
+              uniq = [uniq,c[j]]
+           endif
+        endfor
      endfor
-;     these_inst = these_inst[1:*]
-;     for i = 0,n_elements(these_inst)-1 do begin
-;        spawn,'chown -R ' + grpchng + ' ' + sdir_full + these_inst[i]
-;        spawn,'chmod 775 -R ' + sdir_full + these_inst[i]
-;     endfor
+     uniq = uniq[1:*]
+;
+; Change the group ownerships and accessibility for all the unique subdirectories
+;
+     nu = n_elements(uniq)
+     for i = long(0), nu-long(1) do begin
+        spawn,'chown -R ' + grpchng + ' ' + sdir_full + uniq[i]
+        spawn,'chmod 775 -R ' + sdir_full + uniq[i]
+     endfor
 ;
 ; Connect to the remote machine and transfer files plus their structure
 ;
@@ -158,7 +165,12 @@ PRO HV_JP2_TRANSFER,details_file = details_file,ntransfer = n,web = web, delete_
 ;
         if exit_status eq 0 then begin
            if (keyword_set(delete_transferred) and (sdir eq expand_tilde(storage.outgoing))) then begin ; ensure that the user has made a request to delete from the outgoing directory; this directory is the only one from which files may be deleted.  Intended to make the deletion process harder to activate and so keeps the JP2 files safe.
-              spawn,'rm -i ' + b[i] ; TEMPORARY inquiry to make sure the user really wants to delete the originals
+              if keyword_set(force_delete) then begin ; if you don't force the delete, you will be asked about deleting every file.  This is for extra safety in deleting JP2 files.
+                 modifier = ' -f '
+              endif else begin
+                 modifier = ' -i '
+              endelse
+              spawn,'rm' + modifier + b[i] ; delete the originals - three layers of protection included.
               print,' '
               print,filenumber + ' out of ' + filetotal
               print,progname + ': no error reported on transfer of ' + sdir_full + b[i] + ' to ' + $
