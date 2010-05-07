@@ -144,8 +144,10 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
         print,'using camera C3'
         model=2                 ; 1=any_year, 2=local year
         hide=1
-        minim = 0.99
-        maxim = 1.30
+        minim = 0.99 ; BF values
+        maxim = 1.30 ; BF values
+        minim = details.minim
+        maxim = details.maxim
                                 ;box=[260,780,900,1020]
                                 ;box=[540,780,40,1000]
         cam='c3'
@@ -153,8 +155,11 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
         print,'using camera C2'
         model=2
         hide=0
-        minim=0.95
-        maxim=2.00
+        minim=0.95 ; BF values
+        maxim=2.00 ; BF values
+        minim = details.minim
+        maxim = details.maxim
+
         cam='c2'
      ENDELSE
 
@@ -184,6 +189,9 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
            IF do_crem and i GE startind THEN $
               imc = remove_cr(dprev,dhprev,im,h,use_roi,init=initval) $
            ELSE 	imc = im
+;
+;           maxim = 3*median(imc)
+;
 ;print,'Pausing...'
 ;wait,2
            dprev = im

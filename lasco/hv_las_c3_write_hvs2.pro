@@ -75,22 +75,28 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
      a = xim - sunc.xcen
      b = yim - sunc.ycen
 ;
-; Quicklook files seem to be have the SOHO roll included in them, so
-; no need to take care of the rotation
+; Handle quicklook + rotation
 ;
      using_quicklook =  STRPOS(details.called_by,'HV_LASCO_PREP2JP2_AUTO')
      if (using_quicklook ge 0) then begin
-        rotate_by_this = 0.0
-        print,progname + ': quicklook FITS files.'
+        answer = HV_LASCO_HANDLE_QUICKLOOK(image_new,hd,sunc)
+        image_new = answer.image_new
+        hd = answer.hd
+        sunc = answer.sunc
+        rotate_by_this = answer.rotate_by_this
+        pivot_centre = [sz[0]/2.0,sz[1]/2.0]
      endif else begin
         rotate_by_this = hd.crota1
+        pivot_centre = [sunc.xcen,sunc.ycen]
         print,progname + ': using archived FITS files.'
      endelse
 ;
 ; Pylon Image
 ;
 ;     pylonima_rotated = rot(pylonima, hd.crota1, 1, xim,yim)
-     pylonima_rotated = rot(pylonima, rotate_by_this, 1, sunc.xcen,sunc.ycen,/pivot)
+     pylonima_rotated = rot(pylonima, rotate_by_this, 1, pivot_centre[0],pivot_centre[1],/pivot)
+;     pylonima_rotated = rotate(pylonima, 2);rotate_by_this, 1, old_sunc.xcen,old_sunc.ycen,/pivot)
+
      transparent_index = where(pylonima_rotated eq 2)
 ;     alpha_mask(transparent_index) = 0
      zero_index = where(pylonima_rotated ge 2)

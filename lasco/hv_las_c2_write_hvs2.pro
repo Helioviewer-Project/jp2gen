@@ -68,8 +68,25 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ;
      using_quicklook =  STRPOS(details.called_by,'HV_LASCO_PREP2JP2_AUTO')
      if (using_quicklook ge 0) then begin
-        rotate_by_this = 0.0
-        print,progname + ': quicklook FITS files.'
+        answer = HV_LASCO_HANDLE_QUICKLOOK(image_new,hd,sunc)
+;        rotate_by_this = 0.0
+;        rotate_by_this = get_soho_roll(date_obs + ' ' + time_obs)
+;        imtemp = image_new
+;        image_new = 0.0*image_new
+;        image_new = rot(imtemp,rotate_by_this, 1, sunc.xcen,sunc.ycen,/pivot)
+;        image_new = rotate(imtemp,2)
+;        aa = sunc.xcen - sz[0]/2.0 ; difference between array centre and sun centre
+;        bb = sunc.ycen - sz[1]/2.0 ; difference between array centre and sun centre
+;        sunc.xcen = sz[0]/2.0 - aa ; sun centre appears to be in a different place
+;        sunc.ycen = sz[1]/2.0 - bb ; 
+;        hd.crpix1 = sunc.xcen
+;        hd.crpix2 = sunc.ycen
+;        print,progname + ': quicklook FITS files.'
+;        rotate_by_this = get_soho_roll(date_obs + ' ' + time_obs)
+        image_new = answer.image_new
+        hd = answer.hd
+        sunc = answer.sunc
+        rotate_by_this = answer.rotate_by_this
      endif else begin
         rotate_by_this = hd.crota1
         print,progname + ': using archived FITS files.'
@@ -100,7 +117,7 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
      endif else begin
         image_new = circle_mask(image_new, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
 ;        alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
-     endelse       
+     endelse  
 ;
 ; add the tag_name 'R_SUN' to the header information
 ;
