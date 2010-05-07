@@ -53,8 +53,8 @@ FUNCTION HVS_DEFAULT_LASCO_C2
        hvs_details_filename:'hvs_default_lasco_c2.pro',$ ; REQUIRED
        hvs_details_filename_version:'1.0',$ ; REQUIRED
        gamma_correction:1.00,$ ; 
-       minim:0.95,$
-       maxim:1.30,$
+       minim:0.60,$ ; BF = 0.95, KS = 0.6
+       maxim:2.40,$ ; BF = 1.30, KS = 2.4
        local_quicklook:'/service/soho-archive/soho/private/data/lasco/quicklook/level_05/',$
        alternate_backgrounds:'~/hv/dat/LASCO/alternate_backgrounds/'} ; OPTIONAL - this is an alternate location for the LASCO C2 background.
 ;
