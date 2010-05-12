@@ -52,9 +52,9 @@ FUNCTION HVS_DEFAULT_LASCO_C3
        nickname:'LASCO-C3',$ ; REQUIRED
        hvs_details_filename:'hvs_default_lasco_c3.pro',$ ; REQUIRED
        hvs_details_filename_version:'1.0',$  ; REQUIRED
-       gamma_correction:1.00,$ ; 0.380 image gamma correction used in HV_LAS_C3_WRITE_HVS2.pro
-       minim:0.87,$ ; BF = 0.8, KS = 0.87
-       maxim:1.40,$ ; BF = 1.30, KS = 1.40
+       gamma_correction:0.380,$ ; BF 0.380 image gamma correction used in HV_LAS_C3_WRITE_HVS2.pro
+       minim:0.99,$ ; BF = 0.99, KS = 0.87
+       maxim:1.30,$ ; BF = 1.30, KS = 1.40
        local_quicklook:'/service/soho-archive/soho/private/data/lasco/quicklook/level_05/',$
        alternate_backgrounds:'~/hv/dat/LASCO/alternate_backgrounds/'} ; OPTIONAL - this is an alternate location for the LASCO C3 background.
 ;

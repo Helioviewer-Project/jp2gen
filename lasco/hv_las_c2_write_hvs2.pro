@@ -18,11 +18,19 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ;
   ginfo = CALL_FUNCTION('hvs_gen')
 ;
+; Get further image processing details
+;
+  gamma_correction = details.gamma_correction
+;
 ; Proceed if input is a structure
 ;
   if is_struct(ld) then begin
      cimg = ld.cimg
      hd = ld.header
+;
+; Apply the gamma correction
+;
+     cimg = max(cimg)*(cimg/max(cimg))^gamma_correction
 ;
 ; Get the components of the observation time
 ;
