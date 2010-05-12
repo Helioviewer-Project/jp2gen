@@ -24,6 +24,7 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
   if is_struct(ld) then begin
      cimg = ld.cimg
      hd = ld.header
+;     stop
 ;
 ; Apply the gamma correction
 ;
@@ -77,6 +78,9 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;
 ; Handle quicklook + rotation
 ;
+;     stop
+
+
      using_quicklook =  STRPOS(details.called_by,'HV_LASCO_PREP2JP2_AUTO')
      if (using_quicklook ge 0) then begin
         answer = HV_LASCO_HANDLE_QUICKLOOK(image_new,hd,sunc)
@@ -90,6 +94,7 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
         pivot_centre = [sunc.xcen,sunc.ycen]
         print,progname + ': using archived FITS files.'
      endelse
+     
 ;
 ; Pylon Image
 ;
@@ -110,24 +115,24 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ; Mask the Image
 ;
 
-;;      if (abs(hd.crota1) ge 170.0) then begin
-;;         image_new = circle_mask(image_new, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
+      if (abs(rotate_by_this) ge 170.0) then begin
+         image_new = circle_mask(image_new, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
 ;;         alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
-;;      endif else begin
-;;         image_new = circle_mask(image_new, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
+      endif else begin
+         image_new = circle_mask(image_new, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
 ;;         alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
-;;      endelse
+      endelse
 ;; ;
 ;; ; remove the outer corner areas which have no data and create the mask
 ;; ;
-;;      if (abs(hd.crota1) ge 170.0) then begin
-;;         image_new = circle_mask(image_new, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
+      if (abs(rotate_by_this) ge 170.0) then begin
+         image_new = circle_mask(image_new, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
 ;;         alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
-;;      endif else begin
-;;         image_new = circle_mask(image_new, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
+      endif else begin
+         image_new = circle_mask(image_new, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
 ;;         alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
-;;      endelse      
-;     stop
+      endelse      
+     stop
 ;
 ; add the tag_name 'R_SUN' to the hd information
 ;

@@ -204,6 +204,11 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
                           dO_BYTSCL=bytes,distort=distort, ref_box=boxref, box=box, norm=norm, $
                           lee_filt=lee, hide_pylon=hide,crem=0, MASK_OCC=mask, /LIST, $
                           EXPFAC=efac, times=times) 
+              if using quicklooks then begin ; THIS SHOULD BE FOR using quicklooks only!
+                 im2 = lasco_readfits(list1[i],h)
+                 imc3 = MAKE_IMAGE_C3(im2,h,/nologo,/nolabel)
+                 im = imc3
+              endif
 ;                 im = mk_img(list1[i],minim,maxim,hstr,ratio=rat,fixgaps=fixg,use_model=model, $
 ;                             dO_BYTSCL=bytes,distort=distort, ref_box=boxref, box=box, norm=norm, $
 ;                             lee_filt=lee, hide_pylon=hide,crem=0, MASK_OCC=mask, /LIST, $

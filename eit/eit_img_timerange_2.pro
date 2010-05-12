@@ -355,6 +355,7 @@ while iday.mjd le end_date_utc.mjd do begin ;*** HV ***
                    i_file=is                  
 ;		full_frame = fffr or ffhr
 		ffhr = strpos(s(i_file), '2x(16,16)') gt 0              
+                stop
                 print,'processing image no. '+string(i_file)+' of '+string(n_elements(s))
                    eit_prep, s(i_file), h, a, cosmic=cosmic, n_block = n_block & nmb(i_file) = n_block
                    
