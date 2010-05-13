@@ -116,16 +116,10 @@ FUNCTION HV_MAKE_IMAGE_C2, img, hdr, FIXGAPS=fixgaps, VIDEOIMG=videoimg, $
   
   bmin = m - 0.2
   bmax = m + 0.4
-  print,'******************************'
-  print,m,bmin,bmax,n_elements(nz),min(cimg(nz)),max(cimg(nz)),box_avg
-  print,min( imgm(nonzero) ), max( imgm(nonzero) )
-  print,'******************************'
-  set_plot,'x'
-  window,1
-  h = histogram(cimg(nz),binsize = 0.1)
-;        stop
-  xh = min(cimg(nz)) + findgen(n_elements(h))*0.1
-  plot,xh,h,charsize = 2
+;  print,'******************************'
+;  print,m,bmin,bmax,n_elements(nz),min(cimg(nz)),max(cimg(nz)),box_avg
+;  print,min( imgm(nonzero) ), max( imgm(nonzero) )
+;  print,'******************************'
 ;  set_plot,'z'
 ;  TVLCT, r, g, b, /GET
   

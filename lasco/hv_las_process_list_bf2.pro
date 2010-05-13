@@ -205,14 +205,14 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
               IF using_quicklook THEN BEGIN
                  im2 = lasco_readfits(list1[i],h)
                  IF h.detector EQ 'C2' THEN BEGIN
-                    im = HV_MAKE_IMAGE_C2(im2,h,/nologo,/nolabel)
+                    im = HV_MAKE_IMAGE_C2(im2,h,/nologo,/nolabel,/fixgaps)
 ;                    window,0
 ;                    plot_image,im,title = 'test'
 ;                    print,min(im),max(im)
 ;                    read,dummy
                  ENDIF
                  IF h.detector EQ 'C3' THEN BEGIN
-                    im = MAKE_IMAGE_C3(im2,h,/nologo,/nolabel)
+                    im = MAKE_IMAGE_C3(im2,h,/nologo,/nolabel,/fixgaps)
                  ENDIF
                ENDIF ELSE BEGIN
                  im = mk_img(list1[i],minim,maxim,hstr,ratio=rat,fixgaps=fixg,use_model=model, $
