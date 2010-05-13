@@ -12,7 +12,7 @@
 ; and pick an instrument
 ;
 
-PRO HV_LASCO_PREP2JP2_AUTO,date_start = ds, $ ; date the automated processing starts
+PRO HV_LASCO_PREP2JP2_QL,date_start = ds, $ ; date the automated processing starts
                            date_end = de, $ ; date to end automated processing starts
                            c2 = c2, $ ; choose the c2 instrument
                            c3 = c3, $ ; choose the c3 instrument
@@ -20,12 +20,8 @@ PRO HV_LASCO_PREP2JP2_AUTO,date_start = ds, $ ; date the automated processing st
                            alternate_backgrounds = alternate_backgrounds,$ ; location of the alternate backgrounds
                            copy2outgoing = copy2outgoing,$ ; copy to the outgoing directory
                            once_only = once_only ;  if set, the time range is passed through once only
-  progname = 'HV_LASCO_PREP2JP2_AUTO'
 ;
-;
-;
-
-;
+  progname = 'HV_LASCO_PREP2JP2_QL'
 ;
 ; use the default LASCO file is no other one is specified
 ;

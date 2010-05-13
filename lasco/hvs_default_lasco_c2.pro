@@ -52,7 +52,8 @@ FUNCTION HVS_DEFAULT_LASCO_C2
        nickname:'LASCO-C2',$ ; REQUIRED
        hvs_details_filename:'hvs_default_lasco_c2.pro',$ ; REQUIRED
        hvs_details_filename_version:'1.0',$ ; REQUIRED
-       gamma_correction:0.50,$ ; 
+       gamma_correction:1.00,$ ; 
+       ql_gamma_correction:0.50,$ ; 
        minim:0.95,$ ; BF = 0.95, KS = 0.6
        maxim:2.00,$ ; BF = 2.00, KS = 2.4
        local_quicklook:'/service/soho-archive/soho/private/data/lasco/quicklook/level_05/',$

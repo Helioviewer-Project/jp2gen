@@ -81,13 +81,14 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;     stop
 
 
-     using_quicklook =  STRPOS(details.called_by,'HV_LASCO_PREP2JP2_AUTO')
-     if (using_quicklook ge 0) then begin
-        answer = HV_LASCO_HANDLE_QUICKLOOK(image_new,hd,sunc)
-        image_new = answer.image_new
-        hd = answer.hd
-        sunc = answer.sunc
-        rotate_by_this = answer.rotate_by_this
+     using_quicklook = HV_USING_QUICKLOOK_PROCESSING(details.called_by)
+     if using_quicklook then begin
+;        answer = HV_LASCO_HANDLE_QUICKLOOK(image_new,hd,sunc)
+;        image_new = answer.image_new
+;        hd = answer.hd
+;        sunc = answer.sunc
+;        rotate_by_this = answer.rotate_by_this
+        rotate_by_this = get_soho_roll(hd.date_obs + ' ' + hd.time_obs)
         pivot_centre = [sz[0]/2.0,sz[1]/2.0]
      endif else begin
         rotate_by_this = hd.crota1
@@ -132,7 +133,6 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
          image_new = circle_mask(image_new, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
 ;;         alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
       endelse      
-     stop
 ;
 ; add the tag_name 'R_SUN' to the hd information
 ;

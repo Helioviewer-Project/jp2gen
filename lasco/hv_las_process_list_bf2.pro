@@ -200,20 +200,30 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
            
            IF h.detector NE 'EIT' THEN BEGIN
               set_plot,'x'
-              im = mk_img(list1[i],minim,maxim,hstr,ratio=rat,fixgaps=fixg,use_model=model, $
-                          dO_BYTSCL=bytes,distort=distort, ref_box=boxref, box=box, norm=norm, $
-                          lee_filt=lee, hide_pylon=hide,crem=0, MASK_OCC=mask, /LIST, $
-                          EXPFAC=efac, times=times) 
-              if using quicklooks then begin ; THIS SHOULD BE FOR using quicklooks only!
+;              using_quicklook =  STRPOS(details.called_by,'HV_LASCO_PREP2JP2_QL') ; check to see if we are using the quicklook process
+              using_quicklook =  HV_USING_QUICKLOOK_PROCESSING(details.called_by) ; check to see if we are using the quicklook process
+              IF using_quicklook THEN BEGIN
                  im2 = lasco_readfits(list1[i],h)
-                 imc3 = MAKE_IMAGE_C3(im2,h,/nologo,/nolabel)
-                 im = imc3
-              endif
+                 IF h.detector EQ 'C2' THEN BEGIN
+                    im = HV_MAKE_IMAGE_C2(im2,h,/nologo,/nolabel)
+;                    window,0
+;                    plot_image,im,title = 'test'
+;                    print,min(im),max(im)
+;                    read,dummy
+                 ENDIF
+                 IF h.detector EQ 'C3' THEN BEGIN
+                    im = MAKE_IMAGE_C3(im2,h,/nologo,/nolabel)
+                 ENDIF
+               ENDIF ELSE BEGIN
+                 im = mk_img(list1[i],minim,maxim,hstr,ratio=rat,fixgaps=fixg,use_model=model, $
+                             dO_BYTSCL=bytes,distort=distort, ref_box=boxref, box=box, norm=norm, $
+                             lee_filt=lee, hide_pylon=hide,crem=0, MASK_OCC=mask, /LIST, $
+                             EXPFAC=efac, times=times) 
 ;                 im = mk_img(list1[i],minim,maxim,hstr,ratio=rat,fixgaps=fixg,use_model=model, $
 ;                             dO_BYTSCL=bytes,distort=distort, ref_box=boxref, box=box, norm=norm, $
 ;                             lee_filt=lee, hide_pylon=hide,crem=0, MASK_OCC=mask, /LIST, $
 ;                             EXPFAC=efac, times=times) 
-              
+              ENDELSE
                                 ;hist1 = 'MK_IMG(/RATIO,USE_MODEL='+trim(string(model))+')'
            ENDIF ELSE BEGIN
               im= float(mk_img(list1(i),minim,maxim,hstr,do_bytscl=bytes, $
