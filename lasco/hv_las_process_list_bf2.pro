@@ -206,6 +206,9 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
                  im2 = lasco_readfits(list1[i],h)
                  IF h.detector EQ 'C2' THEN BEGIN
                     im = HV_MAKE_IMAGE_C2(im2,h,/nologo,/nolabel,/fixgaps)
+                    if n_elements(size(im,/dim) ne 2) then begin
+                       print,progname + ': non-2d image found.'
+                    endif
 ;                    window,0
 ;                    plot_image,im,title = 'test'
 ;                    print,min(im),max(im)
@@ -239,7 +242,7 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
            ENDIF
            imc=float(im)
            
-           maxmin,imc
+;           maxmin,imc
                                 ;tvscl,imc
                                 ;med = median(imc)
            

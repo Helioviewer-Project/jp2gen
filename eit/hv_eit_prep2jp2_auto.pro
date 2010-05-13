@@ -17,7 +17,7 @@
 ;        project.
 ;
 ;
-PRO HV_EIT_PREP2JP2_AUTO,start = start, copy2outgoing = copy2outgoing
+PRO HV_EIT_PREP2JP2_AUTO,date_start = date_start, copy2outgoing = copy2outgoing
   progname = 'hv_eit_prep2jp2_auto' ; the program name
   wait = 15*60.0
 ;
@@ -31,11 +31,9 @@ PRO HV_EIT_PREP2JP2_AUTO,start = start, copy2outgoing = copy2outgoing
 ;
      get_utc,utc,/ecs,/date_only
      if (count eq 0) then begin
-        if keyword_set(start) then begin 
-           date_start = start
-        endif else begin
+        if not(keyword_set(date_start)) then begin 
            date_start = utc
-        endelse
+        endif
      endif else begin
         date_start = utc
      endelse

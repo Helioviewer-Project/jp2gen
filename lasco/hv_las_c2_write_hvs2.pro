@@ -18,9 +18,17 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ;
   ginfo = CALL_FUNCTION('hvs_gen')
 ;
-; Proceed if input is a structure
+; Proceed if input is a structure with a 2d image in it
 ;
-  if is_struct(ld) then begin
+  ld_ok = 0
+  IF is_struct(ld) then begin
+     nd = n_elements(size(ld.cimg,/dim))
+     if nd eq 2 then begin
+        ld_ok = 1
+     ENDIF
+  ENDIF
+
+  if (ld_ok eq 1) then begin
      cimg = ld.cimg
      hd = ld.header
 ;
@@ -74,9 +82,9 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ; Quicklook files seem to be have the SOHO roll included in them, so
 ; no need to take care of the rotation
 ;
-     using_quicklook =  STRPOS(details.called_by,'HV_LASCO_PREP2JP2_AUTO')
-     if (using_quicklook ge 0) then begin
-        answer = HV_LASCO_HANDLE_QUICKLOOK(image_new,hd,sunc)
+     using_quicklook = HV_USING_QUICKLOOK_PROCESSING(details.called_by)
+     if using_quicklook then begin
+;        answer = HV_LASCO_HANDLE_QUICKLOOK(image_new,hd,sunc)
 ;        rotate_by_this = 0.0
 ;        rotate_by_this = get_soho_roll(date_obs + ' ' + time_obs)
 ;        imtemp = image_new
@@ -90,11 +98,7 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ;        hd.crpix1 = sunc.xcen
 ;        hd.crpix2 = sunc.ycen
 ;        print,progname + ': quicklook FITS files.'
-;        rotate_by_this = get_soho_roll(date_obs + ' ' + time_obs)
-        image_new = answer.image_new
-        hd = answer.hd
-        sunc = answer.sunc
-        rotate_by_this = answer.rotate_by_this
+        rotate_by_this = get_soho_roll(date_obs + ' ' + time_obs)
      endif else begin
         rotate_by_this = hd.crota1
         print,progname + ': using archived FITS files.'
@@ -217,8 +221,8 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
         jp2_filename = ginfo.already_written
      endelse
   endif else begin
-     print,'ld was not a structure.  something funny with this LASCO C2 fits file'
-     stop
+     print,'Something funny with this LASCO C2 fits file'
+     jp2_filename = ginfo.MinusOneString
   endelse
   return,jp2_filename
 end

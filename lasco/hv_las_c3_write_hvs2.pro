@@ -88,6 +88,12 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;        hd = answer.hd
 ;        sunc = answer.sunc
 ;        rotate_by_this = answer.rotate_by_this
+        aa = sunc.xcen - sz[0]/2.0 ; difference between array centre and sun centre
+        bb = sunc.ycen - sz[1]/2.0 ; difference between array centre and sun centre
+        sunc.xcen = sz[0]/2.0 - aa ; sun centre appears to be in a different place
+        sunc.ycen = sz[1]/2.0 - bb ; 
+        hd.crpix1 = sunc.xcen
+        hd.crpix2 = sunc.ycen
         rotate_by_this = get_soho_roll(hd.date_obs + ' ' + hd.time_obs)
         pivot_centre = [sz[0]/2.0,sz[1]/2.0]
      endif else begin

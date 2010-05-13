@@ -43,6 +43,7 @@ PRO HV_LASCO_PREP2JP2_QL,date_start = ds, $ ; date the automated processing star
      alternate_backgrounds = info.alternate_backgrounds
      progname = progname + '(used alternate backgrounds)'
      setenv,'MONTHLY_IMAGES=' + alternate_backgrounds
+;     HV_LASCO_UPDATE_ALTERNATE_BACKGROUNDS,alternate_background,info ; download the alternate backgrounds from the web
   endif    
 ;
   timestart = systime(0)
