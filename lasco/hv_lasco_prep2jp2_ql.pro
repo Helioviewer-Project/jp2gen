@@ -23,6 +23,13 @@ PRO HV_LASCO_PREP2JP2_QL,date_start = ds, $ ; date the automated processing star
 ;
   progname = 'HV_LASCO_PREP2JP2_QL'
 ;
+; Make sure at least one of C2 or C3 is called
+;
+  if not(keyword_set(c2)) and not(keyword_set(c3)) then begin
+     print,progname + ': neither C2 or C3 chosen.  Use one of /c2 or /c3 in call to '+progname + '. Stopping.'
+     stop
+  endif
+;
 ; use the default LASCO file is no other one is specified
 ;
   if not(KEYWORD_SET(details_file)) then begin

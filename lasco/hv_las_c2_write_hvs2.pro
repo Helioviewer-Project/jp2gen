@@ -99,6 +99,9 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ;        hd.crpix2 = sunc.ycen
 ;        print,progname + ': quicklook FITS files.'
         rotate_by_this = get_soho_roll(date_obs + ' ' + time_obs)
+        if (abs(rotate_by_this) ge 170.0) then begin
+           image_new = rotate(image_new,2)
+        endif
      endif else begin
         rotate_by_this = hd.crota1
         print,progname + ': using archived FITS files.'

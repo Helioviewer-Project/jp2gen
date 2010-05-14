@@ -5,6 +5,8 @@
 PRO HV_COPY2OUTGOING,files,search = search,delete_original = delete_original
   progname = 'hv_copy2outgoing'
 ;
+  g = HVS_GEN()
+;
 ; get the outgoing directory for this nickname
 ;
   storage = HV_STORAGE(nickname = 'dummy')
@@ -23,7 +25,16 @@ PRO HV_COPY2OUTGOING,files,search = search,delete_original = delete_original
   if not(isarray(files)) then begin
      print,progname + ': passed a directory.  Looking for files in ' + files + ' containing ' + search
      files = file_list(find_all_dir(files),search)
-  endif
+  endif else begin
+     nawind = where(files eq g.already_written,naw) ; remove entries from the list that may have already been written
+     if naw gt 0 then begin
+        files = files(nawind)
+     endif
+     nm1ind = where(files eq g.already_written,nm1) ; remove entries from the list that indicate failed processing
+     if nm1 gt 0 then begin
+        files = files(nm1ind)
+     endif
+  endelse
 ;
 ; Split the path of the file.
 ;
