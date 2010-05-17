@@ -37,7 +37,7 @@
 ;     04-Dec-2009 (SEG) - Updating the flat_field file from flat_Dec2008.fits to flat_Dec2009.fits
 ;-
 
-PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoing,output = output, ds = ds
+PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoing,output = output, date_start = date_start, date_end = date_end
 ;
 ; Program name
 ;
@@ -60,15 +60,24 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
   repeat begin
      t0 = systime(1)
      if count eq 0 then begin
-        if not(keyword_set(ds)) then begin
+        if not(keyword_set(date_start)) then begin
            sttim = anytim2ints(ut_time(), offset=-2*86400)
         endif else begin
-           sttim = anytim2ints(ds)
+           sttim = anytim2ints(date_start)
         endelse
      endif else begin
         sttim = anytim2ints(ut_time(), offset=-2*86400)
      endelse
-     entim = ut_time()
+;
+;
+;
+     if not(keyword_set(date_end)) then begin
+        exit_tf = 0
+        entim = ut_time()
+     endif else begin
+        entim = anytim2ints(date_end, offset=86400)
+        exit_tf = 1
+     endelse
 
 ;; ------ temporyary fix for network switch problems where igram and doppl cannot be read from soho-archive 11-Jul-2007 (SEG) 
 ;;dir = '/soho-archive/private/data/planning/mdi' ;;--- 11-Jul-2007 (SEG)
@@ -234,6 +243,7 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
      count = count + 1
      HV_REPEAT_MESSAGE,progname,count,timestart,/web,more = report
      HV_WAIT,progname,15,/minutes,/web
-  endrep until 1 eq 0 ; infinite repeat
+
+  endrep until 1 eq exit_tf ; infinite repeat permissible
 
 end

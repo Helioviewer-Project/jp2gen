@@ -26,11 +26,11 @@ PRO HV_COPY2OUTGOING,files,search = search,delete_original = delete_original
      print,progname + ': passed a directory.  Looking for files in ' + files + ' containing ' + search
      files = file_list(find_all_dir(files),search)
   endif else begin
-     nawind = where(files eq g.already_written,naw) ; remove entries from the list that may have already been written
+     nawind = where(files ne g.already_written,naw) ; remove entries from the list that may have already been written
      if naw gt 0 then begin
         files = files(nawind)
      endif
-     nm1ind = where(files eq g.already_written,nm1) ; remove entries from the list that indicate failed processing
+     nm1ind = where(files ne g.MinusOneString,nm1) ; remove entries from the list that indicate failed processing
      if nm1 gt 0 then begin
         files = files(nm1ind)
      endif
