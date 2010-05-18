@@ -162,7 +162,7 @@ END
 ;+
 ;PRO eit_img_timerange,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,hv_simple=hv_simple,scale=scale,quiet=quiet,latest=latest,hv_write = hv_write,hv_count = hv_count,hv_details = hv_details
 ;-
-PRO eit_img_timerange_3,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,hv_simple=hv_simple,scale=scale,quiet=quiet,latest=latest,hv_write = hv_write,hv_count = hv_count,hv_details = hv_details
+PRO eit_img_timerange_4,dir_im=dir_im,start_date=start_date,end_date=end_date,help=help,cosmic=cosmic,gif=gif,jpg=jpg,quality_jpg=quality_jpg,no_block_fill=no_block_fill,progressive=progressive,hv_simple=hv_simple,scale=scale,quiet=quiet,latest=latest,hv_write = hv_write,hv_count = hv_count,hv_details = hv_details
 
 ;hv_simple: simple way to write JPEG 2000 files in hv-compatible
 ;format (does not rely on JP2GEN suite, less comprehensive)
@@ -176,11 +176,10 @@ PRO eit_img_timerange_3,dir_im=dir_im,start_date=start_date,end_date=end_date,he
 ;
 ; HV Project: get general JP2Gen information
 ;
-If keyword_set(hv_write) then begin ; HVP
-   ginfo = HVS_GEN()                ; HVP
-   hv_count = [ginfo.already_written] ; HVP
-ENDIF ; HVP
-
+  If keyword_set(hv_write) then begin ; HVP
+     ginfo = HVS_GEN()                ; HVP
+     hv_count = [ginfo.already_written] ; HVP
+  ENDIF                                 ; HVP 
 
 
 IF KEYWORD_SET(help) THEN BEGIN
@@ -220,7 +219,7 @@ endif else begin
 
 
 ; set default image type to .gif
-IF KEYWORD_SET(gif) eq 0 and KEYWORD_SET(jpg) eq 0 and KEYWORD_SET(hv_simple) eq 0 THEN BEGIN
+IF KEYWORD_SET(gif) eq 0 and KEYWORD_SET(jpg) eq 0 and KEYWORD_SET(hv_simple) eq 0 and KEYWORD_SET(hv_write) eq 0 THEN BEGIN ; HVP
    gif=1
    print,'No image type set. Creating .gif images.'
 ENDIF
@@ -315,7 +314,7 @@ while iday.mjd le min([end_date_utc.mjd,today_date_utc.mjd]) do begin
 		case n_file of
 			0:			no_files = 1
 			1:			begin
-							no_files = (s(0) eq '') or (strpos(s(0), fix(hv.obs.mes[i_wave]) + '::') lt 0)
+							no_files = (s(0) eq '') or (strpos(s(0), hv.obs.mes[i_wave] + '::') lt 0)
                                                      end
                         else: no_files=0
 		endcase
