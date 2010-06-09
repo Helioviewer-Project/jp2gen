@@ -59,7 +59,7 @@ FUNCTION HVS_DEFAULT_AIA
 ;
 ; 93
 ;
-  b.details[0].measurement = '93'; REQUIRED
+  b.details[0].measurement = '94'; REQUIRED
   b.details[0].n_levels = 8 ; REQUIRED
   b.details[0].n_layers = 8 ; REQUIRED
   b.details[0].idl_bitdepth = 8 ; REQUIRED
