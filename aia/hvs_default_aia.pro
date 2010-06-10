@@ -41,7 +41,7 @@ FUNCTION HVS_DEFAULT_AIA
 ; Each measurement requires some details to control the creation of
 ; JP2 files
 ;
-  d = {measurement: "", n_levels: 8, n_layers: 8, idl_bitdepth: 8, bit_rate: [0.5,0.01]}
+  d = {measurement: "", n_levels: 8, n_layers: 8, idl_bitdepth: 8, bit_rate: [0.5,0.01],dataMin:0.0,dataMax:0.0,dataScalingType:0}
 ;
 ; In this case, each AIA measurement requires the same type of details
 ;
@@ -57,13 +57,16 @@ FUNCTION HVS_DEFAULT_AIA
        hvs_details_filename:'hvs_default_aia.pro',$ ; REQUIRED
        hvs_details_filename_version:'1.0'} ; REQUIRED
 ;
-; 93
+; 94
 ;
   b.details[0].measurement = '94'; REQUIRED
   b.details[0].n_levels = 8 ; REQUIRED
   b.details[0].n_layers = 8 ; REQUIRED
   b.details[0].idl_bitdepth = 8 ; REQUIRED
   b.details[0].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[0].dataMin = 0.0
+  b.details[0].dataMax = 800.0
+  b.details[0].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
 
 ;
 ; 131
@@ -73,6 +76,9 @@ FUNCTION HVS_DEFAULT_AIA
   b.details[1].n_layers = 8 ; REQUIRED
   b.details[1].idl_bitdepth = 8 ; REQUIRED
   b.details[1].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[1].dataMin = 0.0
+  b.details[1].dataMax = 1900.0
+  b.details[1].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
 
 ;
 ; 171
@@ -82,6 +88,9 @@ FUNCTION HVS_DEFAULT_AIA
   b.details[2].n_layers = 8
   b.details[2].idl_bitdepth = 8
   b.details[2].bit_rate = [0.5,0.01]
+  b.details[2].dataMin = 0.0
+  b.details[2].dataMax = 3500.0
+  b.details[2].dataScalingType = 1 ; 0 - linear, 1 - sqrt, 3 - log10
 
 ;
 ; 193
@@ -91,6 +100,9 @@ FUNCTION HVS_DEFAULT_AIA
   b.details[3].n_layers = 8
   b.details[3].idl_bitdepth = 8
   b.details[3].bit_rate = [0.5,0.01]
+  b.details[3].dataMin = 0.0
+  b.details[3].dataMax = 5500.0
+  b.details[3].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
 
 ;
 ; 211
@@ -100,6 +112,9 @@ FUNCTION HVS_DEFAULT_AIA
   b.details[4].n_layers = 8
   b.details[4].idl_bitdepth = 8
   b.details[4].bit_rate = [0.5,0.01]
+  b.details[4].dataMin = 0.0
+  b.details[4].dataMax = 3500.0
+  b.details[4].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
 
 ;
 ; 304
@@ -109,6 +124,9 @@ FUNCTION HVS_DEFAULT_AIA
   b.details[5].n_layers = 8 ; REQUIRED
   b.details[5].idl_bitdepth = 8 ; REQUIRED
   b.details[5].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[5].dataMin = 0.0
+  b.details[5].dataMax = 3500.0
+  b.details[5].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
 
 ;
 ; 335
@@ -118,6 +136,9 @@ FUNCTION HVS_DEFAULT_AIA
   b.details[6].n_layers = 8 ; REQUIRED
   b.details[6].idl_bitdepth = 8 ; REQUIRED
   b.details[6].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[6].dataMin = 0.0
+  b.details[6].dataMax = 3500.0
+  b.details[6].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
 
 ;
 ; 1600
@@ -127,6 +148,9 @@ FUNCTION HVS_DEFAULT_AIA
   b.details[7].n_layers = 8 ; REQUIRED
   b.details[7].idl_bitdepth = 8 ; REQUIRED
   b.details[7].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[7].dataMin = 0.0
+  b.details[7].dataMax = 800.0
+  b.details[7].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
 
 ;
 ; 1700
@@ -136,6 +160,9 @@ FUNCTION HVS_DEFAULT_AIA
   b.details[8].n_layers = 8 ; REQUIRED
   b.details[8].idl_bitdepth = 8 ; REQUIRED
   b.details[8].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[8].dataMin = 0.0
+  b.details[8].dataMax = 3500.0
+  b.details[8].dataScalingType = 1 ; 0 - linear, 1 - sqrt, 3 - log10
 
 ;
 ; 4500
@@ -145,7 +172,9 @@ FUNCTION HVS_DEFAULT_AIA
   b.details[9].n_layers = 8 ; REQUIRED
   b.details[9].idl_bitdepth = 8 ; REQUIRED
   b.details[9].bit_rate = [0.5,0.01] ; REQUIRED
-
+  b.details[9].dataMin = 0.0
+  b.details[9].dataMax = 38000.0
+  b.details[9].dataScalingType = 1 ; 0 - linear, 1 - sqrt, 3 - log10
 
 ;
 ; Verify

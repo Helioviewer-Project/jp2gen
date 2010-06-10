@@ -54,14 +54,25 @@ PRO hv_aia_d2jp2, fitsname, img, hd, $
 ;
 ; Wavelength-dependent scaling of the image
 ;
-     lz = where(img lt 0.0)
-     if lz[0] ne -1 then begin
-        sz = size(img,/dim)
-        nx = sz[0]
-        ny = sz[1]
-        img[lz] = median(img[0.5*nx-50:0.5*nx+50,0.5*ny-50:0.5*ny+50])
+     lmin = where(img le info.details[this_wave].dataMin)
+     if lmin[0] ne -1 then begin
+        img[lmin] = info.details[this_wave].dataMin
      endif
-     img = bytscl(sqrt(img))
+
+     lmax = where(img ge info.details[this_wave].dataMax)
+     if lmax[0] ne -1 then begin
+        img[lmax] = info.details[this_wave].dataMax
+     endif
+
+     if info.details[this_wave].dataScalingType eq 0 then begin
+        img = bytscl(img,/nan)
+     endif
+     if info.details[this_wave].dataScalingType eq 1 then begin
+        img = bytscl(sqrt(img),/nan)
+     endif
+     if info.details[this_wave].dataScalingType eq 3 then begin
+        img = bytscl(alog10(img),/nan)
+     endif
   endelse
 ;
 ; add extra tags
