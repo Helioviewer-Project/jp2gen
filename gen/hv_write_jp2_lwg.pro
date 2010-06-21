@@ -499,6 +499,7 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
                     bit_rate=bit_rate,$
                     n_layers=n_layers,$
                     n_levels=n_levels,$
+                    PROGRESSION = 'RPCL',$
                     xml=xh)
      oJP2->SetData,image_new_with_transparency
      OBJ_DESTROY, oJP2
@@ -521,6 +522,7 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
                     n_layers=n_layers,$
                     n_levels=n_levels,$
                     JP2 = 1,$
+                    PROGRESSION = 'RPCL',$
                     xml=xh)
      oJP2->SetData,image_new
      OBJ_DESTROY, oJP2
