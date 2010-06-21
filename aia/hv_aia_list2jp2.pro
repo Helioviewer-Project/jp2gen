@@ -38,6 +38,10 @@ PRO hv_aia_list2jp2,list,$
      info = add_tag(info,progname,'called_by')
   endelse
 ;
+; All the supported measurements
+;
+  wave_arr = info.details[*].measurement
+;
 ; Number of elements in the list
 ;
   nl = n_elements(list)
@@ -50,12 +54,50 @@ PRO hv_aia_list2jp2,list,$
      z = strsplit(fullname,path_sep(),/extract) ; split up to get filename
      nz = n_elements(z)
      fitsname = z[nz-1]
-     img = readfits(fullname,header) ; read the individual filename
-     HV_AIA_D2JP2,fitsname,img,header,$
-                  jp2_filename = jp2_filename, $
-                  already_written = already_written
-     plot_image,img,title = header.wavelnth
-     prepped[i] = jp2_filename
+     hd = fitshead2struct(headfits(fullname)) ; get the FITS header only
+;
+; Check that this FITS file is supported
+;
+     this_wave = where(wave_arr eq trim(hd.wavelnth),this_wave_count)
+     if this_wave_count eq 0 then begin
+        measurement = 'not_supported'
+     endif else begin
+        measurement = trim(hd.wavelnth)
+     endelse
+;
+; Construct an HVS
+;
+     tobs = HV_PARSE_CCSDS(hd.date_obs)
+     hvs = {dir:'',$
+            fitsname:fitsname,$
+            img:-1,$
+            header:hd,$
+            yy:tobs.yy,$
+            mm:tobs.mm,$
+            dd:tobs.dd,$
+            hh:tobs.hh,$
+            mmm:tobs.mmm,$
+            ss:tobs.ss,$
+            milli:tobs.milli,$
+            measurement:measurement,$
+            details:info}
+;
+; In the Data base already
+;
+     HV_DB,hvs,/check_fitsname_only,already_written = already_written
+;
+; Write it if it is NOT in the database
+;
+     if not(already_written) then begin
+        img = readfits(fullname) ; read the individual filename
+        HV_AIA_D2JP2,fitsname,img,hd,$
+                     jp2_filename = jp2_filename, $
+                     already_written = already_written
+        prepped[i] = jp2_filename
+     endif else begin
+        print,progname + ': file already written = '+ fitsname
+        prepped[i] = g.already_written
+     endelse
   endfor
 ;
 ; Report time taken and number of files written
