@@ -107,6 +107,8 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
         ss = sel_timrange(timarr, sttim, entim, /between)
         if (ss(0) ne -1) then begin
            output = strarr(n_elements(ss))
+;           int_aaa = fltarr(n_elements(ss),2)
+;           int_bbb = fltarr(n_elements(ss),2)
            for i=0,n_elements(ss)-1 do begin
 ;
 ; keep the file names
@@ -140,7 +142,10 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
                     outdir = '~/Desktop/test'
                     tit = 'SOHO/MDI Magnetogram'
                     loadct = 0
-                    img = bytscl(img,smin,smax,top=!d.n_colors-1)
+;                    img = bytscl(img,smin,smax,top=!d.n_colors-1)
+;                    int_aaa[i,*] = minmax(img)
+;                    print,'*',int_aaa[i,*]
+                    img = bytscl(img,smin,smax,top=254)
                     hd = add_tag(hd,'FD_Magnetogram','DPC_OBSR')
                     error_report = error_report + 'DPC_OBSR tag inserted and value set by '+progname +'.'
                     measurement = info.details[1].measurement
@@ -156,6 +161,7 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
                     img = img * ff_img
                     darklimb_correct, img, img3, limbxyr=xyz, lambda=6767
                     img = temporary(img3)
+;                    int_bbb[i,*] = minmax(img)
                     smin = 5000.
                     smax = 13000.
                     gamma=1.8	
@@ -166,7 +172,8 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
                     outdir = '~/Desktop/test'
                     tit = 'SOHO/MDI Continuum'
                     loadct = 3
-                    img = bytscl(img,smin,smax,top=!d.n_colors-1)
+;                    img = bytscl(img,smin,smax,top=!d.n_colors-1)
+                    img = bytscl(img,smin,smax,top=254)
                     hd = add_tag(hd,'FD_Continuum','DPC_OBSR')
                     error_report = error_report + 'DPC_OBSR tag inserted and value set by '+progname +'.'
                     measurement = info.details[0].measurement

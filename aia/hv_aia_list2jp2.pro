@@ -7,9 +7,10 @@
 ; Initial version only - will probably need significant edits
 ;
 PRO hv_aia_list2jp2,list,$
-                    details_file = details_file,$
-                    copy2outgoing = copy2outgoing,$
-                    called_by = called_by
+                    details_file = details_file,$ ; AIA details file
+                    copy2outgoing = copy2outgoing,$ ; Copy the files to an outgoing directory
+                    called_by = called_by,$ ; calling program (if any)
+                    transfer_direct = transfer_direct ; transfer JP2 files from local to remote direct from original JP2 archive.
 ;
 ; start time
 ;
@@ -54,7 +55,15 @@ PRO hv_aia_list2jp2,list,$
      z = strsplit(fullname,path_sep(),/extract) ; split up to get filename
      nz = n_elements(z)
      fitsname = z[nz-1]
+     zzz0 = systime(1)
      hd = fitshead2struct(headfits(fullname)) ; get the FITS header only
+     ff = readfits(fullname)
+     zzz1 = systime(1)
+     dummy = readfits(fullname,hd)
+     zzz2 = systime(1)
+
+     print,zzz1 - zzz0
+     print,zzz2 - zzz1
 ;
 ; Check that this FITS file is supported
 ;
@@ -112,6 +121,11 @@ PRO hv_aia_list2jp2,list,$
   if keyword_set(copy2outgoing) then begin
      HV_COPY2OUTGOING,prepped
   endif
-
+;
+; Transfer direct from local archive to local machine
+;
+  if keyword_set(transfer_direct) then begin
+     HV_JP2_TRANSFER_DIRECT,prepped
+  endif
   RETURN
 END
