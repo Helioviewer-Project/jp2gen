@@ -55,15 +55,7 @@ PRO hv_aia_list2jp2,list,$
      z = strsplit(fullname,path_sep(),/extract) ; split up to get filename
      nz = n_elements(z)
      fitsname = z[nz-1]
-     zzz0 = systime(1)
      hd = fitshead2struct(headfits(fullname)) ; get the FITS header only
-     ff = readfits(fullname)
-     zzz1 = systime(1)
-     dummy = readfits(fullname,hd)
-     zzz2 = systime(1)
-
-     print,zzz1 - zzz0
-     print,zzz2 - zzz1
 ;
 ; Check that this FITS file is supported
 ;
