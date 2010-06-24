@@ -21,10 +21,6 @@ PRO hv_aia_list2jp2_gs,list,$
 ;
   t0 = systime(1)
 ;
-; program name
-;
-  progname = 'hv_aia_list2jp2'
-
 ; use the default AIA file is no other one is specified
 ;
   info = CALL_FUNCTION('hvs_default_aia')
