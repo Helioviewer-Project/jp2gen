@@ -36,7 +36,7 @@ PRO hv_aia_list2jp2_gs,list,$
 ;
 ; Get contact details
 ;
-     wby = HV_WRITTENBY()
+  wby = HV_WRITTENBY()
 ;
 ; If called_by information is given, pass it along.  Otherwise, just
 ; use this program name
@@ -157,7 +157,7 @@ PRO hv_aia_list2jp2_gs,list,$
 ;
 ; Make the storage directory: HV_WRITE_LIST_JP2_MKDIR
 ;
-     loc = storage.jp2_location + path_sep() + $
+     loc = storage.jp2_location + $
            hvsi.measurement + path_sep() + $
            hvsi.yy + path_sep() + $
            hvsi.mm + path_sep() + $
