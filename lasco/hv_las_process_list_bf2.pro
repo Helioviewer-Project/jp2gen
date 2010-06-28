@@ -206,7 +206,7 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
               IF using_quicklook THEN BEGIN
                  im2 = lasco_readfits(list1[i],h)
                  IF h.detector EQ 'C2' THEN BEGIN
-                    im = HV_MAKE_IMAGE_C2(im2,h,/nologo,/nolabel,/fixgaps)
+                    im = HV_MAKE_IMAGE_C2(im2,h,/nologo,/nolabel,fixgaps=2)
                     prev2 = im
                     if n_elements(size(im,/dim) ne 2) then begin
                        print,progname + ': non-2d image found.'
@@ -217,7 +217,7 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
 ;                    read,dummy
                  ENDIF
                  IF h.detector EQ 'C3' THEN BEGIN
-                    im = MAKE_IMAGE_C3(im2,h,/nologo,/nolabel,/fixgaps)
+                    im = MAKE_IMAGE_C3(im2,h,/nologo,/nolabel,fixgaps=2)
                     prev3 = im
                  ENDIF
                ENDIF ELSE BEGIN
