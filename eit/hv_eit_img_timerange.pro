@@ -25,17 +25,17 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_writ
 ;
 ; create the hvs structure and pass it along to JP2Gen
 ;
-  hvs = {dir:dir,$
+  hvsi = {dir:dir,$
          fitsname:fitsname,$
-         img:b0, $
          header:header,$
-         measurement:this_wave,$
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli,$
+         measurement:this_wave,$
          details:details}
+  hvs = {img:b0,hvsi:hvsi}
 
   HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename, already_written = already_written
   if not(already_written) then begin
-     HV_LOG_WRITE,hvs,'read ' + s + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0) + ' : wrote to ' + jp2_filename
+     HV_LOG_WRITE,hvs.hvsi,'read ' + s + ' ; ' +HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0) + ' : wrote to ' + jp2_filename
   endif
   return
 end

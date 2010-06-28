@@ -115,7 +115,6 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
 ;           b[i] = strmid(b[i],1)
 ;        endif
         c = HV_PARSE_LOCATION(a[i],/transfer_path,/all_subdir)
-        test = 0
         for j = 0,n_elements(c)-2 do begin
            dummy = where(c[j] eq uniq,count)
            if (count eq 0) then begin

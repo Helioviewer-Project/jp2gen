@@ -36,7 +36,7 @@ PRO hv_aia_list2jp2_gs,list,$
 ;
 ; Get contact details
 ;
-  wby = HV_WRITTENBY()
+  wby = HV_AIA_WRITTENBY()
 ;
 ; If called_by information is given, pass it along.  Otherwise, just
 ; use this program name
@@ -316,11 +316,57 @@ PRO hv_aia_list2jp2_gs,list,$
      print,progname + ' created ' + loc + jp2_filename
 
 
-     prepped[ii] = jp2_filename
+     prepped[ii] = loc + jp2_filename
 ;     endif else begin
 ;        print,progname + ': file already written = '+ fitsname
 ;        prepped[i] = g.already_written
 ;     endelse
+  endfor
+;
+; Get the full path
+;
+  sdir_full = HV_PARSE_LOCATION(prepped[0],/location)
+;
+; Remote transfer 
+;
+  transfer_details = ' -e ssh -l ' + $
+                     wby.transfer.remote.user + '@' + $
+                     wby.transfer.remote.machine + ':' + $
+                     wby.transfer.remote.incoming + $
+                     'v' + g.source.jp2gen_version + path_sep()
+;
+; Go through the entire list and find all the unique subdirectories
+;
+  n = n_elements(prepped)
+  uniq = [g.MinusOneString]
+  for i = long(0), n-long(1) do begin
+;     b[i] = HV_PARSE_LOCATION(prepped[i],/transfer_path)
+;        if (!VERSION.OS_NAME) eq 'Mac OS X' then begin
+;           b[i] = strmid(b[i],1)
+;        endif
+     c = HV_PARSE_LOCATION(prepped[i],/transfer_path,/all_subdir)
+     test = 0
+     for j = 0,n_elements(c)-2 do begin
+        dummy = where(c[j] eq uniq,count)
+        if (count eq 0) then begin
+           uniq = [uniq,c[j]]
+           print,progname + ': will change permission on directory '+ c[j]
+        endif
+     endfor
+  endfor
+  uniq = uniq[1:*]
+;
+; Part of the command to change groups
+;
+  grpchng = wby.transfer.local.group + ':' + $
+            wby.transfer.remote.group
+;
+; Change the group ownerships and accessibility for all the unique subdirectories
+;
+  nu = n_elements(uniq)
+  for i = long(0), nu-long(1) do begin
+     spawn,'chown ' + grpchng + ' ' + sdir_full + uniq[i]
+     spawn,'chmod 775 ' + sdir_full + uniq[i]
   endfor
 ;
 ; Report time taken and number of files written
@@ -329,17 +375,10 @@ PRO hv_aia_list2jp2_gs,list,$
   nm1ind = where(prepped eq g.MinusOneString,nm1)
   nnew = n_elements(prepped) - naw - nm1
   HV_REPORT_WRITE_TIME,progname,t0,nnew,report=report
-;
-; Copy2outgoing
-;
-;  if keyword_set(copy2outgoing) then begin
-;     HV_COPY2OUTGOING,prepped
+
+
+;  if keyword_set(transfer_direct) then begin
+;     HV_JP2_TRANSFER_DIRECT,prepped
 ;  endif
-;
-; Transfer direct from local archive to local machine
-;
-  if keyword_set(transfer_direct) then begin
-     HV_JP2_TRANSFER_DIRECT,prepped
-  endif
   RETURN
 END
