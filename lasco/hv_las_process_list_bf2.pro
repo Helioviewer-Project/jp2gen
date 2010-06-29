@@ -54,7 +54,7 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
 
   COMMON images, prev,hprev, startind, i, init1
   COMMON STAR_SUMS, allstarims,numims, bkg, n_cr, coords, replaced_all
-  COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304
+  COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304,box_avg_prev2
 
   maskdir=GETENV('NRL_LIB')+'/lasco/data/calib/'
   print,'Reading ',maskdir+'c3clearmask2.fts'
@@ -207,7 +207,8 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
                  im2 = lasco_readfits(list1[i],h)
                  IF h.detector EQ 'C2' THEN BEGIN
                     im = HV_MAKE_IMAGE_C2(im2,h,/nologo,/nolabel,fixgaps=2)
-                    prev2 = im
+;                    prev2 = im
+
                     if n_elements(size(im,/dim) ne 2) then begin
                        print,progname + ': non-2d image found.'
                     endif
@@ -218,7 +219,7 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
                  ENDIF
                  IF h.detector EQ 'C3' THEN BEGIN
                     im = MAKE_IMAGE_C3(im2,h,/nologo,/nolabel,fixgaps=2)
-                    prev3 = im
+;                    prev3 = im
                  ENDIF
                ENDIF ELSE BEGIN
                  im = mk_img(list1[i],minim,maxim,hstr,ratio=rat,fixgaps=fixg,use_model=model, $

@@ -31,7 +31,7 @@ FUNCTION HV_MAKE_IMAGE_C2, img, hdr, FIXGAPS=fixgaps, VIDEOIMG=videoimg, $
 ;
 ; 01/17/08 @(#)make_image_c2.pro	1.10 : NRL LASCO IDL Library
 ;
-  COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304
+  COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304,box_avg_prev2
 
   m0 = median(img)
   IF m0 LT 1000 THEN return, -1
@@ -93,10 +93,13 @@ FUNCTION HV_MAKE_IMAGE_C2, img, hdr, FIXGAPS=fixgaps, VIDEOIMG=videoimg, $
       
   IF KEYWORD_SET(FIXGAPS) THEN BEGIN
      IF (ind00(0) NE -1) THEN BEGIN ;** gaps in this image
-        IF (fixgaps EQ 1) or DATATYPE(prev2) EQ 'UND' THEN $
-           cimg(ind00) = fillcol $
-        ELSE $
-           cimg(ind00) = prev2(ind00) ;** fill gaps in this img with prev image
+        IF (fixgaps EQ 1) or DATATYPE(prev2) EQ 'UND' THEN BEGIN
+           cimg(ind00) = fillcol
+        ENDIF ELSE BEGIN
+;           print,hdr.date_obs + ' ' + hdr.time_obs
+;           read,dummy
+           cimg(ind00) = prev2(ind00)*box_avg_prev2/box_avg ;** fill gaps in this img with prev image
+        ENDELSE
      ENDIF
   ENDIF	
   IF datatype(prev2) NE 'UND' THEN BEGIN
@@ -106,6 +109,7 @@ FUNCTION HV_MAKE_IMAGE_C2, img, hdr, FIXGAPS=fixgaps, VIDEOIMG=videoimg, $
      rdiff = tvrd()
   ENDIF
   prev2 = cimg
+  box_avg_prev2 = box_avg
   
                                 ;** ratio **
   
@@ -124,7 +128,7 @@ FUNCTION HV_MAKE_IMAGE_C2, img, hdr, FIXGAPS=fixgaps, VIDEOIMG=videoimg, $
 ;  TVLCT, r, g, b, /GET
   
   cimg = BYTSCL(cimg, bmin, bmax)
-
+;  read, dummy2
 
   ;; sunc = GET_SUN_CENTER(hdr, /NOCHECK,full=hsize)
   ;; arcs = GET_SEC_PIXEL(hdr, full=hsize)
