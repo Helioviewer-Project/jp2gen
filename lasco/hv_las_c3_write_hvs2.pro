@@ -219,12 +219,13 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;
 ; HVS file
 ;
-     hvs = {dir:dir,fitsname:hd.filename,img:image_new, header:hd,details: details,$
+     hvsi = {dir:dir,fitsname:hd.filename, header:hd,details: details,$
             measurement:measurement,$
             yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
+     hvs = {img:image_new,hvsi:hvsi}
      HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_written
      if not(already_written) then begin
-        HV_LOG_WRITE,hvs,log_comment + ' : wrote ' + jp2_filename
+        HV_LOG_WRITE,hvs.hvsi,log_comment + ' : wrote ' + jp2_filename
      endif else begin
         jp2_filename = ginfo.already_written
      endelse

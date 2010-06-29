@@ -31,7 +31,7 @@ FUNCTION HV_MAKE_IMAGE_C2, img, hdr, FIXGAPS=fixgaps, VIDEOIMG=videoimg, $
 ;
 ; 01/17/08 @(#)make_image_c2.pro	1.10 : NRL LASCO IDL Library
 ;
-  COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304,box_avg_prev2
+  COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304,box_avg_prev2,box_avg_prev3
 
   m0 = median(img)
   IF m0 LT 1000 THEN return, -1
