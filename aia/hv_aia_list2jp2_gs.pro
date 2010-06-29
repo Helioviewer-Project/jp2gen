@@ -372,13 +372,45 @@ PRO hv_aia_list2jp2_gs,list,$
 ; Report time taken and number of files written
 ;
   nawind = where(prepped eq g.already_written,naw)
+  if naw ne 0 then begin
+     good = where(prepped eq g.already_written,naw,/complement)
+     prepped = prepped(good)
+  endif
+
   nm1ind = where(prepped eq g.MinusOneString,nm1)
-  nnew = n_elements(prepped) - naw - nm1
-  HV_REPORT_WRITE_TIME,progname,t0,nnew,report=report
+  if nm1 ne 0 then begin
+     good = where(prepped eq g.already_written,nm1,/complement)
+     prepped = prepped(good)
+  endif
+;
+; Transfer the files
+;
+; First, write out the file list as seen from wby.local.jp2gen_write /
+; write / v0.8
+;
 
 
-;  if keyword_set(transfer_direct) then begin
-;     HV_JP2_TRANSFER_DIRECT,prepped
-;  endif
+;
+; Connect to the remote machine and transfer files plus their structure
+;
+  cd,sdir_full,current = old_dir
+;
+;rsync --files-from=prepped.txt . -e ssh ireland@delphi.nascom.nasa.gov:/home/ireland/test3/
+;rsync --files-from=prepped.txt . -e ssh remote_user@remote_machine : remote_directory
+;
+  c1 = '--files-from=prepped.txt . '
+  c2 = 'ssh ' + wby.transfer.remote.user + '@' + wby.transfer.remote.machine + ':' + wby.transfer.remote.incoming
+  spawn,'rsync ' + c1 + c2
+;
+; Go back to the old directory
+;
+  cd,old_dir
+;
+; Report the time taken for JP2 file creation and transfer
+;
+  HV_REPORT_WRITE_TIME,progname,t0,n_elements(prepped)
+;
+;
+;
   RETURN
 END
