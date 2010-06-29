@@ -45,7 +45,7 @@ FUNCTION HV_MAKE_IMAGE_C3, img, hdr, FIXGAPS=fixgaps, VIDEOIMG=videoimg, PICT=pi
 ; 01/17/08 @(#)make_image_c3.pro	1.19 :LASCO IDL LIBRARY
 
 ;
-COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304,box_avg_prev2,box_avg_prev3
+COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304,box_avg_prev2
 COMMON C3_BLOCK, pylonim, ctr, pylon
 
       ;IF hdr.exptime LT 15 THEN dbias = -7 ELSE dbias=-44	;**NBR,9/1/99

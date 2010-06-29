@@ -54,7 +54,7 @@ FUNCTION hv_las_process_list_bf2,listfile, rootdir, nickname , logfilename, STAI
 
   COMMON images, prev,hprev, startind, i, init1
   COMMON STAR_SUMS, allstarims,numims, bkg, n_cr, coords, replaced_all
-  COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304,box_avg_prev2,box_avg_prev3
+  COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304,box_avg_prev2
 
   maskdir=GETENV('NRL_LIB')+'/lasco/data/calib/'
   print,'Reading ',maskdir+'c3clearmask2.fts'
