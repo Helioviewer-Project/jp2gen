@@ -401,20 +401,23 @@ PRO hv_aia_list2jp2_gs,list,$
   for i = 0,np-1 do begin
      prepped2[i] = trim(strmid(prepped[i],sdir_full_len,strlen(prepped[i])-sdir_full_len))
   endfor
-
   HV_WRT_ASCII,prepped2,storage.outgoing+'prepped.txt'
-
 ;
 ; Connect to the remote machine and transfer files plus their structure
+; First cd in the root of the required directory
 ;
   cd,sdir_full,current = old_dir
 ;
 ;rsync --files-from=prepped.txt . -e ssh ireland@delphi.nascom.nasa.gov:/home/ireland/test3/
 ;rsync --files-from=prepped.txt . -e ssh remote_user@remote_machine : remote_directory
 ;
-  c1 = '--files-from='+storage.outgoing+'prepped.txt' + ' . '
-  c2 = '-e ssh ' + wby.transfer.remote.user + '@' + wby.transfer.remote.machine + ':' + wby.transfer.remote.incoming
-  spawn,'rsync ' + c1 + c2
+; Greg - the following three lines are commented out.  When you have
+;        access to helioviewer or delphi, comment them out.  This will
+;        transfer files to the remote machine everytime you run this procedure.
+;
+;  c1 = '--files-from='+storage.outgoing+'prepped.txt' + ' . '
+;  c2 = '-e ssh ' + wby.transfer.remote.user + '@' + wby.transfer.remote.machine + ':' + wby.transfer.remote.incoming
+;  spawn,'rsync ' + c1 + c2
 ;
 ; Go back to the old directory
 ;
