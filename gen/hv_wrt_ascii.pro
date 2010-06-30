@@ -79,7 +79,8 @@ pro HV_WRT_ASCII, text, file, err_msg=err_msg, append = append
 ;
 ;  output data and tidy up
 ;
-  printf,lun,strpad(text,nmax,/after),format='(a)'
+;  printf,lun,strpad(text,nmax,/after),format='(a)'
+  printf,lun,text,format='(a)'
   close,lun
   free_lun,lun
 

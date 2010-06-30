@@ -383,12 +383,26 @@ PRO hv_aia_list2jp2_gs,list,$
      prepped = prepped(good)
   endif
 ;
+; Change the group and accessibility for all the files
+;
+  np = n_elements(prepped)
+  for i = 0,np-1 do begin
+     spawn,'chown ' + grpchng + ' ' + prepped[i]
+     spawn,'chmod 775 ' + prepped[i]
+  endfor
+;
 ; Transfer the files
 ;
 ; First, write out the file list as seen from wby.local.jp2gen_write /
 ; write / v0.8
 ;
+  prepped2 = strarr(np)
+  sdir_full_len = strlen(sdir_full)
+  for i = 0,np-1 do begin
+     prepped2[i] = trim(strmid(prepped[i],sdir_full_len,strlen(prepped[i])-sdir_full_len))
+  endfor
 
+  HV_WRT_ASCII,prepped2,storage.outgoing+'prepped.txt'
 
 ;
 ; Connect to the remote machine and transfer files plus their structure
@@ -398,8 +412,8 @@ PRO hv_aia_list2jp2_gs,list,$
 ;rsync --files-from=prepped.txt . -e ssh ireland@delphi.nascom.nasa.gov:/home/ireland/test3/
 ;rsync --files-from=prepped.txt . -e ssh remote_user@remote_machine : remote_directory
 ;
-  c1 = '--files-from=prepped.txt . '
-  c2 = 'ssh ' + wby.transfer.remote.user + '@' + wby.transfer.remote.machine + ':' + wby.transfer.remote.incoming
+  c1 = '--files-from='+storage.outgoing+'prepped.txt' + ' . '
+  c2 = '-e ssh ' + wby.transfer.remote.user + '@' + wby.transfer.remote.machine + ':' + wby.transfer.remote.incoming
   spawn,'rsync ' + c1 + c2
 ;
 ; Go back to the old directory
