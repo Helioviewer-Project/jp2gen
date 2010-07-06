@@ -10,7 +10,8 @@
 #
 # Scrapes all the JP2 files from LMSAL webspace and writes them to local subdirectories
 #
-# TODO: check for files already downloaded
+# TODO: check for files already downloaded so we don't download them twice.
+# Solution: check for a text db file, if JP2 file is not in the list, download it, and update list.  should be simple
 #
 #
 
@@ -57,11 +58,16 @@ def download(url, fileName=None, storage=None):
 
 #download('http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA/94/2010/06/18/2010_06_18__00_00_20_135__SDO_AIA_AIA_94.jp2')
 
+local_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
+
 # The location of where the data will be stored
-storage = '/home/ireland/JP2Gen_from_LMSAL/v0.8/jp2/AIA'
+local_storage = local_root + 'jp2/AIA'
+
+# The location of where the databases are stored
+dbloc = local_root + 'db/AIA/'
 
 # root of where the data is
-root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
+remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
 
 # wavelength array - constant
 wavelength = ['94','131','171','193','211','304','335','1600','1700','4500']
@@ -74,32 +80,31 @@ dd = time.strftime('%d',time.gmtime())
 
 yyyy = '2010'
 mm = '06'
-dd = '18'
+dd = '23'
 
 Today = yyyy + '/' + mm + '/' + dd
-
 
 
 
 # go through each wavelength
 for wave in wavelength:
     # create the local subdirectory required
-    keep = storage + '/' + wave + '/' + Today + '/'
-    os.makedirs(keep)
+    local_keep = local_storage + '/' + wave + '/' + Today + '/'
+    os.makedirs(local_keep)
 
-    # calculate the directory
-    location = root + '/' + wave + '/' + Today + '/'
+    # calculate the remote directory
+    remote_location = remote_root + '/' + wave + '/' + Today + '/'
 
     # read in the database file for this wavelength and today.
 
     # open the location and get the file list
-    usock = urllib.urlopen(location)
+    usock = urllib.urlopen(remote_location)
     parser = URLLister()
     parser.feed(usock.read())
     usock.close()
     parser.close()
     for url in parser.urls:
         if url.endswith('.jp2'):
-            print 'reading ' + location + url
-            download(location + url, storage = keep)
+            print 'reading ' + remote_location + url
+            download(remote_location + url, storage = local_keep)
 
