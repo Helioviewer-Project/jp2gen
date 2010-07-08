@@ -208,13 +208,13 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
 ;
 ; Construct the HVS
 ;
-              hvs = {dir:dir,$
+              hvsi = {dir:dir,$
                      fitsname:zzz[n_elements(zzz)-1],$
-                     img:img,$
                      header:hd,$
                      measurement:measurement,$
                      yy:aaa.yy, mm:aaa.mm, dd:aaa.dd, hh:aaa.hh, mmm:aaa.mmm, ss:aaa.ss, milli:aaa.milli,$
                      details:info}
+              hvs = {hvsi:hvsi,img:img}
 ;
 ; Call the JP2 writing
 ;
@@ -223,7 +223,7 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
                  log_comment = 'read ' + ff(ss(i)) + $
                                ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
                                ' ; at ' + systime(0)
-                 HV_LOG_WRITE,hvs,log_comment + ' ; wrote ' + jp2_filename
+                 HV_LOG_WRITE,hvs.hvsi,log_comment + ' ; wrote ' + jp2_filename
               endif else begin
                  jp2_filename = ginfo.already_written
               endelse

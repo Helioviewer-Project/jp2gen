@@ -33,6 +33,11 @@ class URLLister(SGMLParser):
 		if href:
 			self.urls.extend(href)
 
+def change2hv(z):
+	os.system('chmod -R 775 ' + z)
+	os.system('chown -R ireland:helioviewer ' + z)
+
+
 
 def download(url, fileName=None, storage=None):
     def getFileName(url,openUrl):
@@ -55,22 +60,37 @@ def download(url, fileName=None, storage=None):
             shutil.copyfileobj(r,f)
     finally:
         r.close()
+    change2hv(fileName)
 
 #download('http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA/94/2010/06/18/2010_06_18__00_00_20_135__SDO_AIA_AIA_94.jp2')
 
+# Local root - presumed to be created
 local_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
 
 # The location of where the data will be stored
 local_storage = local_root + 'jp2/AIA'
+try:
+	os.makedirs(local_storage)
+	change2hv(local_storage)
+except:
+	print 'Directory already exists'
 
 # The location of where the databases are stored
 dbloc = local_root + 'db/AIA/'
+try:
+	os.makedirs(dbloc)
+	change2hv(local_storage)
+except:
+	print 'Directory already exists'
+
 
 # root of where the data is
 remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
 
 # wavelength array - constant
 wavelength = ['94','131','171','193','211','304','335','1600','1700','4500']
+
+# repeat starts here
 
 # get today's date in UT
 
@@ -85,26 +105,64 @@ dd = '23'
 Today = yyyy + '/' + mm + '/' + dd
 
 
-
 # go through each wavelength
 for wave in wavelength:
-    # create the local subdirectory required
+    # create the local JP2 subdirectory required
     local_keep = local_storage + '/' + wave + '/' + Today + '/'
-    os.makedirs(local_keep)
+    try:
+	    os.makedirs(local_keep)
+	    change2hv(local_storage)
+	    change2hv(local_storage + '/' + wave)
+	    change2hv(local_storage + '/' + wave + '/' + yyyy)
+	    change2hv(local_storage + '/' + wave + '/' + yyyy + '/' + mm)
+	    change2hv(local_storage + '/' + wave + '/' + yyyy + '/' + mm + '/' + dd)
+    except:
+	    print 'Directory already exists: '+ local_keep
+
+    # create the database subdirectory for this wavelength
+    dbSubdir = dbloc + '/' + wave + '/' + Today
+    try:
+	    os.makedirs(dbSubdir)
+    except:
+	    print 'Directory already exists: '+ dbSubdir
+
+    # create the database filename
+    dbFileName = yyyy + '_' + mm + '_' + dd + '__AIA__' + wave + '__db.csv'    
+
+    # read in the database file for this wavelength and today.
+    try:
+	    file = open(dbSubdir + '/' + dbFileName,'r')
+	    jp2list = file.readlines()
+	    print 'Read database file '+ dbSubdir + '/' + dbFileName
+    except:
+	    file = open(dbSubdir + '/' + dbFileName,'w')
+	    jp2list = ['This file first created '+time.ctime()+'\n\n']
+	    file.write(jp2list[0])
+	    print 'Created database file '+ dbSubdir + '/' + dbFileName
+    finally:
+	    file.close()
 
     # calculate the remote directory
     remote_location = remote_root + '/' + wave + '/' + Today + '/'
 
-    # read in the database file for this wavelength and today.
-
-    # open the location and get the file list
+    # open the remote location and get the file list
     usock = urllib.urlopen(remote_location)
     parser = URLLister()
     parser.feed(usock.read())
     usock.close()
     parser.close()
+    # check which files are new
+
     for url in parser.urls:
         if url.endswith('.jp2'):
-            print 'reading ' + remote_location + url
-            download(remote_location + url, storage = local_keep)
-
+		if not url + ',\n' in jp2list:
+			print 'reading ' + remote_location + url
+			download(remote_location + url, storage = local_keep)
+			# update database file with new files
+			jp2list.extend(url + ',\n')
+		else:
+			print 'File already transferred ' + url
+    print 'Writing updated ' + dbSubdir + '/' + dbFileName
+    file = open(dbSubdir + '/' + dbFileName,'w')
+    file.writelines(jp2list)
+    file.close()

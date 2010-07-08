@@ -45,7 +45,7 @@ FUNCTION HV_MAKE_IMAGE_C3, img, hdr, FIXGAPS=fixgaps, VIDEOIMG=videoimg, PICT=pi
 ; 01/17/08 @(#)make_image_c3.pro	1.19 :LASCO IDL LIBRARY
 
 ;
-COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304,box_avg_prev2
+COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304,box_avg_prev2,box_avg_prev3,prev3_exptime
 COMMON C3_BLOCK, pylonim, ctr, pylon
 
       ;IF hdr.exptime LT 15 THEN dbias = -7 ELSE dbias=-44	;**NBR,9/1/99
@@ -101,7 +101,6 @@ COMMON C3_BLOCK, pylonim, ctr, pylon
 	print,"box:",box
 
 
-
       ;imgm = imgm/mhdr.exptime
       ;bias = OFFSET_BIAS(hdr, /SUM) + dbias	; NBR, 8/30/99		;JAKE-030127-done in reduce_std_size
       ;cimg = FLOAT(img) - bias	;subtract detector bias from image	;JAKE-030127-done in reduce_std_size
@@ -129,12 +128,18 @@ COMMON C3_BLOCK, pylonim, ctr, pylon
       box_img = DOUBLE(cimg(box(0):box(1),box(2):box(3)))
       box_imgr = DOUBLE(img(box(0):box(1),box(2):box(3)))
       good = WHERE(box_imgr GT 0)
-      IF (good(0) GE 0) THEN box_avg=TOTAL(box_img(good))/N_ELEMENTS(good) ELSE BEGIN
-	 good = where (cimg GT 0,n)
-	 box_avg=TOTAL(cimg(good))/n
+      IF (good(0) GE 0) THEN BEGIN
+         box_avg=TOTAL(box_img(good))/N_ELEMENTS(good) 
+         box_avgr=TOTAL(box_imgr(good))/N_ELEMENTS(good) 
+      ENDIF ELSE BEGIN
+         good = where (cimg GT 0,n)
+         box_avg=TOTAL(cimg(good))/n
+         box_avgr=TOTAL(img(good))/n
       ENDELSE 
+      print,'^^^^^^^^^^^^^^^^^^^^^^^^^'
+      print,box_avg,box_avgr, hdr.exptime,mhdr.exptime
       cimg = TEMPORARY(cimg) * (box_ref/box_avg)        ;** normalize to counts in box
-help,box_ref,box_avg
+      help,box_ref,box_avg
 
       nonzero = WHERE(imgm NE 0)
       
@@ -142,7 +147,9 @@ help,box_ref,box_avg
          IF (ind00(0) NE -1) THEN BEGIN			;** gaps in this image
             IF (fixgaps EQ 1) or DATATYPE(prev3) EQ 'UND' THEN cimg(ind00) = fillcol $
             ELSE BEGIN
-               cimg(ind00) = prev3(ind00)	;** fill gaps in this img with prev image
+               cimg(ind00) = prev3(ind00);*box_avg_prev3/box_avg;	* (hdr.exptime/prev3_exptime);** fill gaps in this img with prev image with the correct scale
+               print,'*********************************'
+               print, box_avg_prev3/box_avg
             ENDELSE
          ENDIF
       ENDIF
@@ -154,9 +161,10 @@ help,box_ref,box_avg
 		tvscl, rdiff<dmax>dmin
 		RTMVIXY, timestamp
 		rdiff = tvrd()
-	ENDIF
+             ENDIF
 	prev3 = cimg
-
+        box_avg_prev3 = box_avg
+        prev3_exptime = hdr.exptime
 
       cimg(nonzero) = TEMPORARY(cimg(nonzero)) / imgm(nonzero)   ;take ratio of image to model
 ;

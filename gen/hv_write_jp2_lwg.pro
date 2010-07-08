@@ -143,6 +143,7 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; Get contact details
 ;
      wby = HV_WRITTENBY()
+;     wby = HV_WRITTENBY(fitsheader.hv_writtenby)
 ;
 ; Set the JP2 compression details, override defaults if set from
 ; function call

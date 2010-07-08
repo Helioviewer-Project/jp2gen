@@ -13,7 +13,7 @@
 ;        create JP2 files in the correct directory structure for use
 ;        with the Helioviewer project.
 
-PRO HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = called_by,copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds, prepped = prepped,report=report
+PRO HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = called_by,copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds, prepped = prepped,report=report,writtenby = writtenby
   progname = 'HV_LASCO_C3_PREP2JP2'
 ;
   date_start = ds + 'T00:00:00'
@@ -26,10 +26,17 @@ PRO HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
      setenv,'MONTHLY_IMAGES=' + alternate_backgrounds
   endif
 ;
+; Assign the default writtenby choice if no other present
+;
+  if not(KEYWORD_SET(writtenby)) then begin
+     writtenby = 'default'
+  endif
+;
 ; use the default LASCO-C3 file is no other one is specified
 ;
   if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_lasco_c3'
   info = CALL_FUNCTION(details_file)
+;  info = add_tag(info,HV_WRITTENBY(writtenby),'writtenby')
   nickname = info.nickname
 ;
 ; get general information
