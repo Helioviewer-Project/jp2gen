@@ -61,27 +61,30 @@ def download(url, fileName=None, storage=None):
         r.close()
     change2hv(fileName)
 
+def hvCreateSubdir(x):
+	try:
+		os.makedirs(x)
+		change2hv(x)
+	except:
+		print 'Directory already exists ' + x
+
+
+
 def GetAIA(yyyy,mm,dd):
 
 	# Local root - presumed to be created
 	local_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
 
 	# The location of where the data will be stored
-	local_storage = local_root + 'jp2/AIA'
-	try:
-		os.makedirs(local_storage)
-		change2hv(local_storage)
-	except:
-		print 'Directory already exists'
+	jp2_dir = local_root + 'jp2/'
+	hvCreateSubdir(jp2_dir)
+
+	local_storage = jp2_dir + 'AIA/'
+	hvCreateSubdir(local_storage)
 
 	# The location of where the databases are stored
 	dbloc = local_root + 'db/AIA/'
-	try:
-		os.makedirs(dbloc)
-		change2hv(local_storage)
-	except:
-		print 'Directory already exists'
-
+	hvCreateSubdir(dbloc)
 
 	# root of where the data is
 	remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
@@ -94,14 +97,14 @@ def GetAIA(yyyy,mm,dd):
         # go through each wavelength
 	for wave in wavelength:
 		# create the local JP2 subdirectory required
-		local_keep = local_storage + '/' + wave + '/' + Today + '/'
+		local_keep = local_storage + wave + '/' + Today + '/'
 		try:
 			os.makedirs(local_keep)
 			change2hv(local_storage)
-			change2hv(local_storage + '/' + wave)
-			change2hv(local_storage + '/' + wave + '/' + yyyy)
-			change2hv(local_storage + '/' + wave + '/' + yyyy + '/' + mm)
-			change2hv(local_storage + '/' + wave + '/' + yyyy + '/' + mm + '/' + dd)
+			change2hv(local_storage + wave)
+			change2hv(local_storage + wave + '/' + yyyy)
+			change2hv(local_storage + wave + '/' + yyyy + '/' + mm)
+			change2hv(local_storage + wave + '/' + yyyy + '/' + mm + '/' + dd)
 		except:
 			print 'Directory already exists: '+ local_keep
 
