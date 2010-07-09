@@ -91,78 +91,78 @@ remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
 wavelength = ['94','131','171','193','211','304','335','1600','1700','4500']
 
 # repeat starts here
+while 1:
 
-# get today's date in UT
+	# get today's date in UT
 
-yyyy = time.strftime('%Y',time.gmtime())
-mm = time.strftime('%m',time.gmtime())
-dd = time.strftime('%d',time.gmtime())
+	yyyy = time.strftime('%Y',time.gmtime())
+	mm = time.strftime('%m',time.gmtime())
+	dd = time.strftime('%d',time.gmtime())
+	
+        #yyyy = '2010'
+	#mm = '06'
+	#dd = '23'
 
-yyyy = '2010'
-mm = '06'
-dd = '23'
+	Today = yyyy + '/' + mm + '/' + dd
 
-Today = yyyy + '/' + mm + '/' + dd
+        # go through each wavelength
+	for wave in wavelength:
+		# create the local JP2 subdirectory required
+		local_keep = local_storage + '/' + wave + '/' + Today + '/'
+		try:
+			os.makedirs(local_keep)
+			change2hv(local_storage)
+			change2hv(local_storage + '/' + wave)
+			change2hv(local_storage + '/' + wave + '/' + yyyy)
+			change2hv(local_storage + '/' + wave + '/' + yyyy + '/' + mm)
+			change2hv(local_storage + '/' + wave + '/' + yyyy + '/' + mm + '/' + dd)
+		except:
+			print 'Directory already exists: '+ local_keep
 
+		# create the database subdirectory for this wavelength
+		dbSubdir = dbloc + '/' + wave + '/' + Today
+		try:
+	      		os.makedirs(dbSubdir)
+		except:
+			print 'Directory already exists: '+ dbSubdir
 
-# go through each wavelength
-for wave in wavelength:
-    # create the local JP2 subdirectory required
-    local_keep = local_storage + '/' + wave + '/' + Today + '/'
-    try:
-	    os.makedirs(local_keep)
-	    change2hv(local_storage)
-	    change2hv(local_storage + '/' + wave)
-	    change2hv(local_storage + '/' + wave + '/' + yyyy)
-	    change2hv(local_storage + '/' + wave + '/' + yyyy + '/' + mm)
-	    change2hv(local_storage + '/' + wave + '/' + yyyy + '/' + mm + '/' + dd)
-    except:
-	    print 'Directory already exists: '+ local_keep
+		# create the database filename
+		dbFileName = yyyy + '_' + mm + '_' + dd + '__AIA__' + wave + '__db.csv'    
 
-    # create the database subdirectory for this wavelength
-    dbSubdir = dbloc + '/' + wave + '/' + Today
-    try:
-	    os.makedirs(dbSubdir)
-    except:
-	    print 'Directory already exists: '+ dbSubdir
+		# read in the database file for this wavelength and today.
+		try:
+			file = open(dbSubdir + '/' + dbFileName,'r')
+			jp2list = file.readlines()
+			print 'Read database file '+ dbSubdir + '/' + dbFileName
+		except:
+			file = open(dbSubdir + '/' + dbFileName,'w')
+			jp2list = ['This file first created '+time.ctime()+'\n\n']
+			file.write(jp2list[0])
+			print 'Created database file '+ dbSubdir + '/' + dbFileName
+		finally:
+			file.close()
 
-    # create the database filename
-    dbFileName = yyyy + '_' + mm + '_' + dd + '__AIA__' + wave + '__db.csv'    
+		# calculate the remote directory
+		remote_location = remote_root + '/' + wave + '/' + Today + '/'
 
-    # read in the database file for this wavelength and today.
-    try:
-	    file = open(dbSubdir + '/' + dbFileName,'r')
-	    jp2list = file.readlines()
-	    print 'Read database file '+ dbSubdir + '/' + dbFileName
-    except:
-	    file = open(dbSubdir + '/' + dbFileName,'w')
-	    jp2list = ['This file first created '+time.ctime()+'\n\n']
-	    file.write(jp2list[0])
-	    print 'Created database file '+ dbSubdir + '/' + dbFileName
-    finally:
-	    file.close()
+		# open the remote location and get the file list
+		usock = urllib.urlopen(remote_location)
+		parser = URLLister()
+		parser.feed(usock.read())
+		usock.close()
+		parser.close()
+		# check which files are new
 
-    # calculate the remote directory
-    remote_location = remote_root + '/' + wave + '/' + Today + '/'
-
-    # open the remote location and get the file list
-    usock = urllib.urlopen(remote_location)
-    parser = URLLister()
-    parser.feed(usock.read())
-    usock.close()
-    parser.close()
-    # check which files are new
-
-    for url in parser.urls:
-        if url.endswith('.jp2'):
-		if not url + ',\n' in jp2list:
-			print 'reading ' + remote_location + url
-			download(remote_location + url, storage = local_keep)
-			# update database file with new files
-			jp2list.extend(url + ',\n')
-		else:
-			print 'File already transferred ' + url
-    print 'Writing updated ' + dbSubdir + '/' + dbFileName
-    file = open(dbSubdir + '/' + dbFileName,'w')
-    file.writelines(jp2list)
-    file.close()
+		for url in parser.urls:
+			if url.endswith('.jp2'):
+				if not url + ',\n' in jp2list:
+					print 'reading ' + remote_location + url
+					download(remote_location + url, storage = local_keep)
+					# update database file with new files
+					jp2list.extend(url + ',\n')
+				else:
+					print 'File already transferred ' + url
+		print 'Writing updated ' + dbSubdir + '/' + dbFileName
+		file = open(dbSubdir + '/' + dbFileName,'w')
+		file.writelines(jp2list)
+		file.close()
