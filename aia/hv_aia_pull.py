@@ -22,6 +22,7 @@ import urllib2
 import urllib
 from sgmllib import SGMLParser
 import os, time
+import calendar
 
 class URLLister(SGMLParser):
 	def reset(self):
@@ -36,8 +37,6 @@ class URLLister(SGMLParser):
 def change2hv(z):
 	os.system('chmod -R 775 ' + z)
 	os.system('chown -R ireland:helioviewer ' + z)
-
-
 
 def download(url, fileName=None, storage=None):
     def getFileName(url,openUrl):
@@ -62,46 +61,33 @@ def download(url, fileName=None, storage=None):
         r.close()
     change2hv(fileName)
 
-#download('http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA/94/2010/06/18/2010_06_18__00_00_20_135__SDO_AIA_AIA_94.jp2')
+def GetAIA(yyyy,mm,dd):
 
-# Local root - presumed to be created
-local_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
+	# Local root - presumed to be created
+	local_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
 
-# The location of where the data will be stored
-local_storage = local_root + 'jp2/AIA'
-try:
-	os.makedirs(local_storage)
-	change2hv(local_storage)
-except:
-	print 'Directory already exists'
+	# The location of where the data will be stored
+	local_storage = local_root + 'jp2/AIA'
+	try:
+		os.makedirs(local_storage)
+		change2hv(local_storage)
+	except:
+		print 'Directory already exists'
 
-# The location of where the databases are stored
-dbloc = local_root + 'db/AIA/'
-try:
-	os.makedirs(dbloc)
-	change2hv(local_storage)
-except:
-	print 'Directory already exists'
+	# The location of where the databases are stored
+	dbloc = local_root + 'db/AIA/'
+	try:
+		os.makedirs(dbloc)
+		change2hv(local_storage)
+	except:
+		print 'Directory already exists'
 
 
-# root of where the data is
-remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
+	# root of where the data is
+	remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
 
-# wavelength array - constant
-wavelength = ['94','131','171','193','211','304','335','1600','1700','4500']
-
-# repeat starts here
-while 1:
-
-	# get today's date in UT
-
-	yyyy = time.strftime('%Y',time.gmtime())
-	mm = time.strftime('%m',time.gmtime())
-	dd = time.strftime('%d',time.gmtime())
-	
-        #yyyy = '2010'
-	#mm = '06'
-	#dd = '23'
+	# wavelength array - constant
+	wavelength = ['94','131','171','193','211','304','335','1600','1700','4500']
 
 	Today = yyyy + '/' + mm + '/' + dd
 
@@ -166,3 +152,29 @@ while 1:
 		file = open(dbSubdir + '/' + dbFileName,'w')
 		file.writelines(jp2list)
 		file.close()
+
+
+#download('http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA/94/2010/06/18/2010_06_18__00_00_20_135__SDO_AIA_AIA_94.jp2')
+
+
+
+# repeat starts here
+while 1:
+
+	# get today's date in UT
+
+	yyyy = time.strftime('%Y',time.gmtime())
+	mm = time.strftime('%m',time.gmtime())
+	dd = time.strftime('%d',time.gmtime())
+
+	# get yesterday's date in UT
+	yesterday = calendar.timegm(time.gmtime()) - 24*60*60
+	yesterday_yyyy = time.strftime('%Y',time.gmtime(yesterday))
+	yesterday_mm = time.strftime('%m',time.gmtime(yesterday))
+	yesterday_dd = time.strftime('%d',time.gmtime(yesterday))
+
+	# Make sure we have all of yesterday's data
+	GetAIA(yesterday_yyyy,yesterday_mm,yesterday_dd)
+
+	# Get Today's data
+	GetAIA(yyyy,mm,dd)
