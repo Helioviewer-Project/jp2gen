@@ -51,7 +51,17 @@ def download(url, fileName=None, storage=None):
         # if no filename was found above, parse it out of the final URL.
         return basename(urlsplit(openUrl.url)[2])
 
-    r = urllib2.urlopen(urllib2.Request(url))
+    TryAgain = True
+    while TryAgain:
+	    try:
+		    r = urllib2.urlopen(urllib2.Request(url))
+		    TryAgain = False
+	    except (urllib2.URLError),value:
+		    if value == 110:
+			    print 'Connection time out: Trying again'
+			    TryAgain = True
+
+ 
     try:
         fileName = fileName or getFileName(url,r)
         fileName = storage + fileName
@@ -131,6 +141,8 @@ def GetAIA(yyyy,mm,dd):
 		finally:
 			file.close()
 
+		# Append any files that are in the directory but not in the db file.
+
 		# calculate the remote directory
 		remote_location = remote_root + '/' + wave + '/' + Today + '/'
 
@@ -147,6 +159,7 @@ def GetAIA(yyyy,mm,dd):
 				if not url + ',\n' in jp2list:
 					print 'reading ' + remote_location + url
 					download(remote_location + url, storage = local_keep)
+					#os.system("wget -r -l1 -nd --no-parent -A.jp2 -P"+local_keep + ' ' + remote_location) 
 					# update database file with new files
 					jp2list.extend(url + ',\n')
 				else:
