@@ -88,7 +88,7 @@ def GetAIAWave(yyyy,mm,dd,wave):
 	# Local root - presumed to be created
 	local_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
 
-	# The location of where the data will be stored
+	# Where the data will be stored
 	jp2_dir = local_root + 'jp2/'
 	hvCreateSubdir(jp2_dir)
 
@@ -106,6 +106,7 @@ def GetAIAWave(yyyy,mm,dd,wave):
 	# root of where the data is
 	remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
 
+	# Today as a directory and as name
 	todayDir = yyyy + '/' + mm + '/' + dd
 	todayName = yyyy + '_' + mm + '_' + dd
 
@@ -129,7 +130,8 @@ def GetAIAWave(yyyy,mm,dd,wave):
 		os.makedirs(logSubdir)
 	except:
 		print 'Directory already exists: '+ logSubdir
-	# Create the logfile file
+
+	# Create the logfile filename
         logFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__AIA__' + wave + '.log'    
 
 	# create the database subdirectory for this wavelength
@@ -167,6 +169,11 @@ def GetAIAWave(yyyy,mm,dd,wave):
 	finally:
 		file.close()
 
+	# put the last image in some web space
+	webFile = '/service/www/sdo/aia/latest_jp2/latest_' + wave + '.jp2'
+	print 'Wrote '+ webFile
+	shutil.copy(local_keep + jp2list[-1][:-1], webFile)
+
 	# Calculate the remote directory
 	remote_location = remote_root + '/' + wave + '/' + todayDir + '/'
 
@@ -176,6 +183,7 @@ def GetAIAWave(yyyy,mm,dd,wave):
 	parser.feed(usock.read())
 	usock.close()
 	parser.close()
+
 	# Check which files are new at the remote location
 	newlist = ['']
 	newFiles = False
@@ -191,6 +199,7 @@ def GetAIAWave(yyyy,mm,dd,wave):
 		print 'Number of new files found at remote location = ' + str(newFilesCount)
 	else:
 		print 'No new files found at remote location.'
+
 	# Write the new filenames to a file
 	if newFiles:
 		newFileListName = timeStamp + '.' + todayName + '__'+ wave + '.newfiles.txt'
