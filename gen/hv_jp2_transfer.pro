@@ -83,6 +83,8 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
   endif
   sdir = EXPAND_TILDE(sdir)
   print,progname + ': looking in '+sdir
+  print,progname + ': transfer to '+ wby.transfer.remote.machine + ':' + $
+                     wby.transfer.remote.incoming 
   a = file_list(find_all_dir(sdir),'*.jp2')
   if (not(isarray(a)) or (a[0] eq 'aaa.jp2')) then begin
      transfer_results = ['No files to transfer']

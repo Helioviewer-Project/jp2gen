@@ -2,16 +2,12 @@
 #
 # Script cobbled together from
 # 
-# http://stackoverflow.com/questions/862173/how-to-download-a-file-using-python-in-a-smarter-way
-#
-# and
-#
 # Dive Into Python 5.4
 #
 # Scrapes all the JP2 files from LMSAL webspace and writes them to local subdirectories
 #
-# TODO: check for files already downloaded so we don't download them twice.
-# Solution: check for a text db file, if JP2 file is not in the list, download it, and update list.  should be simple
+# TODO: better handling of spawned wget process through the subprocess module
+# 
 #
 #
 
@@ -21,270 +17,327 @@ import shutil
 import urllib2
 import urllib
 from sgmllib import SGMLParser
-import os, time
+import os, time, sys
 import calendar
 
 class URLLister(SGMLParser):
-	def reset(self):
-		SGMLParser.reset(self)
-		self.urls = []
+        def reset(self):
+                SGMLParser.reset(self)
+                self.urls = []
 
-	def start_a(self, attrs):
-		href = [v for k, v in attrs if k=='href']
-		if href:
-			self.urls.extend(href)
+        def start_a(self, attrs):
+                href = [v for k, v in attrs if k=='href']
+                if href:
+                        self.urls.extend(href)
 
 # Forward compatibility with Python 3
 def jprint(z):
-	print z
+        print z
 
 
 def change2hv(z):
-	os.system('chmod -R 775 ' + z)
-	os.system('chown -R ireland:helioviewer ' + z)
+        os.system('chmod -R 775 ' + z)
+        os.system('chown -R ireland:helioviewer ' + z)
 
-def download(url, fileName=None, storage=None):
-    def getFileName(url,openUrl):
-        if 'Content-Disposition' in openUrl.info():
-            # If the response has Content-Disposition, try to get filename from it
-            cd = dict(map(
-                lambda x: x.strip().split('=') if '=' in x else (x.strip(),''),
-                openUrl.info().split(';')))
-            if 'filename' in cd:
-                filename = cd['filename'].strip("\"'")
-                if filename: return filename
-        # if no filename was found above, parse it out of the final URL.
-        return basename(urlsplit(openUrl.url)[2])
 
-    TryAgain = True
-    while TryAgain:
-	    try:
-		    r = urllib2.urlopen(urllib2.Request(url))
-		    TryAgain = False
-	    except (urllib2.URLError),value:
-		    if value == 110:
-			    jprint('Connection time out: Trying again')
-			    TryAgain = True
+#def download(url, fileName=None, storage=None):
+#    def getFileName(url,openUrl):
+#        if 'Content-Disposition' in openUrl.info():
+#            # If the response has Content-Disposition, try to get filename from it
+#            cd = dict(map(
+#                lambda x: x.strip().split('=') if '=' in x else (x.strip(),''),
+#                openUrl.info().split(';')))
+#            if 'filename' in cd:
+#                filename = cd['filename'].strip("\"'")
+#                if filename: return filename
+#        # if no filename was found above, parse it out of the final URL.
+#        return basename(urlsplit(openUrl.url)[2])
+#
+#    TryAgain = True
+#    while TryAgain:
+#           try:
+#                   r = urllib2.urlopen(urllib2.Request(url))
+#                   TryAgain = False
+#           except (urllib2.URLError),value:
+#                   if value == 110:
+#                           jprint('Connection time out: Trying again')
+#                           TryAgain = True
+#
+#
+#    try:
+#        fileName = fileName or getFileName(url,r)
+#        fileName = storage + fileName
+#        with open(fileName, 'wb') as f:
+#            shutil.copyfileobj(r,f)
+#    finally:
+#        r.close()
+#    change2hv(fileName)
 
- 
-    try:
-        fileName = fileName or getFileName(url,r)
-        fileName = storage + fileName
-        with open(fileName, 'wb') as f:
-            shutil.copyfileobj(r,f)
-    finally:
-        r.close()
-    change2hv(fileName)
 
 def hvCreateSubdir(x):
-	try:
-		os.makedirs(x)
-		change2hv(x)
-	except:
-		jprint('Directory already exists: ' + x)
+        try:
+                os.makedirs(x)
+                change2hv(x)
+        except:
+                jprint('Directory already exists: ' + x)
 
 
 
-def GetAIAWave(yyyy,mm,dd,wave):
+def GetAIAWave(yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
+        jprint('Remote root: '+remote_root)
+        jprint('Local root: '+local_root)
+        jprint('Ingest root: '+ingest_root)
 
-	# Get a time-stamp to be used by all log files
-	TSyyyy = time.strftime('%Y',time.localtime())
-	TSmm = time.strftime('%m',time.localtime())
-	TSdd = time.strftime('%d',time.localtime())
-	TShh = time.strftime('%H',time.localtime())
-	TSmmm = time.strftime('%M',time.localtime())
-	TSss =  time.strftime('%S',time.localtime())
-	timeStamp = TSyyyy + TSmm + TSdd + '_' + TShh + TSmmm + TSss
+        # Get a time-stamp to be used by all log files
+        TSyyyy = time.strftime('%Y',time.localtime())
+        TSmm = time.strftime('%m',time.localtime())
+        TSdd = time.strftime('%d',time.localtime())
+        TShh = time.strftime('%H',time.localtime())
+        TSmmm = time.strftime('%M',time.localtime())
+        TSss =  time.strftime('%S',time.localtime())
+        timeStamp = TSyyyy + TSmm + TSdd + '_' + TShh + TSmmm + TSss
 
-	# Local root - presumed to be created
-	local_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
+        # Where the data will be stored
+        jp2_dir = local_root + 'jp2/'
+        #jp2_dir = local_root
+        hvCreateSubdir(jp2_dir)
 
-	# Where the data will be stored
-	jp2_dir = local_root + 'jp2/'
-	hvCreateSubdir(jp2_dir)
+        local_storage = jp2_dir + 'AIA/'
+        hvCreateSubdir(local_storage)
 
-	local_storage = jp2_dir + 'AIA/'
-	hvCreateSubdir(local_storage)
 
-	# The location of where the databases are stored
-	dbloc = local_root + 'db/AIA/'
-	hvCreateSubdir(dbloc)
+        # Where the data will be stored
+        ingest_dir = ingest_root + 'jp2/'
+        hvCreateSubdir(ingest_dir)
 
-	# The location of where the logfiles are stored
-	logloc = local_root + 'log/AIA/'
-	hvCreateSubdir(logloc)
+        local_storage = jp2_dir + 'AIA/'
+        hvCreateSubdir(local_storage)
 
-	# root of where the data is
-	remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
+        # The location of where the databases are stored
+        dbloc = local_root + 'db/AIA/'
+        hvCreateSubdir(dbloc)
 
-	# Today as a directory and as name
-	todayDir = yyyy + '/' + mm + '/' + dd
-	todayName = yyyy + '_' + mm + '_' + dd
+        # The location of where the logfiles are stored
+        logloc = local_root + 'log/AIA/'
+        hvCreateSubdir(logloc)
+
+        # Today as a directory and as name
+        todayDir = yyyy + '/' + mm + '/' + dd
+        todayName = yyyy + '_' + mm + '_' + dd
 
         # get the JP2s for this wavelength
-	# create the local JP2 subdirectory required
-	local_keep = local_storage + wave + '/' + todayDir + '/'
-	try:
-		os.makedirs(local_keep)
-		change2hv(local_storage)
-		change2hv(local_storage + wave)
-		change2hv(local_storage + wave + '/' + yyyy)
-		change2hv(local_storage + wave + '/' + yyyy + '/' + mm)
-		change2hv(local_storage + wave + '/' + yyyy + '/' + mm + '/' + dd)
-	except:
-		jprint('Directory already exists: '+ local_keep)
+        # create the local JP2 subdirectory required
+        local_keep = local_storage + wave + '/' + todayDir + '/'
+        try:
+                os.makedirs(local_keep)
+                change2hv(local_storage)
+                change2hv(local_storage + wave)
+                change2hv(local_storage + wave + '/' + yyyy)
+                change2hv(local_storage + wave + '/' + yyyy + '/' + mm)
+                change2hv(local_storage + wave + '/' + yyyy + '/' + mm + '/' + dd)
+		jprint('Created '+ local_keep)
+        except:
+                jprint('Directory already exists: '+ local_keep)
 
 
-	# create the logfile subdirectory for this wavelength
-	logSubdir = logloc + wave + '/' + todayDir
-	try:
-		os.makedirs(logSubdir)
-	except:
-		jprint('Directory already exists: '+ logSubdir)
+        # create the logfile subdirectory for this wavelength
+        logSubdir = logloc + wave + '/' + todayDir
+        try:
+                os.makedirs(logSubdir)
+		jprint('Created log directory: ' + logSubdir)
+        except:
+                jprint('Directory already exists: '+ logSubdir)
 
-	# Create the logfile filename
+        # Create the logfile filename
         logFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__AIA__' + wave + '.log'    
 
-	# create the database subdirectory for this wavelength
-	dbSubdir = dbloc + wave + '/' + todayDir
-	try:
-		os.makedirs(dbSubdir)
-	except:
-		jprint('Directory already exists: '+ dbSubdir)
+        # create the database subdirectory for this wavelength
+        dbSubdir = dbloc + wave + '/' + todayDir
+        try:
+                os.makedirs(dbSubdir)
+		jprint('Created log directory: ' + dbSubdir)
+        except:
+                jprint('Directory already exists: '+ dbSubdir)
 
-	# create the database filename
+        # create the database filename
         dbFileName = yyyy + '_' + mm + '_' + dd + '__AIA__' + wave + '__db.csv'    
 
-	# read in the database file for this wavelength and today.
-	try:
-		file = open(dbSubdir + '/' + dbFileName,'r')
-		jp2list = file.readlines()
-		jprint('Read database file '+ dbSubdir + '/' + dbFileName)
-		jprint('Number of existing entries in database = ' + str(len(jp2list)))
-		# Get a list of the images in the subdirectory
-		dirList = os.listdir(local_keep)
-		# Update the jp2list with any new images which may be present
-		count = 0
-		for testfile in dirList:
-			if testfile.endswith('.jp2'):
-				if not testfile + '\n' in jp2list:
-					jp2list.extend(testfile + '\n')
-					count = count + 1
-		if count > 0:
-			jprint('Number of local files found not in database: ' + str(count))
-	except:
-		file = open(dbSubdir + '/' + dbFileName,'w')
-		jp2list = ['This file first created '+time.ctime()+'\n\n']
-		file.write(jp2list[0])
-		jprint('Created database file '+ dbSubdir + '/' + dbFileName)
-	finally:
-		file.close()
+        # read in the database file for this wavelength and today.
+        try:
+                file = open(dbSubdir + '/' + dbFileName,'r')
+                jp2list = file.readlines()
+                jprint('Read database file '+ dbSubdir + '/' + dbFileName)
+                jprint('Number of existing entries in database = ' + str(len(jp2list)))
+                # Get a list of the images in the subdirectory
+                dirList = os.listdir(local_keep)
+                # Update the jp2list with any new images which may be present
+                count = 0
+                for testfile in dirList:
+                        if testfile.endswith('.jp2'):
+                                if not testfile + '\n' in jp2list:
+                                        jp2list.extend(testfile + '\n')
+                                        count = count + 1
+                if count > 0:
+                        jprint('Number of local files found not in database: ' + str(count))
+        except:
+                file = open(dbSubdir + '/' + dbFileName,'w')
+                jp2list = ['This file first created '+time.ctime()+'\n\n']
+                file.write(jp2list[0])
+                jprint('Created new database file '+ dbSubdir + '/' + dbFileName)
+        finally:
+                file.close()
 
-	# put the last image in some web space
-	webFileJP2 = jp2list[-1][:-1]
-	if webFileJP2.endswith('.jp2'):
-		webFile = '/service/www/sdo/aia/latest_jp2/latest_' + wave + '.jp2'
-		jprint('Wrote '+ webFile)
-		shutil.copy(local_keep + webFileJP2, webFile)
-	else:
-		jprint('No latest JP2 file found')
+        # put the last image in some web space
+        webFileJP2 = jp2list[-1][:-1]
+        if webFileJP2.endswith('.jp2'):
+                webFile = '/service/www/sdo/aia/latest_jp2/latest_aia_' + wave + '.jp2'
+        #       shutil.copy(local_keep + webFileJP2, webFile)
+                jprint('Updated latest JP2 file to a webpage: '+ webFile)
+        else:
+                jprint('No latest JP2 file found.')
 
-	# Calculate the remote directory
-	remote_location = remote_root + '/' + wave + '/' + todayDir + '/'
+        # Calculate the remote directory
+        remote_location = remote_root + '/' + wave + '/' + todayDir + '/'
 
-	# Open the remote location and get the file list
-	usock = urllib.urlopen(remote_location)
-	parser = URLLister()
-	parser.feed(usock.read())
-	usock.close()
-	parser.close()
+        # Open the remote location and get the file list
+        usock = urllib.urlopen(remote_location)
+        parser = URLLister()
+        parser.feed(usock.read())
+        usock.close()
+        parser.close()
 
-	# Check which files are new at the remote location
-	newlist = ['']
-	newFiles = False
-	newFilesCount = 0
-	for url in parser.urls:
-		if url.endswith('.jp2'):
-			if not url + '\n' in jp2list:
-				newFiles = True
-				#print 'found new file at ' + remote_location + url
-				newlist.extend(url + '\n')
-				newFilesCount = newFilesCount + 1
-	if newFilesCount > 0:
-		jprint('Number of new files found at remote location = ' + str(newFilesCount))
-	else:
-		jprint('No new files found at remote location.')
+        # Check which files are new at the remote location
+        newlist = ['']
+        newFiles = False
+        newFilesCount = 0
+        for url in parser.urls:
+                if url.endswith('.jp2'):
+                        if not url + '\n' in jp2list:
+                                newFiles = True
+                                #print 'found new file at ' + remote_location + url
+                                newlist.extend(url + '\n')
+                                newFilesCount = newFilesCount + 1
+        if newFilesCount > 0:
+                jprint('Number of new files found at remote location = ' + str(newFilesCount))
+        else:
+                jprint('No new files found at remote location.')
 
-	# Write the new filenames to a file
-	if newFiles:
-		newFileListName = timeStamp + '.' + todayName + '__'+ wave + '.newfiles.txt'
-		jprint('Writing new file list to ' + logSubdir + '/' + newFileListName)
-		file = open(logSubdir + '/' + newFileListName,'w')
-		file.writelines(newlist)
-		file.close()
-		# Download only the new files
-		jprint('Downloading new files.')
-		localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
-		localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
-		localDir = ' -P'+local_keep + ' '
-		remoteBaseURL = '-B ' + remote_location + ' '
-		command = 'wget -r -l1 -nd --no-parent -A.jp2' + localLog + localInputFile + localDir + remoteBaseURL
+        # Write the new filenames to a file
+        if newFiles:
+                newFileListName = timeStamp + '.' + todayName + '__AIA__'+ wave + '.newfiles.txt'
+                jprint('Writing new file list to ' + logSubdir + '/' + newFileListName)
+                file = open(logSubdir + '/' + newFileListName,'w')
+                file.writelines(newlist)
+                file.close()
+                # Download only the new files
+                jprint('Downloading new files.')
+                localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
+                localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
+                localDir = ' -P'+local_keep + ' '
+                remoteBaseURL = '-B ' + remote_location + ' '
+                command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
 
-		os.system(command)
+                os.system(command)
 
-		# Write the new updated database file
-		jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
-		file = open(dbSubdir + '/' + dbFileName,'w')
-		file.writelines(jp2list)
-		file.writelines(newlist)
-		file.close()
-		# Absolutely ensure the correct permissions on the new file
-		#for this in newlist:
-		#	change2hv(local_keep + this[:-1])
-	else:
-		jprint('No new files found at ' + remote_location)
+                # Write the new updated database file
+		print newlist
+                jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
+                file = open(dbSubdir + '/' + dbFileName,'w')
+                file.writelines(jp2list)
+                file.writelines(newlist)
+                file.close()
+                # Absolutely ensure the correct permissions on all the files
+                change2hv(local_keep)
+
+		# Create the ingest directory
+                ingestDir = ingest_dir + 'AIA/' + wave + '/' + todayDir + '/'
+                try:
+                        os.makedirs(ingestDir)
+                except:
+                        jprint('Ingest directory already exists: '+ingestDir)
+
+		# Read in the new filenames again
+                file = open(logSubdir + '/' + newFileListName,'r')
+                newlist = file.readlines()
+                file.close()
+                # Move the new files to the ingest directory
+                for name in newlist:
+                        newFile = name[:-1]
+                        print newFile
+                        if newFile.endswith('.jp2'):
+                                os.rename(local_keep + newFile,ingestDir + newFile)
+
+                
+        else:
+                jprint('No new files found at ' + remote_location)
 
 
+# Local root - presumed to be created
+#local_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
 
-# wavelength array - constant
-wavelength = ['94','131','171','193','211','304','335','1600','1700','4500']
+# root of where the data is
+#remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
 
+#
+# Script must be called using an options file that defines the root of the
+# remote directory and the root of the local directory
+#
+if len(sys.argv) <= 1:
+        jprint('No options file given.  Ending.')
+else:
+        options_file = sys.argv[1]
+        try:
+                file = open(options_file,'r')
+                options = file.readlines()
+        finally:
+                file.close()
 
-# repeat starts here
-count = 0
-while 1:
-	count = count + 1
-	# get today's date in UT
+        # Parse the options
+        # first entry must be the remote http location
+        # second entry must be the local subdirectory where the files are saved to
+        remote_root = options[0][:-1]
+        local_root = options[1][:-1]
+        ingest_root = options[2][:-1]
+        # wavelength array - constant
+        wavelength = ['94','131','171','193','211','304','335','1600','1700','4500']
 
-	yyyy = time.strftime('%Y',time.gmtime())
-	mm = time.strftime('%m',time.gmtime())
-	dd = time.strftime('%d',time.gmtime())
+        # repeat starts here
+        count = 0
+        while 1:
+                count = count + 1
+                # get today's date in UT
 
-	# get yesterday's date in UT
-	Y = calendar.timegm(time.gmtime()) - 24*60*60
-	Yyyyy = time.strftime('%Y',time.gmtime(Y))
-	Ymm = time.strftime('%m',time.gmtime(Y))
-	Ydd = time.strftime('%d',time.gmtime(Y))
+                yyyy = time.strftime('%Y',time.gmtime())
+                mm = time.strftime('%m',time.gmtime())
+                dd = time.strftime('%d',time.gmtime())
 
-	# Make sure we have all of yesterday's data
+                # get yesterday's date in UT
+                Y = calendar.timegm(time.gmtime()) - 24*60*60
+                Yyyyy = time.strftime('%Y',time.gmtime(Y))
+                Ymm = time.strftime('%m',time.gmtime(Y))
+                Ydd = time.strftime('%d',time.gmtime(Y))
 
-	for wave in wavelength:
-		t1 = time.time()
-		jprint(' ')
-		jprint(' ')
-		jprint('Wavelength = ' + wave)
-		jprint('Beginning remote location query number ' + str(count))
-		jprint('Looking for missed files from yesterday = ' + Yyyyy + Ymm + Ydd)
-		GetAIAWave(Yyyyy,Ymm,Ydd,wave)
-		jprint('Time taken in seconds =' + str(time.time() - t1))
+                # Make sure we have all of yesterday's data
 
-	# Get Today's data
-	for wave in wavelength:
-		t1 = time.time()
-		jprint(' ')
-		jprint(' ')
-		jprint('Wavelength = ' + wave)
-		jprint('Beginning remote location query number ' + str(count))
-		jprint("Looking for today's files = " + Yyyyy + Ymm + Ydd)
-		GetAIAWave(yyyy,mm,dd,wave)
-		jprint('Time taken in seconds =' + str(time.time() - t1))
+                for wave in wavelength:
+                        t1 = time.time()
+                        jprint(' ')
+                        jprint(' ')
+                        jprint('Wavelength = ' + wave)
+                        jprint('Beginning remote location query number ' + str(count))
+                        jprint('Looking for missed files from yesterday = ' + Yyyyy + Ymm + Ydd)
+                        jprint('Using options file '+ options_file)
+                        GetAIAWave(Yyyyy,Ymm,Ydd,wave,remote_root,local_root,ingest_root)
+                        jprint('Time taken in seconds =' + str(time.time() - t1))
+
+                # Get Today's data
+                for wave in wavelength:
+                        t1 = time.time()
+                        jprint(' ')
+                        jprint(' ')
+                        jprint('Wavelength = ' + wave)
+                        jprint('Beginning remote location query number ' + str(count))
+                        jprint("Looking for today's files = " + Yyyyy + Ymm + Ydd)
+                        jprint('Using options file '+ options_file)
+                        GetAIAWave(yyyy,mm,dd,wave,remote_root,local_root,ingest_root)
+                        jprint('Time taken in seconds =' + str(time.time() - t1))

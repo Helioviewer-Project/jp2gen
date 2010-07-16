@@ -1,0 +1,3 @@
+http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA
+/home/ireland/input/v0.8/jp2/
+/home/ireland/incoming/v0.8/jp2/
