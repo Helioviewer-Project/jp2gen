@@ -79,11 +79,11 @@ PRO HV_LASCO_PREP2JP2_QL,date_start = ds, $ ; date the automated processing star
      print,progname + ': Processing... ' + ds + ' to ' + de
 
      if keyword_set(c2) then begin
-        HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds,report=report,writtenby = writtenby
+        HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds,report=report;,writtenby = writtenby
      endif
 
      if keyword_set(c3) then begin
-        HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds,report=report,writtenby = writtenby
+        HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = progname,copy2outgoing = copy2outgoing,alternate_backgrounds = alternate_backgrounds,report=report;,writtenby = writtenby
      endif
 
      if NOT(keyword_set(c2)) and NOT(keyword_set(c3)) then begin

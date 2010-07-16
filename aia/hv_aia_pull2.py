@@ -34,6 +34,11 @@ class URLLister(SGMLParser):
 		if href:
 			self.urls.extend(href)
 
+# Forward compatibility with Python 3
+def jprint(z):
+	print z
+
+
 def change2hv(z):
 	os.system('chmod -R 775 ' + z)
 	os.system('chown -R ireland:helioviewer ' + z)
@@ -58,7 +63,7 @@ def download(url, fileName=None, storage=None):
 		    TryAgain = False
 	    except (urllib2.URLError),value:
 		    if value == 110:
-			    print 'Connection time out: Trying again'
+			    jprint('Connection time out: Trying again')
 			    TryAgain = True
 
  
@@ -76,14 +81,20 @@ def hvCreateSubdir(x):
 		os.makedirs(x)
 		change2hv(x)
 	except:
-		print 'Directory already exists ' + x
+		jprint('Directory already exists: ' + x)
 
 
 
 def GetAIAWave(yyyy,mm,dd,wave):
 
 	# Get a time-stamp to be used by all log files
-	timeStamp = str(int(time.time()))
+	TSyyyy = time.strftime('%Y',time.localtime())
+	TSmm = time.strftime('%m',time.localtime())
+	TSdd = time.strftime('%d',time.localtime())
+	TShh = time.strftime('%H',time.localtime())
+	TSmmm = time.strftime('%M',time.localtime())
+	TSss =  time.strftime('%S',time.localtime())
+	timeStamp = TSyyyy + TSmm + TSdd + '_' + TShh + TSmmm + TSss
 
 	# Local root - presumed to be created
 	local_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
@@ -121,7 +132,7 @@ def GetAIAWave(yyyy,mm,dd,wave):
 		change2hv(local_storage + wave + '/' + yyyy + '/' + mm)
 		change2hv(local_storage + wave + '/' + yyyy + '/' + mm + '/' + dd)
 	except:
-		print 'Directory already exists: '+ local_keep
+		jprint('Directory already exists: '+ local_keep)
 
 
 	# create the logfile subdirectory for this wavelength
@@ -129,7 +140,7 @@ def GetAIAWave(yyyy,mm,dd,wave):
 	try:
 		os.makedirs(logSubdir)
 	except:
-		print 'Directory already exists: '+ logSubdir
+		jprint('Directory already exists: '+ logSubdir)
 
 	# Create the logfile filename
         logFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__AIA__' + wave + '.log'    
@@ -139,7 +150,7 @@ def GetAIAWave(yyyy,mm,dd,wave):
 	try:
 		os.makedirs(dbSubdir)
 	except:
-		print 'Directory already exists: '+ dbSubdir
+		jprint('Directory already exists: '+ dbSubdir)
 
 	# create the database filename
         dbFileName = yyyy + '_' + mm + '_' + dd + '__AIA__' + wave + '__db.csv'    
@@ -148,31 +159,35 @@ def GetAIAWave(yyyy,mm,dd,wave):
 	try:
 		file = open(dbSubdir + '/' + dbFileName,'r')
 		jp2list = file.readlines()
-		print 'Read database file '+ dbSubdir + '/' + dbFileName
-		print 'Number of existing entries in database = ' + str(len(jp2list))
+		jprint('Read database file '+ dbSubdir + '/' + dbFileName)
+		jprint('Number of existing entries in database = ' + str(len(jp2list)))
 		# Get a list of the images in the subdirectory
 		dirList = os.listdir(local_keep)
 		# Update the jp2list with any new images which may be present
 		count = 0
 		for testfile in dirList:
-			if not testfile + '\n' in jp2list:
-				jp2list.extend(testfile + '\n')
-				#print 'Added local file not in database: ' + testfile
-				count = count + 1
+			if testfile.endswith('.jp2'):
+				if not testfile + '\n' in jp2list:
+					jp2list.extend(testfile + '\n')
+					count = count + 1
 		if count > 0:
-			print 'Number of local files found not in database: ' + str(count)
+			jprint('Number of local files found not in database: ' + str(count))
 	except:
 		file = open(dbSubdir + '/' + dbFileName,'w')
 		jp2list = ['This file first created '+time.ctime()+'\n\n']
 		file.write(jp2list[0])
-		print 'Created database file '+ dbSubdir + '/' + dbFileName
+		jprint('Created database file '+ dbSubdir + '/' + dbFileName)
 	finally:
 		file.close()
 
 	# put the last image in some web space
-	webFile = '/service/www/sdo/aia/latest_jp2/latest_' + wave + '.jp2'
-	print 'Wrote '+ webFile
-	shutil.copy(local_keep + jp2list[-1][:-1], webFile)
+	webFileJP2 = jp2list[-1][:-1]
+	if webFileJP2.endswith('.jp2'):
+		webFile = '/service/www/sdo/aia/latest_jp2/latest_' + wave + '.jp2'
+		jprint('Wrote '+ webFile)
+		shutil.copy(local_keep + webFileJP2, webFile)
+	else:
+		jprint('No latest JP2 file found')
 
 	# Calculate the remote directory
 	remote_location = remote_root + '/' + wave + '/' + todayDir + '/'
@@ -196,19 +211,19 @@ def GetAIAWave(yyyy,mm,dd,wave):
 				newlist.extend(url + '\n')
 				newFilesCount = newFilesCount + 1
 	if newFilesCount > 0:
-		print 'Number of new files found at remote location = ' + str(newFilesCount)
+		jprint('Number of new files found at remote location = ' + str(newFilesCount))
 	else:
-		print 'No new files found at remote location.'
+		jprint('No new files found at remote location.')
 
 	# Write the new filenames to a file
 	if newFiles:
 		newFileListName = timeStamp + '.' + todayName + '__'+ wave + '.newfiles.txt'
-		print 'Writing new file list to ' + logSubdir + '/' + newFileListName
+		jprint('Writing new file list to ' + logSubdir + '/' + newFileListName)
 		file = open(logSubdir + '/' + newFileListName,'w')
 		file.writelines(newlist)
 		file.close()
 		# Download only the new files
-		print 'Downloading new files.'
+		jprint('Downloading new files.')
 		localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
 		localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
 		localDir = ' -P'+local_keep + ' '
@@ -218,7 +233,7 @@ def GetAIAWave(yyyy,mm,dd,wave):
 		os.system(command)
 
 		# Write the new updated database file
-		print 'Writing updated ' + dbSubdir + '/' + dbFileName
+		jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
 		file = open(dbSubdir + '/' + dbFileName,'w')
 		file.writelines(jp2list)
 		file.writelines(newlist)
@@ -227,7 +242,7 @@ def GetAIAWave(yyyy,mm,dd,wave):
 		#for this in newlist:
 		#	change2hv(local_keep + this[:-1])
 	else:
-		print 'No new files found at ' + remote_location
+		jprint('No new files found at ' + remote_location)
 
 
 
@@ -246,20 +261,30 @@ while 1:
 	dd = time.strftime('%d',time.gmtime())
 
 	# get yesterday's date in UT
-	#yesterday = calendar.timegm(time.gmtime()) - 24*60*60
-	#yesterday_yyyy = time.strftime('%Y',time.gmtime(yesterday))
-	#yesterday_mm = time.strftime('%m',time.gmtime(yesterday))
-	#yesterday_dd = time.strftime('%d',time.gmtime(yesterday))
+	Y = calendar.timegm(time.gmtime()) - 24*60*60
+	Yyyyy = time.strftime('%Y',time.gmtime(Y))
+	Ymm = time.strftime('%m',time.gmtime(Y))
+	Ydd = time.strftime('%d',time.gmtime(Y))
 
 	# Make sure we have all of yesterday's data
-	#GetAIA(yesterday_yyyy,yesterday_mm,yesterday_dd)
+
+	for wave in wavelength:
+		t1 = time.time()
+		jprint(' ')
+		jprint(' ')
+		jprint('Wavelength = ' + wave)
+		jprint('Beginning remote location query number ' + str(count))
+		jprint('Looking for missed files from yesterday = ' + Yyyyy + Ymm + Ydd)
+		GetAIAWave(Yyyyy,Ymm,Ydd,wave)
+		jprint('Time taken in seconds =' + str(time.time() - t1))
 
 	# Get Today's data
 	for wave in wavelength:
 		t1 = time.time()
-		print ' '
-		print ' '
-		print 'Wavelength = ' + wave
-		print 'Beginning remote location query number ' + str(count)
+		jprint(' ')
+		jprint(' ')
+		jprint('Wavelength = ' + wave)
+		jprint('Beginning remote location query number ' + str(count))
+		jprint("Looking for today's files = " + Yyyyy + Ymm + Ydd)
 		GetAIAWave(yyyy,mm,dd,wave)
-		print 'Time taken in seconds =' + str(time.time() - t1)
+		jprint('Time taken in seconds =' + str(time.time() - t1))
