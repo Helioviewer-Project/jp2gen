@@ -81,11 +81,17 @@ def hvCreateSubdir(x):
         except:
                 jprint('Directory already exists: ' + x)
 
-
+# yyyy - four digit year
+# mm - two digit month
+# dd - two digit day
+# remote_root - remote location of the AIA files
+# local_root - files from remote location are originally copied here, and have their permissions changes here
+# ingest_root - the directory where the files with the correct permissions end up
 
 def GetAIAWave(yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
         jprint('Remote root: '+remote_root)
         jprint('Local root: '+local_root)
+	change2hv(local_root)
         jprint('Ingest root: '+ingest_root)
 
         # Get a time-stamp to be used by all log files
@@ -106,12 +112,12 @@ def GetAIAWave(yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
         hvCreateSubdir(local_storage)
 
 
-        # Where the data will be stored
+        # Where the data will be ingested from
         ingest_dir = ingest_root + 'jp2/'
         hvCreateSubdir(ingest_dir)
 
-        local_storage = jp2_dir + 'AIA/'
-        hvCreateSubdir(local_storage)
+        ingest_storage = ingest_dir + 'AIA/'
+        hvCreateSubdir(ingest_storage)
 
         # The location of where the databases are stored
         dbloc = local_root + 'db/AIA/'
@@ -240,7 +246,6 @@ def GetAIAWave(yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
                 os.system(command)
 
                 # Write the new updated database file
-		print newlist
                 jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
                 file = open(dbSubdir + '/' + dbFileName,'w')
                 file.writelines(jp2list)
@@ -249,12 +254,16 @@ def GetAIAWave(yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
                 # Absolutely ensure the correct permissions on all the files
                 change2hv(local_keep)
 
-		# Create the ingest directory
-                ingestDir = ingest_dir + 'AIA/' + wave + '/' + todayDir + '/'
+		# Create the moveTo directory
+		moveTo = ingest_storage + wave + '/' + yyyy + '/' + mm + '/' + dd + '/'
                 try:
-                        os.makedirs(ingestDir)
+			hvCreateSubdir(ingest_storage)
+			hvCreateSubdir(ingest_storage + wave)
+			hvCreateSubdir(ingest_storage + wave + '/' + yyyy)
+			hvCreateSubdir(ingest_storage + wave + '/' + yyyy + '/' + mm)
+			hvCreateSubdir(ingest_storage + wave + '/' + yyyy + '/' + mm + '/' + dd)
                 except:
-                        jprint('Ingest directory already exists: '+ingestDir)
+                        jprint('Ingest directory already exists: '+moveTo)
 
 		# Read in the new filenames again
                 file = open(logSubdir + '/' + newFileListName,'r')
@@ -265,9 +274,8 @@ def GetAIAWave(yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
                         newFile = name[:-1]
                         print newFile
                         if newFile.endswith('.jp2'):
-                                os.rename(local_keep + newFile,ingestDir + newFile)
-
-                
+                                shutil.copy2(local_keep + newFile,moveTo + newFile)
+				change2hv(moveTo + newFile)
         else:
                 jprint('No new files found at ' + remote_location)
 
@@ -298,46 +306,53 @@ else:
         remote_root = options[0][:-1]
         local_root = options[1][:-1]
         ingest_root = options[2][:-1]
+	yyyyI = options[3][:-1]
+	mmI = options[4][:-1]
+	ddI = options[5][:-1]
+	waveI = options[6][:-1]
         # wavelength array - constant
         wavelength = ['94','131','171','193','211','304','335','1600','1700','4500']
 
-        # repeat starts here
-        count = 0
-        while 1:
-                count = count + 1
-                # get today's date in UT
 
-                yyyy = time.strftime('%Y',time.gmtime())
-                mm = time.strftime('%m',time.gmtime())
-                dd = time.strftime('%d',time.gmtime())
+	if not( (yyyyI == '-1') or (mmI == '-1') or (ddI == '-1') or (waveI == '-1') ):
+		GetAIAWave(yyyyI,mmI,ddI,waveI,remote_root,local_root,ingest_root)
+	else:
+		# repeat starts here
+		count = 0
+		while 1:
+			count = count + 1
+			# get today's date in UT
 
-                # get yesterday's date in UT
-                Y = calendar.timegm(time.gmtime()) - 24*60*60
-                Yyyyy = time.strftime('%Y',time.gmtime(Y))
-                Ymm = time.strftime('%m',time.gmtime(Y))
-                Ydd = time.strftime('%d',time.gmtime(Y))
+			yyyy = time.strftime('%Y',time.gmtime())
+			mm = time.strftime('%m',time.gmtime())
+			dd = time.strftime('%d',time.gmtime())
 
-                # Make sure we have all of yesterday's data
+			# get yesterday's date in UT
+			Y = calendar.timegm(time.gmtime()) - 24*60*60
+			Yyyyy = time.strftime('%Y',time.gmtime(Y))
+			Ymm = time.strftime('%m',time.gmtime(Y))
+			Ydd = time.strftime('%d',time.gmtime(Y))
 
-                for wave in wavelength:
-                        t1 = time.time()
-                        jprint(' ')
-                        jprint(' ')
-                        jprint('Wavelength = ' + wave)
-                        jprint('Beginning remote location query number ' + str(count))
-                        jprint('Looking for missed files from yesterday = ' + Yyyyy + Ymm + Ydd)
-                        jprint('Using options file '+ options_file)
-                        GetAIAWave(Yyyyy,Ymm,Ydd,wave,remote_root,local_root,ingest_root)
-                        jprint('Time taken in seconds =' + str(time.time() - t1))
+			# Make sure we have all of yesterday's data
+			for wave in wavelength:
+				t1 = time.time()
+				jprint(' ')
+				jprint(' ')
+				jprint('Wavelength = ' + wave)
+				jprint('Beginning remote location query number ' + str(count))
+				jprint('Looking for missed files from yesterday = ' + Yyyyy + Ymm + Ydd)
+				jprint('Using options file '+ options_file)
+				GetAIAWave(Yyyyy,Ymm,Ydd,wave,remote_root,local_root,ingest_root)
+				jprint('Time taken in seconds =' + str(time.time() - t1))
 
-                # Get Today's data
-                for wave in wavelength:
-                        t1 = time.time()
-                        jprint(' ')
-                        jprint(' ')
-                        jprint('Wavelength = ' + wave)
-                        jprint('Beginning remote location query number ' + str(count))
-                        jprint("Looking for today's files = " + Yyyyy + Ymm + Ydd)
-                        jprint('Using options file '+ options_file)
-                        GetAIAWave(yyyy,mm,dd,wave,remote_root,local_root,ingest_root)
-                        jprint('Time taken in seconds =' + str(time.time() - t1))
+				# Get Today's data
+				for wave in wavelength:
+					t1 = time.time()
+					jprint(' ')
+					jprint(' ')
+					jprint('Wavelength = ' + wave)
+					jprint('Beginning remote location query number ' + str(count))
+					jprint("Looking for today's files = " + Yyyyy + Ymm + Ydd)
+					jprint('Using options file '+ options_file)
+					GetAIAWave(yyyy,mm,dd,wave,remote_root,local_root,ingest_root)
+					jprint('Time taken in seconds =' + str(time.time() - t1))
