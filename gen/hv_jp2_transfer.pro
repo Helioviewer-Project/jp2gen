@@ -74,7 +74,8 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
                      wby.transfer.remote.user + '@' + $
                      wby.transfer.remote.machine + ':' + $
                      wby.transfer.remote.incoming + $
-                     'v' + g.source.jp2gen_version + path_sep()
+                     'v' + g.source.jp2gen_version + path_sep() + $
+                     'jp2/'
 ;
 ; Get a list of the JP2 files and their subdirectories in the outgoing directory
 ;

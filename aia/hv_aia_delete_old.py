@@ -285,46 +285,11 @@ else:
         # wavelength array - constant
         wavelength = ['94','131','171','193','211','304','335','1600','1700','4500']
 
+	dayInSeconds = 24*60*60
 
-	if not( (yyyyI == '-1') or (mmI == '-1') or (ddI == '-1') or (waveI == '-1') ):
-		GetAIAWave(nickname,yyyyI,mmI,ddI,waveI,remote_root,local_root,ingest_root)
-	else:
-		# repeat starts here
-		count = 0
-		while 1:
-			count = count + 1
-			# get today's date in UT
+	Y = calendar.timegm(time.gmtime()) - dayInSeconds
+	Yyyyy = time.strftime('%Y',time.gmtime(Y))
+	Ymm = time.strftime('%m',time.gmtime(Y))
+	Ydd = time.strftime('%d',time.gmtime(Y))
 
-			yyyy = time.strftime('%Y',time.gmtime())
-			mm = time.strftime('%m',time.gmtime())
-			dd = time.strftime('%d',time.gmtime())
-
-			# get yesterday's date in UT
-			Y = calendar.timegm(time.gmtime()) - 24*60*60
-			Yyyyy = time.strftime('%Y',time.gmtime(Y))
-			Ymm = time.strftime('%m',time.gmtime(Y))
-			Ydd = time.strftime('%d',time.gmtime(Y))
-
-			# Make sure we have all of yesterday's data
-			for wave in wavelength:
-				t1 = time.time()
-				jprint(' ')
-				jprint(' ')
-				jprint('Wavelength = ' + wave)
-				jprint('Beginning remote location query number ' + str(count))
-				jprint('Looking for missed files from yesterday = ' + Yyyyy + Ymm + Ydd)
-				jprint('Using options file '+ options_file)
-				GetAIAWave(Yyyyy,Ymm,Ydd,wave,remote_root,local_root,ingest_root)
-				jprint('Time taken in seconds =' + str(time.time() - t1))
-
-				# Get Today's data
-				for wave in wavelength:
-					t1 = time.time()
-					jprint(' ')
-					jprint(' ')
-					jprint('Wavelength = ' + wave)
-					jprint('Beginning remote location query number ' + str(count))
-					jprint("Looking for today's files = " + Yyyyy + Ymm + Ydd)
-					jprint('Using options file '+ options_file)
-					GetAIAWave(yyyy,mm,dd,wave,remote_root,local_root,ingest_root)
-					jprint('Time taken in seconds =' + str(time.time() - t1))
+	
