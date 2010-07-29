@@ -245,6 +245,16 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
         else:
                 jprint('No new files found at ' + remote_location)
 
+def hvDir(root,version,extension,y,m,d,measuremement):
+	r = strarr(7)
+	r[0] = root
+	r[1] = r[0] + 'v' + str(version) + '/'
+	r[2] = r[1] + extension + '/'
+	r[3] = r[2] + measurement + '/'
+	r[4] = r[3] + y + '/'
+	r[5] = r[4] + m + '/'
+	r[6] = r[5] + d + '/'
+	return r
 
 # Local root - presumed to be created
 #local_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
@@ -287,9 +297,23 @@ else:
 
 	dayInSeconds = 24*60*60
 
-	Y = calendar.timegm(time.gmtime()) - dayInSeconds
-	Yyyyy = time.strftime('%Y',time.gmtime(Y))
-	Ymm = time.strftime('%m',time.gmtime(Y))
-	Ydd = time.strftime('%d',time.gmtime(Y))
+	delay = 14*dayInSeconds
+	Y = calendar.timegm(time.gmtime()) - delay
+	yyyy = time.strftime('%Y',time.gmtime(Y))
+	mm = time.strftime('%m',time.gmtime(Y))
+	dd = time.strftime('%d',time.gmtime(Y))
 
-	
+	# get the next wavelength
+	for wave in wavelength:
+		r = hvDir(local_root,0.8,'jp2',yyyy,mm,dd,wave)
+		# get all the files in the directory
+		fList = os.listdir(r[6])
+		# get the last modification time for this file
+		for this in fList:
+			mTime = (os.stat(this)).st_mtime
+			# if the file is older than the delay, delete
+			if now-mTime > delay :
+				os.remove(r[6] + this)
+		# remove all the branches we can
+		os.removedirs(r[2])
+			
