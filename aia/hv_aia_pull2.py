@@ -247,6 +247,7 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
                 	jprint('No new files found at ' + remote_location)
 	except:
 		jprint('Problem opening connection to '+remote_location+'.  Continuing with loop.')
+	        newFilesCount = -1
 	return newFilesCount
 
 # Local root - presumed to be created
