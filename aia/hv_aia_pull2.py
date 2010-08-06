@@ -51,6 +51,10 @@ def hvCreateSubdir(x):
 def hvSubDir(measurement,yyyy,mm,dd):
 	return [measurement+'/', measurement+'/'+yyyy+'/', measurement+'/'+yyyy+'/'+mm+'/', measurement+'/'+yyyy+'/'+mm+'/'+dd+'/']
 
+# Log directory
+def hvLogSubDir(nickname,measurement,yyyy,mm,dd):
+	a = hvSubDir(measurement,yyyy,mm,dd)
+	
 
 # yyyy - four digit year
 # mm - two digit month
@@ -162,8 +166,8 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
         # put the last image in some web space
         webFileJP2 = jp2list[-1][:-1]
         if webFileJP2.endswith('.jp2'):
-                webFile = '/service/www/sdo/aia/latest_jp2/latest_aia_' + wave + '.jp2'
-        #       shutil.copy(local_keep + webFileJP2, webFile)
+                webFile = monitorLoc + 'latest_aia_' + wave + '.jp2'
+		shutil.copy(local_keep + webFileJP2, webFile)
                 jprint('Updated latest JP2 file to a webpage: '+ webFile)
         else:
                 jprint('No latest JP2 file found.')
@@ -331,6 +335,9 @@ else:
 					stdoutLatestFileName = 'latest.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.stdout.log'
 					stderrLatestFileName = 'latest.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.stderr.log'
 
+					# log subdirectory
+					logSubDir = createLogSubDir(nickname,
+
 					# Redirect stdout
 					saveout = sys.stdout
 					fsock = open(logSubDir + stdoutFileName, 'w')
@@ -354,4 +361,4 @@ else:
 					fsock.close()
 
 					# Copy the most recent stdout file to some webspace.
-
+					shutil.copy(logSubDir + stdoutFileName, monitorLoc + stdoutLatestFileName)
