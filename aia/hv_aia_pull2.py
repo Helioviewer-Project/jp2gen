@@ -47,6 +47,11 @@ def hvCreateSubdir(x):
         except:
                 jprint('Directory already exists: ' + x)
 
+# Directory Structure
+def hvSubDir(measurement,yyyy,mm,dd):
+	return [measurement+'/', measurement+'/'+yyyy+'/', measurement+'/'+yyyy+'/'+mm+'/', measurement+'/'+yyyy+'/'+mm+'/'+dd+'/']
+
+
 # yyyy - four digit year
 # mm - two digit month
 # dd - two digit day
@@ -54,20 +59,11 @@ def hvCreateSubdir(x):
 # local_root - files from remote location are originally copied here, and have their permissions changes here
 # ingest_root - the directory where the files with the correct permissions end up
 
-def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
+def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,timeStamp):
         jprint('Remote root: '+remote_root)
         jprint('Local root: '+local_root)
 	change2hv(local_root)
         jprint('Ingest root: '+ingest_root)
-
-        # Create a time-stamp to be used by all log files
-        TSyyyy = time.strftime('%Y',time.localtime())
-        TSmm = time.strftime('%m',time.localtime())
-        TSdd = time.strftime('%d',time.localtime())
-        TShh = time.strftime('%H',time.localtime())
-        TSmmm = time.strftime('%M',time.localtime())
-        TSss =  time.strftime('%S',time.localtime())
-        timeStamp = TSyyyy + TSmm + TSdd + '_' + TShh + TSmmm + TSss
 
         # Where the data will be stored
         jp2_dir = local_root + 'jp2/'
@@ -90,6 +86,10 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
         # The location of where the logfiles are stored
         logloc = local_root + 'log/'+ nickname +'/'
         hvCreateSubdir(logloc)
+
+	# Extra info
+	if not info = '':
+		jprint(info)
 
         # Today as a directory and as name
         todayDir = yyyy + '/' + mm + '/' + dd
@@ -119,7 +119,7 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
                 jprint('Directory already exists: '+ logSubdir)
 
         # Create the logfile filename
-        logFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.log'    
+        logFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.wget.log'    
 
         # create the database subdirectory for this wavelength
         dbSubdir = dbloc + wave + '/' + todayDir
@@ -144,9 +144,11 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
                 count = 0
                 for testfile in dirList:
                         if testfile.endswith('.jp2'):
-                                if not testfile + '\n' in jp2list:
-                                        jp2list.extend(testfile + '\n')
-                                        count = count + 1
+				stat = os.stat(local_keep + testfile)
+				if stat.st_size > minJP2SizeInBytes:
+					if not testfile + '\n' in jp2list:
+						jp2list.extend(testfile + '\n')
+						count = count + 1
                 if count > 0:
                         jprint('Number of local files found not in database: ' + str(count))
         except:
@@ -185,7 +187,6 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
 	                if url.endswith('.jp2'):
 	                        if not url + '\n' in jp2list:
 	                                newFiles = True
-	                                #print 'found new file at ' + remote_location + url
 	                                newlist.extend(url + '\n')
 	                                newFilesCount = newFilesCount + 1
 	        if newFilesCount > 0:
@@ -250,11 +251,26 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root):
 	        newFilesCount = -1
 	return newFilesCount
 
+# Create a time-stamp to be used by all log files
+def createTimeStamp():
+	TSyyyy = time.strftime('%Y',time.localtime())
+	TSmm = time.strftime('%m',time.localtime())
+	TSdd = time.strftime('%d',time.localtime())
+	TShh = time.strftime('%H',time.localtime())
+	TSmmm = time.strftime('%M',time.localtime())
+	TSss =  time.strftime('%S',time.localtime())
+	timeStamp = TSyyyy + TSmm + TSdd + '_' + TShh + TSmmm + TSss
+
+
 # Local root - presumed to be created
 #local_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
 
 # root of where the data is
 #remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
+
+# AIA wavelength array - constant
+wavelength = ['94','131','171','193','211','304','335','1600','1700','4500']
+
 
 #
 # Script must be called using an options file that defines the root of the
@@ -286,56 +302,56 @@ else:
 	ddI = options[5][:-1]
 	waveI = options[6][:-1]
 	nickname = options[7][:-1]
-        # wavelength array - constant
-        wavelength = ['94','131','171','193','211','304','335','1600','1700','4500']
+	monitorLoc = options[8][:-1]
 
 
 	if not( (yyyyI == '-1') or (mmI == '-1') or (ddI == '-1') or (waveI == '-1') ):
-		nfc = GetAIAWave(nickname,yyyyI,mmI,ddI,waveI,remote_root,local_root,ingest_root)
+		nfc = GetAIAWave(nickname,yyyyI,mmI,ddI,waveI,remote_root,local_root,ingest_root,createTimeStamp())
 	else:
 		# repeat starts here
 		count = 0
 		while 1:
 			count = count + 1
-			# get today's date in UT
+			for daysBack in range(0,1):
 
-			yyyy = time.strftime('%Y',time.gmtime())
-			mm = time.strftime('%m',time.gmtime())
-			dd = time.strftime('%d',time.gmtime())
+				# get  date in UT
+				Y = calendar.timegm(time.gmtime()) - daysBack*24*60*60
+				yyyy = time.strftime('%Y',time.gmtime(Y))
+				mm = time.strftime('%m',time.gmtime(Y))
+				dd = time.strftime('%d',time.gmtime(Y))
 
-			# get yesterday's date in UT
-			Y = calendar.timegm(time.gmtime()) - 24*60*60
-			Yyyyy = time.strftime('%Y',time.gmtime(Y))
-			Ymm = time.strftime('%m',time.gmtime(Y))
-			Ydd = time.strftime('%d',time.gmtime(Y))
+				# Go through each measurement
+				for wave in wavelength:
+					t1 = time.time()
+					timeStamp = createTimeStamp()
 
-			# Get Today's data
-			for wave in wavelength:
-				t1 = time.time()
-				jprint(' ')
-				jprint(' ')
-				jprint('Wavelength = ' + wave)
-				jprint('Beginning remote location query number ' + str(count))
-				jprint("Looking for today's files = " + yyyy + mm + dd)
-				jprint('Using options file '+ options_file)
-				nfc = GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root)
-				t2 = time.time()
-				jprint('Time taken in seconds =' + str(t2 - t1))
-				if nfc > 0 :
-					jprint('Average time taken in seconds = ' + str( (t2-t1)/nfc ) )
+					# Standard output + error log file names
+					stdoutFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.stdout.log'
+					stderrFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.stderr.log'
+					stdoutLatestFileName = 'latest.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.stdout.log'
+					stderrLatestFileName = 'latest.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.stderr.log'
 
-			# Make sure we have all of yesterday's data
-			for wave in wavelength:
-				t1 = time.time()
-				jprint(' ')
-				jprint(' ')
-				jprint('Wavelength = ' + wave)
-				jprint('Beginning remote location query number ' + str(count))
-				jprint('Looking for missed files from yesterday = ' + Yyyyy + Ymm + Ydd)
-				jprint('Using options file '+ options_file)
-				nfc = GetAIAWave(nickname,Yyyyy,Ymm,Ydd,wave,remote_root,local_root,ingest_root)
-				t2 = time.time()
-				jprint('Time taken in seconds =' + str(t2 - t1))
-				if nfc > 0 :
-					jprint('Average time taken in seconds = ' + str( (t2-t1)/nfc ) )
+					# Redirect stdout
+					saveout = sys.stdout
+					fsock = open(logSubDir + stdoutFileName, 'w')
+					sys.stdout = fsock
+
+					# Get the data
+					jprint(' ')
+					jprint(' ')
+					jprint('Wavelength = ' + wave)
+					jprint('Beginning remote location query number ' + str(count))
+					jprint("Looking for files on this date = " + yyyy + mm + dd)
+					jprint('Using options file '+ options_file)
+					nfc = GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,timeStamp)
+					t2 = time.time()
+					jprint('Time taken in seconds =' + str(t2 - t1))
+					if nfc > 0 :
+						jprint('Average time taken in seconds = ' + str( (t2-t1)/nfc ) )
+				
+					# Put the stdout back
+					sys.stdout = saveout
+					fsock.close()
+
+					# Copy the most recent stdout file to some webspace.
 

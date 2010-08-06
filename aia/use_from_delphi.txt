@@ -6,3 +6,4 @@ http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA
 23
 4500
 AIA
+/var/www/ireland/aia/transfer
