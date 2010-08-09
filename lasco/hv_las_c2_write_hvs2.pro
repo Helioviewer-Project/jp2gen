@@ -102,8 +102,8 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
         bb = sunc.ycen - sz[1]/2.0 ; difference between array centre and sun centre
         sunc.xcen = sz[0]/2.0 - aa ; sun centre appears to be in a different place
         sunc.ycen = sz[1]/2.0 - bb ; 
-        hd.crpix1 = sunc.xcen
-        hd.crpix2 = sunc.ycen
+        ;hd.crpix1 = sunc.xcen
+        ;hd.crpix2 = sunc.ycen
         rotate_by_this = get_soho_roll(hd.date_obs + ' ' + hd.time_obs)
         if (abs(rotate_by_this) ge 170.0) then begin
            image_new = rotate(image_new,2)

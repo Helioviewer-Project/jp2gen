@@ -59,6 +59,7 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;
      sz = size(image_new,/dim)
      sunc = GET_SUN_CENTER(hd, /NOCHECK,full=sz(1))
+     print,sunc
      arcs = GET_SEC_PIXEL(hd, full=sz(1))
      yymmdd = UTC2YYMMDD(STR2UTC(date_obs + ' ' + time_obs))
      solar_ephem,yymmdd,radius=radius,/soho
@@ -75,11 +76,17 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 
      a = xim - sunc.xcen
      b = yim - sunc.ycen
+
+     a = xim - hd.crpix1
+     b = yim - hd.crpix2
+
+;     image_new = shift(image_new,a,b)
+
+
 ;
 ; Handle quicklook + rotation
 ;
 ;     stop
-
 
      using_quicklook = HV_USING_QUICKLOOK_PROCESSING(details.called_by)
      if using_quicklook then begin
@@ -92,8 +99,6 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
         bb = sunc.ycen - sz[1]/2.0 ; difference between array centre and sun centre
         sunc.xcen = sz[0]/2.0 - aa ; sun centre appears to be in a different place
         sunc.ycen = sz[1]/2.0 - bb ; 
-        hd.crpix1 = sunc.xcen
-        hd.crpix2 = sunc.ycen
         rotate_by_this = get_soho_roll(hd.date_obs + ' ' + hd.time_obs)
         pivot_centre = [sz[0]/2.0,sz[1]/2.0]
      endif else begin
@@ -123,10 +128,12 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;
 
       if (abs(rotate_by_this) ge 170.0) then begin
-         image_new = circle_mask(image_new, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
+;         image_new = circle_mask(image_new, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
 ;;         alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
+        hd.crpix1 = 512+a
+        hd.crpix2 = 512+b
       endif else begin
-         image_new = circle_mask(image_new, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
+;         image_new = circle_mask(image_new, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
 ;;         alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
       endelse
 ;; ;
@@ -139,6 +146,7 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
          image_new = circle_mask(image_new, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
 ;;         alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
       endelse      
+
 ;
 ; add the tag_name 'R_SUN' to the hd information
 ;
