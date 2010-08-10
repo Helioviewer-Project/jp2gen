@@ -272,12 +272,14 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;           endif
 ;       endfor
 
-
-
+;
+; Close the FITS information
+;
+        xh+='</fits>'+lf
 ;
 ; Explicitly encode the allowed Helioviewer JP2 tags
 ;
-
+        xh+='<helioviewer>'+lf
 ;
 ; Original rotation state
 ;
@@ -366,9 +368,9 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;        endfor
 ;        xh+='</Helioviewer>'+lf
 ;
-; Close the FITS information
+; Close the Helioviewer information
 ;
-        xh+='</fits>'+lf
+        xh+='</helioviewer>'+lf
 ;
 ; Enclose all the XML elements in their own container
 ;

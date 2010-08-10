@@ -63,7 +63,7 @@ def hvLogSubDir(nickname,measurement,yyyy,mm,dd):
 # local_root - files from remote location are originally copied here, and have their permissions changes here
 # ingest_root - the directory where the files with the correct permissions end up
 
-def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,timeStamp):
+def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes):
         jprint('Remote root: '+remote_root)
         jprint('Local root: '+local_root)
 	change2hv(local_root)
@@ -291,13 +291,16 @@ else:
                 file.close()
 
         # Parse the options
-        # first entry must be the remote http location
-        # second entry must be the local subdirectory where the files are saved to
-	# [2] = local sub-directory where the JP2 files with the correct permissions are put for transfer
+        # [0] = remote http location
+        # [1] = local subdirectory where the files are first saved to (staging)
+	# [2] = local subdirectory where the JP2 files with the correct permissions are put for ingestion
 	# [3] = specific year
 	# [4] = specific month
 	# [5] = specific day
 	# [6] = specific wavelength
+	# [7] = instrument nickname
+	# [8] = webspace
+	# [9] = minimum acceptable file size in bytes.  Files smaller than this are considered corrupted
         remote_root = options[0][:-1]
         local_root = options[1][:-1]
         ingest_root = options[2][:-1]
@@ -307,10 +310,11 @@ else:
 	waveI = options[6][:-1]
 	nickname = options[7][:-1]
 	monitorLoc = options[8][:-1]
+	minJP2SizeInBytes = int(options[9][:-1])
 
 
-	if not( (yyyyI == '-1') or (mmI == '-1') or (ddI == '-1') or (waveI == '-1') ):
-		nfc = GetAIAWave(nickname,yyyyI,mmI,ddI,waveI,remote_root,local_root,ingest_root,createTimeStamp())
+	if ( (yyyyI != '-1') and (mmI != '-1') and (ddI != '-1') and (waveI != '-1') ):
+		nfc = GetAIAWave(nickname,yyyyI,mmI,ddI,waveI,remote_root,local_root,ingest_root,createTimeStamp(),minJP2SizeInBytes)
 	else:
 		# repeat starts here
 		count = 0
