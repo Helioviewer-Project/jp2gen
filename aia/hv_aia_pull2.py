@@ -40,21 +40,29 @@ def change2hv(z):
         os.system('chown -R ireland:helioviewer ' + z)
 
 # Create a HV - compliant subdirectory
-def hvCreateSubdir(x):
+def hvCreateSubdir(x,out=True):
         try:
                 os.makedirs(x)
                 change2hv(x)
         except:
-                jprint('Directory already exists: ' + x)
+		if out:
+			jprint('Directory already exists: ' + x)
 
 # Directory Structure
-def hvSubDir(measurement,yyyy,mm,dd):
+def hvSubdir(measurement,yyyy,mm,dd):
 	return [measurement+'/', measurement+'/'+yyyy+'/', measurement+'/'+yyyy+'/'+mm+'/', measurement+'/'+yyyy+'/'+mm+'/'+dd+'/']
 
-# Log directory
-def hvLogSubDir(nickname,measurement,yyyy,mm,dd):
-	a = hvSubDir(measurement,yyyy,mm,dd)
-	
+# Define the log directory
+def hvLogSubdir(nickname,measurement,yyyy,mm,dd):
+	a = hvSubdir(measurement,yyyy,mm,dd)
+	return 'log/' + nickname + '/' + a[3]
+
+# Create the log directory
+def hvCreateLogSubdir(root,nickname,measurement,yyyy,mm,dd):
+	a = hvLogSubdir(nickname,measurement,yyyy,mm,dd)
+	hvCreateSubdir(root + a,out = False)
+	return root + a
+
 
 # yyyy - four digit year
 # mm - two digit month
@@ -76,6 +84,10 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
         local_storage = jp2_dir + nickname + '/'
         hvCreateSubdir(local_storage)
 
+	# Quarantine
+	quarantine = local_root + 'quarantine/'
+        hvCreateSubdir(quarantine)
+
         # Where the data will be ingested in Helioviewer from
         ingest_dir = ingest_root + 'jp2/'
         hvCreateSubdir(ingest_dir)
@@ -90,10 +102,6 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
         # The location of where the logfiles are stored
         logloc = local_root + 'log/'+ nickname +'/'
         hvCreateSubdir(logloc)
-
-	# Extra info
-	if not info = '':
-		jprint(info)
 
         # Today as a directory and as name
         todayDir = yyyy + '/' + mm + '/' + dd
@@ -123,6 +131,7 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
                 jprint('Directory already exists: '+ logSubdir)
 
         # Create the logfile filename
+	jprint('Time stamp for this iteration = ' + timeStamp)
         logFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.wget.log'    
 
         # create the database subdirectory for this wavelength
@@ -153,6 +162,11 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 					if not testfile + '\n' in jp2list:
 						jp2list.extend(testfile + '\n')
 						count = count + 1
+				# If file is not big enough, quarantine it
+				else:
+					os.rename(local_keep + testfile,quarantine + testfile)
+					jprint('Quarantined '+ local_keep + testfile)
+					
                 if count > 0:
                         jprint('Number of local files found not in database: ' + str(count))
         except:
@@ -264,7 +278,49 @@ def createTimeStamp():
 	TSmmm = time.strftime('%M',time.localtime())
 	TSss =  time.strftime('%S',time.localtime())
 	timeStamp = TSyyyy + TSmm + TSdd + '_' + TShh + TSmmm + TSss
+	return timeStamp
 
+# Get the JP2s
+def GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0, redirect = False, daysBack = 0):
+	t1 = time.time()
+	timeStamp = createTimeStamp()
+	# Standard output + error log file names
+	stdoutFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.stdout.log'
+	stderrFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.stderr.log'
+	stdoutLatestFileName = 'latest.' + str(daysBack) + '__'+nickname+'__' + wave + '.stdout.log'
+	stderrLatestFileName = 'latest.' + str(daysBack) + '__'+nickname+'__' + wave + '.stderr.log'
+
+	# log subdirectory
+	logSubdir = hvCreateLogSubdir(local_root,nickname,wave,yyyy,mm,dd)
+
+	# Redirect stdout
+	if redirect:
+		saveout = sys.stdout
+		fsock = open(logSubdir + stdoutFileName, 'w')
+		sys.stdout = fsock
+
+	# Get the data
+	jprint(' ')
+	jprint(' ')
+	jprint('Wavelength = ' + wave)
+	jprint('Beginning remote location query number ' + str(count))
+	jprint("Looking for files on this date = " + yyyy + mm + dd)
+	jprint('Using options file '+ options_file)
+	nfc = GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes)
+	t2 = time.time()
+	jprint('Time taken in seconds =' + str(t2 - t1))
+	if nfc > 0 :
+		jprint('Average time taken in seconds = ' + str( (t2-t1)/nfc ) )
+		
+	# Put the stdout back
+	if redirect:
+		sys.stdout = saveout
+		fsock.close()
+
+	# Copy the most recent stdout file to some webspace.
+		shutil.copy(logSubdir + stdoutFileName, monitorLoc + stdoutLatestFileName)
+
+	return nfc
 
 # Local root - presumed to be created
 #local_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
@@ -301,6 +357,10 @@ else:
 	# [7] = instrument nickname
 	# [8] = webspace
 	# [9] = minimum acceptable file size in bytes.  Files smaller than this are considered corrupted
+	# [10] = redirect output to file (True)
+	# [11] = number of seconds to pause the data download for if no daya was downloaded the last time
+	# [12] = minimum number of days back from the present date to consider
+	# [13] = maximum number of days back from the present date to consider (note that the range command used to implement this requires a minimum value of n to go back n-1 days)
         remote_root = options[0][:-1]
         local_root = options[1][:-1]
         ingest_root = options[2][:-1]
@@ -311,16 +371,33 @@ else:
 	nickname = options[7][:-1]
 	monitorLoc = options[8][:-1]
 	minJP2SizeInBytes = int(options[9][:-1])
+	redirectTF = options[10][:-1]
+	sleep = int(options[11][:-1])
+	daysBackMin = int(options[12][:-1])
+	daysBackMax = int(options[13][:-1])
 
+	# Re-direct stdout to a logfile?
+	if redirectTF == 'True':
+		redirect = True
+	else:
+		redirect = False
 
+	# Days back defaults
+	if daysBackMin <= -1:
+		daysBackMin = 0
+	if daysBackMax <= -1:
+		daysBackMax = 2
+
+	# Main program
 	if ( (yyyyI != '-1') and (mmI != '-1') and (ddI != '-1') and (waveI != '-1') ):
-		nfc = GetAIAWave(nickname,yyyyI,mmI,ddI,waveI,remote_root,local_root,ingest_root,createTimeStamp(),minJP2SizeInBytes)
+		GetJP2(nickname,yyyyI,mmI,ddI,waveI,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
 	else:
 		# repeat starts here
 		count = 0
 		while 1:
 			count = count + 1
-			for daysBack in range(0,1):
+			gotNewData = False
+			for daysBack in range(daysBackMin,daysBackMax):
 
 				# get  date in UT
 				Y = calendar.timegm(time.gmtime()) - daysBack*24*60*60
@@ -330,39 +407,9 @@ else:
 
 				# Go through each measurement
 				for wave in wavelength:
-					t1 = time.time()
-					timeStamp = createTimeStamp()
+					nfc = GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = count,redirect = redirect,daysBack = daysBack)
+					if nfc > 0:
+						gotNewData = True
+			if not gotNewData:
+				time.sleep(sleep)
 
-					# Standard output + error log file names
-					stdoutFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.stdout.log'
-					stderrFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.stderr.log'
-					stdoutLatestFileName = 'latest.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.stdout.log'
-					stderrLatestFileName = 'latest.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.stderr.log'
-
-					# log subdirectory
-					logSubDir = createLogSubDir(nickname,
-
-					# Redirect stdout
-					saveout = sys.stdout
-					fsock = open(logSubDir + stdoutFileName, 'w')
-					sys.stdout = fsock
-
-					# Get the data
-					jprint(' ')
-					jprint(' ')
-					jprint('Wavelength = ' + wave)
-					jprint('Beginning remote location query number ' + str(count))
-					jprint("Looking for files on this date = " + yyyy + mm + dd)
-					jprint('Using options file '+ options_file)
-					nfc = GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,timeStamp)
-					t2 = time.time()
-					jprint('Time taken in seconds =' + str(t2 - t1))
-					if nfc > 0 :
-						jprint('Average time taken in seconds = ' + str( (t2-t1)/nfc ) )
-				
-					# Put the stdout back
-					sys.stdout = saveout
-					fsock.close()
-
-					# Copy the most recent stdout file to some webspace.
-					shutil.copy(logSubDir + stdoutFileName, monitorLoc + stdoutLatestFileName)
