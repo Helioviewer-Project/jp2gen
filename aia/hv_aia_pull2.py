@@ -30,9 +30,21 @@ class URLLister(SGMLParser):
                 if href:
                         self.urls.extend(href)
 
+
+# Create a time-stamp to be used by all log files
+def createTimeStamp():
+	TSyyyy = time.strftime('%Y',time.localtime())
+	TSmm = time.strftime('%m',time.localtime())
+	TSdd = time.strftime('%d',time.localtime())
+	TShh = time.strftime('%H',time.localtime())
+	TSmmm = time.strftime('%M',time.localtime())
+	TSss =  time.strftime('%S',time.localtime())
+	timeStamp = TSyyyy + TSmm + TSdd + '_' + TShh + TSmmm + TSss
+	return timeStamp
+
 # Forward compatibility with Python 3
 def jprint(z):
-        print z
+        print createTimeStamp() + ' : ' + z
 
 # Element has the correct permissions and ownership
 def change2hv(z):
@@ -72,7 +84,8 @@ def hvCreateLogSubdir(root,nickname,measurement,yyyy,mm,dd):
 # ingest_root - the directory where the files with the correct permissions end up
 
 def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes):
-        jprint('Remote root: '+remote_root)
+        #jprint('Remote root: '+remote_root)
+	jprint('Remote root: as defined in options file')
         jprint('Local root: '+local_root)
 	change2hv(local_root)
         jprint('Ingest root: '+ingest_root)
@@ -290,17 +303,6 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 		jprint('Problem opening connection to '+remote_location+'.  Continuing with loop.')
 	        newFilesCount = -1
 	return newFilesCount
-
-# Create a time-stamp to be used by all log files
-def createTimeStamp():
-	TSyyyy = time.strftime('%Y',time.localtime())
-	TSmm = time.strftime('%m',time.localtime())
-	TSdd = time.strftime('%d',time.localtime())
-	TShh = time.strftime('%H',time.localtime())
-	TSmmm = time.strftime('%M',time.localtime())
-	TSss =  time.strftime('%S',time.localtime())
-	timeStamp = TSyyyy + TSmm + TSdd + '_' + TShh + TSmmm + TSss
-	return timeStamp
 
 # Get the JP2s
 def GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0, redirect = False, daysBack = 0):
