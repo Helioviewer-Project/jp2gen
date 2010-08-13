@@ -87,7 +87,7 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
         #jprint('Remote root: '+remote_root)
 	jprint('Remote root: as defined in options file')
         jprint('Local root: '+local_root)
-	change2hv(local_root)
+	#change2hv(local_root)
         jprint('Ingest root: '+ingest_root)
 
         # Where the data will be stored
