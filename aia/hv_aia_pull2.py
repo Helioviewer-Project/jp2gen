@@ -388,23 +388,23 @@ else:
         remote_root = options[0][:-1]
         local_root = options[1][:-1]
         ingest_root = options[2][:-1]
-	yyyyI = options[3][:-1]
-	mmI = options[4][:-1]
-	ddI = options[5][:-1]
-	waveI = options[6][:-1]
-	nickname = options[7][:-1]
-	monitorLoc = options[8][:-1]
-	minJP2SizeInBytes = int(options[9][:-1])
-	redirectTF = options[10][:-1]
-	sleep = int(options[11][:-1])
-	daysBackMin = int(options[12][:-1])
-	daysBackMax = int(options[13][:-1])
+	startDate = (options[3][:-1]).split('/')
+	endDate = (options[4][:-1]).split('/')
+	waveI = options[5][:-1]
+	nickname = options[6][:-1]
+	monitorLoc = options[7][:-1]
+	minJP2SizeInBytes = int(options[8][:-1])
+	redirectTF = options[9][:-1]
+	sleep = int(options[10][:-1])
+	daysBackMin = int(options[11][:-1])
+	daysBackMax = int(options[12][:-1])
 
 	# Re-direct stdout to a logfile?
 	if redirectTF == 'True':
 		redirect = True
 	else:
 		redirect = False
+
 
 	# Days back defaults
 	if daysBackMin <= -1:
@@ -413,9 +413,7 @@ else:
 		daysBackMax = 2
 
 	# Main program
-	if ( (yyyyI != '-1') and (mmI != '-1') and (ddI != '-1') and (waveI != '-1') ):
-		GetJP2(nickname,yyyyI,mmI,ddI,waveI,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
-	else:
+	if ( (startDate[0] =='-1') or (startDate[1]=='-1') or (startDate[2]=='-1') or (endDate[0]=='-1') or (endDate[1]=='-1') or (endDate[2]=='-1') ):
 		# repeat starts here
 		count = 0
 		while 1:
@@ -437,3 +435,16 @@ else:
 			if not gotNewData:
 				time.sleep(sleep)
 
+	else:
+		getThisDay = time.mktime((int(startDate[0]),int(startDate[1]),int(startDate[2]),0, 0, 0, 0, 0, 0))
+		finalDay = time.mktime((int(endDate[0]),int(endDate[1]),int(endDate[2]),0, 0, 0, 0, 0, 0))
+		while getThisDay <= finalDay:
+			yyyy = time.strftime('%Y',time.gmtime(getThisDay))
+			mm = time.strftime('%m',time.gmtime(getThisDay))
+			dd = time.strftime('%d',time.gmtime(getThisDay))
+			if waveI == '-1':
+				for wave in wavelength:
+					nfc = GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
+			else:
+				nfc = GetJP2(nickname,yyyy,mm,dd,waveI,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
+			getThisDay = getThisDay + 24*60*60
