@@ -162,15 +162,15 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
         try:
 		# Get a list of images in the subdirectory and update the database with it
 		dirList = os.listdir(local_keep)
-		file = open(dbSubdir + '/' + dbFileName,'w')
-		file.write('This file created '+time.ctime()+'\n\n')
+		f = open(dbSubdir + '/' + dbFileName,'w')
+		f.write('This file created '+time.ctime()+'\n\n')
 		count = 0
 		for testfile in dirList:
 			if testfile.endswith('.jp2'):
 				stat = os.stat(local_keep + testfile)
 				if stat.st_size > minJP2SizeInBytes:
 					count = count + 1
-					file.write(testfile+'\n')
+					f.write(testfile+'\n')
 				else:
 					os.rename(local_keep + testfile,quarantine + testfile)
 					jprint('Quarantined '+ local_keep + testfile)
@@ -200,17 +200,17 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
                 #        jprint('Number of local files found not in database: ' + str(count))
 
         except:
-                file = open(dbSubdir + '/' + dbFileName,'w')
+                f = open(dbSubdir + '/' + dbFileName,'w')
                 jp2list = ['This file first created '+time.ctime()+'\n\n']
-                file.write(jp2list[0])
+                f.write(jp2list[0])
                 jprint('Created new database file '+ dbSubdir + '/' + dbFileName)
         finally:
-                file.close()
+                f.close()
 
 	# Read the db file
-	file = open(dbSubdir + '/' + dbFileName,'r')
-	jp2list = file.readlines()
-	file.close()
+	f = open(dbSubdir + '/' + dbFileName,'r')
+	jp2list = f.readlines()
+	f.close()
 
         # put the last image in some web space
         webFileJP2 = jp2list[-1][:-1]
@@ -251,9 +251,9 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	        if newFiles:
 	                newFileListName = timeStamp + '.' + todayName + '__'+nickname+'__'+ wave + '.newfiles.txt'
 	                jprint('Writing new file list to ' + logSubdir + '/' + newFileListName)
-	                file = open(logSubdir + '/' + newFileListName,'w')
-	                file.writelines(newlist)
-	                file.close()
+	                f = open(logSubdir + '/' + newFileListName,'w')
+	                f.writelines(newlist)
+	                f.close()
 	                # Download only the new files
 	                jprint('Downloading new files.')
 	                localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
@@ -266,10 +266,10 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	
 	                # Write the new updated database file
 	                jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
-	                file = open(dbSubdir + '/' + dbFileName,'w')
-	                file.writelines(jp2list)
-	                file.writelines(newlist)
-	                file.close()
+	                f = open(dbSubdir + '/' + dbFileName,'w')
+	                f.writelines(jp2list)
+	                f.writelines(newlist)
+	                f.close()
 	                # Absolutely ensure the correct permissions on all the files
 	                change2hv(local_keep)
 	
@@ -288,9 +288,9 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                        jprint('Ingest directory already exists: '+moveTo)
 	
 			# Read in the new filenames again
-	                file = open(logSubdir + '/' + newFileListName,'r')
-	                newlist = file.readlines()
-	                file.close()
+	                f = open(logSubdir + '/' + newFileListName,'r')
+	                newlist = f.readlines()
+	                f.close()
 	                # Move the new files to the ingest directory
 	                for name in newlist:
 	                        newFile = name[:-1]
@@ -316,6 +316,15 @@ def GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLo
 
 	# log subdirectory
 	logSubdir = hvCreateLogSubdir(local_root,nickname,wave,yyyy,mm,dd)
+
+	# Write a current file to web-space so you know what the script is trying to do right now.
+	currentFile = open(monitorLoc + 'current.log','w')
+	currentFile.write('Wavelength = ' + wave +'.\n')
+	currentFile.write('Beginning remote location query number ' + str(count)+ '.\n')
+	currentFile.write("Looking for files on this date = " + yyyy + mm + dd+ '.\n')
+	currentFile.write('Using options file '+ options_file+ '.\n')
+	currentFile.write('Time stamp = '+ timeStamp + '\n')
+	currentFile.close()
 
 	# Redirect stdout
 	if redirect:
@@ -365,10 +374,10 @@ if len(sys.argv) <= 1:
 else:
         options_file = sys.argv[1]
         try:
-                file = open(options_file,'r')
-                options = file.readlines()
+                f = open(options_file,'r')
+                options = f.readlines()
         finally:
-                file.close()
+                f.close()
 
         # Parse the options
         # [0] = remote http location
