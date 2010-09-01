@@ -188,8 +188,8 @@ FUNCTION HVS_VERSION3_AIA
   b.details[9].idl_bitdepth = 8 ; REQUIRED
   b.details[9].bit_rate = [0.5,0.01] ; REQUIRED
   b.details[9].dataMin = 0.25
-  b.details[9].dataMax = 10000.0
-  b.details[9].dataScalingType = 1 ; 0 - linear, 1 - sqrt, 3 - log10
+  b.details[9].dataMax = 38000.0^2
+  b.details[9].dataScalingType = 0 ; 0 - linear, 1 - sqrt, 3 - log10
   b.details[9].dataExptime = 1.00026
 
 ;

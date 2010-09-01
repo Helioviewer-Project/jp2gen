@@ -18,8 +18,8 @@
 ;        project.
 ;
 ;
-PRO HV_EIT_PREP2JP2_AUTO,date_start = date_start, copy2outgoing = copy2outgoing
-  progname = 'hv_eit_prep2jp2_auto' ; the program name
+PRO HV_EIT_PREP2JP2_AUTO,date_start = date_start, copy2outgoing = copy2outgoing,details_file = details_file
+  progname = 'hv_eit_prep2jp2_auto'; the program name
   wait = 15*60.0
 ;
 ;
@@ -44,7 +44,7 @@ PRO HV_EIT_PREP2JP2_AUTO,date_start = date_start, copy2outgoing = copy2outgoing
 ;
 ; Prep the data automagically.
 ;
-     HV_EIT_PREP2JP2,date_start,date_end, copy2outgoing = copy2outgoing, called_by = progname,prepped = prepped,report = report
+     HV_EIT_PREP2JP2,date_start,date_end, copy2outgoing = copy2outgoing, called_by = progname,prepped = prepped,report = report,details_file = details_file
 ;
 ; Wait 15 minutes before looking for more data
 ;

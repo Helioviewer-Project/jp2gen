@@ -31,6 +31,7 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_writ
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli,$
          measurement:this_wave,$
          details:details}
+
   hvs = {img:b0,hvsi:hvsi}
 
   HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename, already_written = already_written
