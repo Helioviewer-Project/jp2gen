@@ -250,14 +250,13 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	        # Write the new filenames to a file
 	        if newFiles:
 	                newFileListName = timeStamp + '.' + todayName + '__'+nickname+'__'+ wave + '.newfiles.txt'
-	                jprint('Writing new file list to ' + logSubdir + '/' + newFileListName)
-	                f = open(logSubdir + '/' + newFileListName,'w')
+			newFileListFullPath = logSubdir + '/' + newFileListName
+	                jprint('Writing new file list to ' + newFileListFullPath)
+	                f = open(newFileListFullPath,'w')
 	                f.writelines(newlist)
 	                f.close()
 	                # Download only the new files
 	                jprint('Downloading new files.')
-			for entry in newlist:
-				jprint(entry)
 	                localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
 	                localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
 	                localDir = ' -P'+local_keep + ' '
@@ -293,6 +292,9 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                f = open(logSubdir + '/' + newFileListName,'r')
 	                newlist = f.readlines()
 	                f.close()
+			jprint('New files ingested are as follows:')
+			for entry in newlist:
+				jprint(entry)
 	                # Move the new files to the ingest directory
 	                for name in newlist:
 	                        newFile = name[:-1]
