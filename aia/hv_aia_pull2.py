@@ -256,6 +256,8 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                f.close()
 	                # Download only the new files
 	                jprint('Downloading new files.')
+			for entry in newlist:
+				jprint(entry)
 	                localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
 	                localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
 	                localDir = ' -P'+local_keep + ' '
