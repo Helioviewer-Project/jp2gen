@@ -42,7 +42,14 @@ PRO HV_LASCO_PREP2JP2_QL,date_start = ds, $ ; date the automated processing star
         details_file = 'hvs_default_lasco_c3'
         progname = progname + '(C3)'
      endif
-  endif
+  endif else begin
+     if keyword_set(c2) then begin
+        progname = progname + '(C2)'
+     endif
+     if keyword_set(c3) then begin
+        progname = progname + '(C3)'
+     endif
+  endelse
 ;
 ; Assign the default writtenby choice if no other present
 ;
@@ -95,7 +102,7 @@ PRO HV_LASCO_PREP2JP2_QL,date_start = ds, $ ; date the automated processing star
 ;
      count = count + 1
      HV_REPEAT_MESSAGE,progname,count,timestart, more = ['examined ' + ds + ' to ' + de + '.',report],/web
-     HV_WAIT,progname,30,/minutes,/web
+     HV_WAIT,progname,15,/minutes,/web
 
   endrep until 1 eq keyword_set(once_only)
 
