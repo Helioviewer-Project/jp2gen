@@ -4,37 +4,15 @@
 ;
 FUNCTION HV_WRITE_LIST_JP2_MKDIR,hvs,dir,return_path_only = return_path_only
 
-  loc = dir
-
   dirCon = HV_DIRECTORY_CONVENTION(hvs.yy,hvs.mm,hvs.dd,hvs.measurement)
+  n = n_elements(dirCon)
 
-  if hvs.yy ne '' then begin
-     loc = loc + dirCon[0]
+  for i = 0,n-1 do begin
+     nextDir = dir + dirCon[i]
      if NOT(KEYWORD_SET(return_path_only)) THEN BEGIN
-        if not(is_dir(loc)) then spawn,'mkdir '+ loc
+        if not(is_dir(nextDir)) then spawn,'mkdir '+ nextDir
      endif
-  endif
-        
-  if hvs.mm ne '' then begin
-     loc = loc + dirCon[1]
-     if NOT(KEYWORD_SET(return_path_only)) THEN BEGIN
-        if not(is_dir(loc)) then spawn,'mkdir '+ loc
-     endif
-  endif
-        
-  if hvs.dd ne '' then begin
-     loc = loc + dirCon[2]
-     if NOT(KEYWORD_SET(return_path_only)) THEN BEGIN
-        if not(is_dir(loc)) then spawn,'mkdir '+ loc
-     endif
-  endif
+  endfor
 
-  if hvs.measurement ne '' then begin
-     loc = loc + dirCon[3]
-     if NOT(KEYWORD_SET(return_path_only)) THEN BEGIN
-        if not(is_dir(loc)) then spawn,'mkdir '+ loc
-     endif
-  endif
-
-  return,loc
+  return,dir + dirCon[n-1]
 end

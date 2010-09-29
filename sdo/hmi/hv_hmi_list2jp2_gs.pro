@@ -87,6 +87,14 @@ PRO hv_hmi_list2jp2_gs,list,$
      if flag eq 1 then begin
         this_wave = where(wave_arr eq measurement,this_wave_count)
 ;
+; Trim the limb of the magnetogram
+;
+        if measurement eq 'magnetogram' then begin
+           rrr = hd.RSUN_OBS/hd.CDELT1
+           ss2 = circle_mask(img, hd.CRPIX1, hd.CRPIX2, 'GE', rrr )
+           if (ss2(0) ne -1) then img(ss2)=-300000.0
+        endif
+;
 ; Construct an HVS
 ;
         tobs = HV_PARSE_CCSDS(hd.date_obs)
