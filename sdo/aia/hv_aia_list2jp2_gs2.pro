@@ -177,11 +177,14 @@ PRO hv_aia_list2jp2_gs2,list,$
 ;
 ; Make the storage directory: HV_WRITE_LIST_JP2_MKDIR
 ;
-     loc = storage.jp2_location + $
-           hvsi.measurement + path_sep() + $
-           hvsi.yy + path_sep() + $
-           hvsi.mm + path_sep() + $
-           hvsi.dd + path_sep()
+        loc = storage.jp2_location + path_sep() + $
+              hvsi.yy + path_sep() + $
+              hvsi.mm + path_sep() + $
+              hvsi.dd + path_sep() + $
+              hvsi.measurement + path_sep()
+
+
+
      if not(is_dir(loc)) then spawn,'mkdir -p '+ loc
 ;
 ; File name convention

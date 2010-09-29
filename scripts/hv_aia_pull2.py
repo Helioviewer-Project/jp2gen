@@ -11,15 +11,11 @@
 #
 #
 
-from os.path import basename
 from urlparse import urlsplit
-import shutil
-import urllib2
-import urllib
 from sgmllib import SGMLParser
-import os, time, sys
-import calendar
+import shutil, urllib2, urllib, os, time, sys, calendar
 
+# URLLister
 class URLLister(SGMLParser):
         def reset(self):
                 SGMLParser.reset(self)
@@ -31,40 +27,47 @@ class URLLister(SGMLParser):
                         self.urls.extend(href)
 
 
-# Create a time-stamp to be used by all log files
+# createTimeStamp
 def createTimeStamp():
+	""" Creates a time-stamp to be used by all log files. """
 	timeStamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
 	return timeStamp
 
-# Forward compatibility with Python 3
+# jprint
 def jprint(z):
+	""" Prints out a message with a time stamp """
         print createTimeStamp() + ' : ' + z
 
-# Element has the correct permissions and ownership
-def change2hv(z):
+# change2hv
+def change2hv(z,localUser):
+	""" Changes the file permissions, and ownership from a local user to the helioviewer identity """
         os.system('chmod -R 775 ' + z)
-        os.system('chown -R ireland:helioviewer ' + z)
+        os.system('chown -R '+localUser+':helioviewer ' + z)
 
-# Create a HV - compliant subdirectory
-def hvCreateSubdir(x,out=True):
+# hvCreateSubdir
+def hvCreateSubdir(x,localUser,out=True):
+	"""Create a helioviewer project compliant subdirectory."""
         try:
                 os.makedirs(x)
-                change2hv(x)
+                change2hv(x,localUser)
         except:
 		if out:
 			jprint('Directory already exists: ' + x)
 
-# Directory Structure
+# hvSubdir
 def hvSubdir(measurement,yyyy,mm,dd):
-	return [measurement+'/', measurement+'/'+yyyy+'/', measurement+'/'+yyyy+'/'+mm+'/', measurement+'/'+yyyy+'/'+mm+'/'+dd+'/']
+	"""Return the directory structure for helioviewer JPEG2000 files."""
+	return [yyyy + '/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
 
-# Define the log directory
+# hvLogSubdir
 def hvLogSubdir(nickname,measurement,yyyy,mm,dd):
+	"""Define the log directory for a given measurement and date."""
 	a = hvSubdir(measurement,yyyy,mm,dd)
 	return 'log/' + nickname + '/' + a[3]
 
-# Create the log directory
+# hvCreateLogSubdir
 def hvCreateLogSubdir(root,nickname,measurement,yyyy,mm,dd):
+	"""Create the log file subdirectory."""
 	a = hvLogSubdir(nickname,measurement,yyyy,mm,dd)
 	hvCreateSubdir(root + a,out = False)
 	return root + a
@@ -119,11 +122,11 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
         local_keep = local_storage + wave + '/' + todayDir + '/'
         try:
                 os.makedirs(local_keep)
-                change2hv(local_storage)
-                change2hv(local_storage + wave)
-                change2hv(local_storage + wave + '/' + yyyy)
-                change2hv(local_storage + wave + '/' + yyyy + '/' + mm)
-                change2hv(local_storage + wave + '/' + yyyy + '/' + mm + '/' + dd)
+                change2hv(local_storage,localUser)
+                change2hv(local_storage + wave,localUser)
+                change2hv(local_storage + wave + '/' + yyyy,localUser)
+                change2hv(local_storage + wave + '/' + yyyy + '/' + mm,localUser)
+                change2hv(local_storage + wave + '/' + yyyy + '/' + mm + '/' + dd,localUser)
 		jprint('Created '+ local_keep)
         except:
                 jprint('Directory already exists: '+ local_keep)
@@ -266,7 +269,7 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                f.writelines(newlist)
 	                f.close()
 	                # Absolutely ensure the correct permissions on all the files
-	                change2hv(local_keep)
+	                change2hv(local_keep,localUser)
 	
 			#
 			# Moving the files from the download directory to the ingestion directory
@@ -294,7 +297,7 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                        newFile = name[:-1]
 	                        if newFile.endswith('.jp2'):
 	                                shutil.copy2(local_keep + newFile,moveTo + newFile)
-					change2hv(moveTo + newFile)
+					change2hv(moveTo + newFile,localUser)
 		else:
                 	jprint('No new files found at ' + remote_location)
 	except:
