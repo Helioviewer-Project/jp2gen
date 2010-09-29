@@ -129,7 +129,7 @@ PRO hv_hmi_list2jp2_gs,list,$
 ;
 ; Make the storage directory
 ;
-        loc = storage.jp2_location + HV_DIRECTORY_CONVENTION(hvsi.yy,hvsi.mm,hvsi.dd,hvsi.measurement)
+        loc = storage.jp2_location + (HV_DIRECTORY_CONVENTION(hvsi.yy,hvsi.mm,hvsi.dd,hvsi.measurement))[3]
 
         if not(is_dir(loc)) then spawn,'mkdir -p '+ loc
 ;

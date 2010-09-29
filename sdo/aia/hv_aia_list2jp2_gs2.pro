@@ -175,14 +175,9 @@ PRO hv_aia_list2jp2_gs2,list,$
      already_written = 0
 ;     HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename, already_written = already_written
 ;
-; Make the storage directory: HV_WRITE_LIST_JP2_MKDIR
+; Make the storage directory
 ;
-        loc = storage.jp2_location + path_sep() + $
-              hvsi.yy + path_sep() + $
-              hvsi.mm + path_sep() + $
-              hvsi.dd + path_sep() + $
-              hvsi.measurement + path_sep()
-
+        loc = storage.jp2_location + (HV_DIRECTORY_CONVENTION(hvsi.yy,hvsi.mm,hvsi.dd,hvsi.measurement))[3]
 
 
      if not(is_dir(loc)) then spawn,'mkdir -p '+ loc
