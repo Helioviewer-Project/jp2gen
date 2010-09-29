@@ -33,13 +33,7 @@ class URLLister(SGMLParser):
 
 # Create a time-stamp to be used by all log files
 def createTimeStamp():
-	TSyyyy = time.strftime('%Y',time.localtime())
-	TSmm = time.strftime('%m',time.localtime())
-	TSdd = time.strftime('%d',time.localtime())
-	TShh = time.strftime('%H',time.localtime())
-	TSmmm = time.strftime('%M',time.localtime())
-	TSss =  time.strftime('%S',time.localtime())
-	timeStamp = TSyyyy + TSmm + TSdd + '_' + TShh + TSmmm + TSss
+	timeStamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
 	return timeStamp
 
 # Forward compatibility with Python 3

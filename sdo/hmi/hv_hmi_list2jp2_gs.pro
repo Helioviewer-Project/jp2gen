@@ -72,8 +72,15 @@ PRO hv_hmi_list2jp2_gs,list,$
 ;
 ; Check that this FITS file is supported
 ;
-     this_wave = where(wave_arr eq trim(hd.wavelnth),this_wave_count)
-     measurement = trim(hd.wavelnth)
+     if trim(hd.content) eq 'MAGNETOGRAM' then begin
+        measurement = 'magnetogram'
+     endif
+     if trim(hd.content) eq 'CONTINUUM INTENSITY' then begin
+        measurement = 'continuum'
+     endif
+
+     this_wave = where(wave_arr eq measurement,this_wave_count)
+
 ;     if this_wave_count eq 0 then begin
 ;        measurement = 'not_supported'
 ;     endif else begin
@@ -121,9 +128,10 @@ PRO hv_hmi_list2jp2_gs,list,$
 ;     if lmax[0] ne -1 then begin
 ;        img[lmax] = info.details[this_wave].dataMax
 ;     endif
-     exptime = hd.exptime
+;     exptime = hd.exptime
 
-     img = (img*info.details[this_wave].dataExptime/exptime > (info.details[this_wave].dataMin)) < info.details[this_wave].dataMax
+;     img = (img*info.details[this_wave].dataExptime/exptime > (info.details[this_wave].dataMin)) < info.details[this_wave].dataMax
+     img = (img > (info.details[this_wave].dataMin)) < info.details[this_wave].dataMax
 
      if info.details[this_wave].dataScalingType eq 0 then begin
         img = bytscl(img,/nan)
