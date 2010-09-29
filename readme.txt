@@ -1,8 +1,11 @@
-AIA
+SDO/AIA
 ---
 
 SOHO
 ----
+
+Typical procedures used for converting EIT, LASCO C2/C3 and MDI to JPEG2000
+
 
 hv_eit_prep2jp2_auto,date_start = '2010/09/23',/copy2outgoing,details_file = 'hvs_highbitrate_eit'
 
