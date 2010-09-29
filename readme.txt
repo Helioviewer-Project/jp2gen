@@ -1,25 +1,39 @@
-SDO/AIA
----
+JP2Gen
+======
 
-SOHO
-----
+Code to convert solar FITS data to JPEG2000 format for use with the Helioviewer Project.
 
-Typical procedures used for converting EIT, LASCO C2/C3 and MDI to JPEG2000
+General purpose
+---------------
+
+/gen
+
+- IDL-based code that is independent of any particular instrument for use with the conversion of solar FITS data to JPEG2000.
+
+/local
+
+- files that customize a local installation of JP2Gen.
+
+/scripts
+
+- various helper scripts that transfer JPEG2000 files from one location to another and monitor the performance of JP2Gen.
 
 
-hv_eit_prep2jp2_auto,date_start = '2010/09/23',/copy2outgoing,details_file = 'hvs_highbitrate_eit'
+Observatory specific subdirectories
+-----------------------------------
 
-hv_lasco_prep2jp2_ql,/c3,/alternate_backgrounds,/copy2outgoing,details_file = 'hvs_highbitrate_lasco_c3'
+/hinode
 
-hv_lasco_prep2jp2_ql,/c2,/alternate_backgrounds,/copy2outgoing,details_file = 'hvs_highbitrate_lasco_c2'
+- Hinode dataset specific code.
 
-hv_mdi_prep2jp2_ql,date_start = '2010/09/23',/copy2outgoing,details_file = 'hvs_highbitrate_mdi' 
+/sdo
 
+- Solar Dynamics Observatory (SDO) dataset specific code.
 
-Transfer and web updating
--------------------------
+/soho
 
-hv_jp2_transfer_schedule,15,/web,/delete_transferred,/force_delete
+- SOlar and Heliospheric Observatory (SOHO) dataset specific code.
 
-hv_jp2gen_monitor,15
+/stereo
 
+- Solar TErrestrial RElations Observatory (STEREO) dataset specific code.
