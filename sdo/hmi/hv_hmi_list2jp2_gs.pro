@@ -127,7 +127,7 @@ PRO hv_hmi_list2jp2_gs,list,$
         already_written = 0
 ;     HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename, already_written = already_written
 ;
-; Make the storage directory: HV_WRITE_LIST_JP2_MKDIR
+; Make the storage directory
 ;
         loc = storage.jp2_location + HV_DIRECTORY_CONVENTION(hvsi.yy,hvsi.mm,hvsi.dd,hvsi.measurement)
 
