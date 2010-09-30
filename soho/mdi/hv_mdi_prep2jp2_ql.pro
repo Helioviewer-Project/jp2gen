@@ -209,24 +209,27 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
 ; Construct the HVS
 ;
               hvsi = {dir:dir,$
-                     fitsname:zzz[n_elements(zzz)-1],$
-                     header:hd,$
-                     measurement:measurement,$
-                     yy:aaa.yy, mm:aaa.mm, dd:aaa.dd, hh:aaa.hh, mmm:aaa.mmm, ss:aaa.ss, milli:aaa.milli,$
-                     details:info}
+                      fitsname:ff[ss[i]],$
+                      header:hd,$
+                      comment:error_report,$
+                      measurement:measurement,$
+                      yy:aaa.yy, mm:aaa.mm, dd:aaa.dd, hh:aaa.hh, mmm:aaa.mmm, ss:aaa.ss, milli:aaa.milli,$
+                      details:info}
               hvs = {hvsi:hvsi,img:img}
 ;
 ; Call the JP2 writing
 ;
-              HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
-              if not(already_written) then begin
-                 log_comment = 'read ' + ff(ss(i)) + $
-                               ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
-                               ' ; at ' + systime(0)
-                 HV_LOG_WRITE,hvs.hvsi,log_comment + ' ; wrote ' + jp2_filename
-              endif else begin
-                 jp2_filename = ginfo.already_written
-              endelse
+              HV_MAKE_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
+;
+;              HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
+;              if not(already_written) then begin
+;                 log_comment = 'read ' + ff(ss(i)) + $
+;                               ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
+;                               ' ; at ' + systime(0)
+;                 HV_LOG_WRITE,hvs.hvsi,log_comment + ' ; wrote ' + jp2_filename
+;              endif else begin
+;                 jp2_filename = ginfo.already_written
+;              endelse
               output[i] = jp2_filename
            endfor ; end of file loop
            nawind = where(output eq ginfo.already_written,naw)

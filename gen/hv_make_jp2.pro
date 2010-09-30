@@ -22,9 +22,11 @@ PRO HV_MAKE_JP2,hvs,jp2_filename = jp2_filename, already_written = already_writt
 ;
   HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
   if not(already_written) then begin
-     log_comment = 'read ' + hvs.hvsi.fitsname + $
+     log_comment = 'directory = '+ hvs.hvsi.dir + $
+                   ' ; read ' + hvs.hvsi.fitsname + $
                    ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
-                   ' ; at ' + systime(0)
+                   ' ; at ' + systime(0) + $
+                   ' ; ' + hvs.hvsi.comment
      HV_LOG_WRITE,hvs.hvsi,log_comment + ' ; wrote ' + jp2_filename
   endif else begin
      jp2_filename = ginfo.already_written

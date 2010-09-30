@@ -200,11 +200,12 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ;
 ; Write the JP2
 ;
-     log_comment = progname + '; source ; ' +hd.filename + ' ; ' + HV_JP2GEN_CURRENT(/verbose) + '; at ' + systime(0)
      if total(err_hd gt 0) then begin
         hd = add_tag(hd,'Warning ' + err_report,'hv_error_report')
         log_comment = log_comment + ' : ' + err_report
-     endif
+     endif else begin
+        err_report = ''
+     endelse
 ;
 ; Detect if this is a quicklook file
 ;
@@ -220,16 +221,29 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ;
 ; HVS file
 ;
-     hvsi = {dir:dir,fitsname:hd.filename, header:hd,details:details,$
-            measurement:measurement,$
-            yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli}
-     hvs = {hvsi:hvsi,img:image_new}
-     HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename,already_written = already_written
-     if not(already_written) then begin
-        HV_LOG_WRITE,hvs.hvsi, log_comment + ' : wrote ' + jp2_filename
-     endif else begin
-        jp2_filename = ginfo.already_written
-     endelse
+     hvsi = {dir:dir,$
+             fitsname:hd.filename,$
+             header:hd,$
+             details: details,$
+             comment:err_report,$
+             measurement:measurement,$
+             yy:yy,$
+             mm:mm,$
+             dd:dd,$
+             hh:hh,$
+             mmm:mmm,$
+             ss:ss,$
+             milli:milli}
+     hvs = {img:image_new,hvsi:hvsi}
+
+     HV_MAKE_JP2,hvs,jp2_filename = jp2_filename,already_written = already_written
+
+;     HV_WRITE_LIST_JP2,hvs, jp2_filename = jp2_filename,already_written = already_written
+;     if not(already_written) then begin
+;        HV_LOG_WRITE,hvs.hvsi, log_comment + ' : wrote ' + jp2_filename
+;     endif else begin
+;        jp2_filename = ginfo.already_written
+;     endelse
   endif else begin
      print,'Something funny with this LASCO C2 fits file'
      jp2_filename = ginfo.MinusOneString
