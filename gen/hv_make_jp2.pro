@@ -1,5 +1,11 @@
 ;
+; 30 September 2010
 ;
+; HV_MAKE_JP2
+; - single simple point of entry to convert a FITS file to a JPEG2000
+;   file for use with the Helioviewer Project.  Calling this
+;   function with the appropriately defined variable "hvs" is
+;   sufficient to create a Helioviewer-compliant JPEG2000 file.
 ;
 
 PRO HV_MAKE_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
@@ -16,7 +22,7 @@ PRO HV_MAKE_JP2,hvs,jp2_filename = jp2_filename, already_written = already_writt
 ;
   HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
   if not(already_written) then begin
-     log_comment = 'read ' + ff(ss(i)) + $
+     log_comment = 'read ' + hvs.hvsi.fitsname + $
                    ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
                    ' ; at ' + systime(0)
      HV_LOG_WRITE,hvs.hvsi,log_comment + ' ; wrote ' + jp2_filename
