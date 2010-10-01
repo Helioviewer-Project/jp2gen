@@ -143,6 +143,7 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; Get contact details
 ;
      wby = HV_WRITTENBY()
+;     wby = HV_WRITTENBY(fitsheader.hv_writtenby)
 ;
 ; Set the JP2 compression details, override defaults if set from
 ; function call
@@ -170,10 +171,10 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; Who created this file and where
 ;
         hv_comment = 'JP2 file created locally at ' + wby.local.institute + $
-                               ' using '+ progname + $
-                               ' at ' + systime() + '.' + lf + $
-                               'Contact ' + wby.local.contact + $
-                               ' for more details/questions/comments regarding this JP2 file.'+lf
+                                       ' using '+ progname + $
+                                       ' at ' + systime() + '.' + lf + $
+                                       'Contact ' + wby.local.contact + $
+                                       ' for more details/questions/comments regarding this JP2 file.'+lf
 ;
 ; Which setup file was used
 ;
@@ -182,14 +183,14 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Source code attribution
 ;
-        hv_comment = hv_comment + $
-                     'FITS to JP2 source code provided by ' + g.source.contact + $
-                     '[' + g.source.institute + ']'+ $
-                     ' and is available for download at ' + g.source.jp2gen_code + '.' + lf + $
-                     'Please contact the source code providers if you suspect an error in the source code.' + lf + $
-                     'Full source code for the entire Helioviewer Project can be found at ' + g.source.all_code + '.'
+        hv_comment = HV_XML_COMPLIANCE(hv_comment + $
+                                       'FITS to JP2 source code provided by ' + g.source.contact + $
+                                       '[' + g.source.institute + ']'+ $
+                                       ' and is available for download at ' + g.source.jp2gen_code + '.' + lf + $
+                                       'Please contact the source code providers if you suspect an error in the source code.' + lf + $
+                                       'Full source code for the entire Helioviewer Project can be found at ' + g.source.all_code + '.')
         if tag_exist(header,'hv_comment') then begin
-           hv_comment = header.hv_comment + lf + hv_comment
+           hv_comment = HV_XML_COMPLIANCE(header.hv_comment) + lf + hv_comment
         endif
 ;
 ; ********************************************************************************************************
@@ -205,6 +206,7 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
         ntags = n_tags(header)
         tagnames = tag_names(header) 
+        tagnames = HV_XML_COMPLIANCE(tagnames)
         jcomm = where(tagnames eq 'COMMENT')
         jhist = where(tagnames eq 'HISTORY')
         jhv = where(strupcase(strmid(tagnames[*],0,3)) eq 'HV_')
@@ -228,7 +230,8 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
                 (where(j eq jhv) eq -1)   and $
                 (where(j eq jhva) eq -1) )then begin      
 ;            xh+='<'+tagnames[j]+' descr="">'+strtrim(string(header.(j)),2)+'</'+tagnames[j]+'>'+lf
-              xh+='<'+tagnames[j]+'>'+strtrim(string(header.(j)),2)+'</'+tagnames[j]+'>'+lf
+              value = HV_XML_COMPLIANCE(strtrim(string(header.(j)),2))
+              xh+='<'+tagnames[j]+'>'+value+'</'+tagnames[j]+'>'+lf
            endif
         endfor
 ;
@@ -238,7 +241,8 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         j=jhist
         k=0
         while (header.(j))[k] ne '' do begin
-           xh+=(header.(j))[k]+lf
+           value = HV_XML_COMPLIANCE((header.(j))[k])
+           xh+=value+lf
            k=k+1
         endwhile
         xh+='</history>'+lf
@@ -249,7 +253,8 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         j=jcomm
         k=0
         while (header.(j))[k] ne '' do begin
-           xh+=(header.(j))[k]+lf
+           value = HV_XML_COMPLIANCE((header.(j))[k])
+           xh+=value+lf
            k=k+1
         endwhile
         xh+='</comment>'+lf
@@ -267,32 +272,34 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;           endif
 ;       endfor
 
-
-
+;
+; Close the FITS information
+;
+        xh+='</fits>'+lf
 ;
 ; Explicitly encode the allowed Helioviewer JP2 tags
 ;
-
+        xh+='<helioviewer>'+lf
 ;
 ; Original rotation state
 ;
-        xh+='<HV_ROTATION>'+strtrim(string(header.hv_rotation),2)+'</HV_ROTATION>'+lf
+        xh+='<HV_ROTATION>'+HV_XML_COMPLIANCE(strtrim(string(header.hv_rotation),2))+'</HV_ROTATION>'+lf
 ;
 ; JP2GEN version
 ;
-        xh+='<HV_JP2GEN_VERSION>'+trim(g.source.jp2gen_version)+'</HV_JP2GEN_VERSION>'+lf
+        xh+='<HV_JP2GEN_VERSION>'+HV_XML_COMPLIANCE(trim(g.source.jp2gen_version))+'</HV_JP2GEN_VERSION>'+lf
 ;
 ; JP2GEN branch revision
 ;
-        xh+='<HV_JP2GEN_BRANCH_REVISION>'+trim(g.source.jp2gen_branch_revision)+'</HV_JP2GEN_BRANCH_REVISION>'+lf
+        xh+='<HV_JP2GEN_BRANCH_REVISION>'+HV_XML_COMPLIANCE(trim(g.source.jp2gen_branch_revision))+'</HV_JP2GEN_BRANCH_REVISION>'+lf
 ;
 ; HVS setup file
 ;
-        xh+='<HV_HVS_DETAILS_FILENAME>'+trim(details.hvs_details_filename)+'</HV_HVS_DETAILS_FILENAME>'+lf
+        xh+='<HV_HVS_DETAILS_FILENAME>'+HV_XML_COMPLIANCE(trim(details.hvs_details_filename))+'</HV_HVS_DETAILS_FILENAME>'+lf
 ;
 ; HVS setup file version
 ;
-        xh+='<HV_HVS_DETAILS_FILENAME_VERSION>'+trim(details.hvs_details_filename_version)+'</HV_HVS_DETAILS_FILENAME_VERSION>'+lf
+        xh+='<HV_HVS_DETAILS_FILENAME_VERSION>'+HV_XML_COMPLIANCE(trim(details.hvs_details_filename_version))+'</HV_HVS_DETAILS_FILENAME_VERSION>'+lf
 ;
 ; JP2 comments
 ;
@@ -332,16 +339,16 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; of the coronagraph in solar radii
 ;
         if have_tag(header,'hv_rocc_inner') then begin
-           xh+='<HV_ROCC_INNER>'+trim(header.hv_rocc_inner)+'</HV_ROCC_INNER>'+lf
+           xh+='<HV_ROCC_INNER>'+HV_XML_COMPLIANCE(trim(header.hv_rocc_inner))+'</HV_ROCC_INNER>'+lf
         endif
         if have_tag(header,'hv_rocc_outer') then begin
-           xh+='<HV_ROCC_OUTER>'+trim(header.hv_rocc_outer)+'</HV_ROCC_OUTER>'+lf
+           xh+='<HV_ROCC_OUTER>'+HV_XML_COMPLIANCE(trim(header.hv_rocc_outer))+'</HV_ROCC_OUTER>'+lf
         endif
 ;
 ; If there is an error report, write that too
 ;
         if have_tag(header,'hv_error_report') then begin
-           xh+='<HV_ERROR_REPORT>'+trim(header.hv_error_report)+'</HV_ERROR_REPORT>'+lf
+           xh+='<HV_ERROR_REPORT>'+HV_XML_COMPLIANCE(trim(header.hv_error_report))+'</HV_ERROR_REPORT>'+lf
         endif
 ;
 ; JP2 specific tag names - number of layers, bit depth, etc
@@ -361,9 +368,9 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;        endfor
 ;        xh+='</Helioviewer>'+lf
 ;
-; Close the FITS information
+; Close the Helioviewer information
 ;
-        xh+='</fits>'+lf
+        xh+='</helioviewer>'+lf
 ;
 ; Enclose all the XML elements in their own container
 ;
@@ -374,7 +381,6 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 
 ; end of FITS header loop:
   ENDELSE 
-
 ;
 ; If the image has an alpha channel transparency mask supplied with
 ; it, then we need to use the KDU library.  If not, then we just use
@@ -499,11 +505,16 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
                     bit_rate=bit_rate,$
                     n_layers=n_layers,$
                     n_levels=n_levels,$
+                    PROGRESSION = 'RPCL',$
                     xml=xh)
+;
      oJP2->SetData,image_new_with_transparency
      OBJ_DESTROY, oJP2
      print,' '
      print,progname + ' created ' + file + '.jp2'
+;
+; Change the permissions on the file
+;
 
   ENDIF ELSE BEGIN
 ;
@@ -517,7 +528,9 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
                     bit_rate=bit_rate,$
                     n_layers=n_layers,$
                     n_levels=n_levels,$
+                    PROGRESSION = 'RPCL',$
                     xml=xh)
+;
      oJP2->SetData,image_new
      OBJ_DESTROY, oJP2
      print,' '

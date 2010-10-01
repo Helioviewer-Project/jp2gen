@@ -5,6 +5,8 @@
 PRO HV_COPY2OUTGOING,files,search = search,delete_original = delete_original
   progname = 'hv_copy2outgoing'
 ;
+  g = HVS_GEN()
+;
 ; get the outgoing directory for this nickname
 ;
   storage = HV_STORAGE(nickname = 'dummy')
@@ -23,12 +25,34 @@ PRO HV_COPY2OUTGOING,files,search = search,delete_original = delete_original
   if not(isarray(files)) then begin
      print,progname + ': passed a directory.  Looking for files in ' + files + ' containing ' + search
      files = file_list(find_all_dir(files),search)
-  endif
+  endif else begin
+     dummy = where(files eq g.already_written,naw)
+     dummy = where(files eq g.MinusOneString,nm1)
+     dummy = where(files eq '',nnull)
+     if ( (naw + nm1 + nnull) eq n_elements(files) ) then begin
+        print,progname + ': No proper file names passed.'
+        files = strarr(1)
+        files[0] = g.MinusOneString
+     endif else begin
+        nawind = where(files ne g.already_written,naw) ; remove entries from the list that may have already been written
+        if naw gt 0 then begin
+           files = files(nawind)
+        endif
+        nm1ind = where(files ne g.MinusOneString,nm1) ; remove entries from the list that indicate failed processing
+        if nm1 gt 0 then begin
+           files = files(nm1ind)
+        endif
+        nnullind = where(files ne '',nnull) ; empty files names
+        if nnull gt 0 then begin
+           files = files(nnullind)
+        endif
+     endelse
+  endelse
 ;
 ; Split the path of the file.
 ;
   n = long(n_elements(files))
-  if (files(0) eq '-1' and n eq 1) then begin
+  if (files[0] eq '-1' and n eq 1) then begin
      print,progname + ': No files to be moved.'
   endif else begin
      if files[0] eq '-1' then offset = long(1) else offset = long(0)

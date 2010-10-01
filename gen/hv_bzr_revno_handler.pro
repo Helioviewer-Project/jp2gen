@@ -6,10 +6,10 @@
 ;
 FUNCTION HV_BZR_REVNO_HANDLER,loc
   spawn,['bzr','revno',loc], list,err,/noshell
-  if err eq '' then begin
+  if err[0] eq '' then begin
      out = list
   endif else begin
-     out ='No valid revision number found. '+ err
+     out ='No valid revision number found. '+ strjoin(err,':')
   endelse
 
 ;  if isarray(out) then begin

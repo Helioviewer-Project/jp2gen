@@ -22,19 +22,47 @@
 ; webpage: the location of the JP2Gen monitoring webpage.  
 ;          This webpage will allow you to monitor file creation and transfer services of your JP2 installtion
 ;
-FUNCTION HV_WRITTENBY
-  return,{local:{institute:'NASA-GSFC',$
-                 contact:'Helioviewer Project (webmaster@helioviewer.org)',$
-                 kdu_lib_location:'~/KDU/Kakadu/v6_1_1-00781N/bin/Mac-x86-64-gcc/',$
-                 jp2gen_write:'/home/ireland/hv_latest/',$
-                 jp2gen:'/home/ireland/hv/jp2gen-jack/'},$
-          transfer:{local:{group:'ireland',$
-                           tcmd_linux:'rsync',$
-                           tcmd_osx:'/usr/local/bin/rsync'},$
-                    remote:{user:'ireland',$
-                            machine:'helioviewer.nascom.nasa.gov',$
-                            incoming:'/home/ireland/incoming/',$
-                            group:'helioviewer'}},$
-          webpage:'/service/www/'}
+FUNCTION HV_WRITTENBY,name
+
+  default = {local:{institute:'NASA-GSFC',$
+                    contact:'Helioviewer Project (webmaster@helioviewer.org)',$
+                    kdu_lib_location:'~/KDU/Kakadu/v6_1_1-00781N/bin/Mac-x86-64-gcc/',$
+                    jp2gen_write:'/home/ireland/hv_latest/',$
+                    jp2gen:'/home/ireland/hv/jp2gen-jack/'},$
+             transfer:{local:{group:'ireland',$
+                              tcmd_linux:'rsync',$
+                              tcmd_osx:'/usr/local/bin/rsync'},$
+                       remote:{user:'ireland',$
+                               machine:'helioviewer.nascom.nasa.gov',$
+                               incoming:'/home/ireland/incoming/',$
+                               group:'helioviewer'}},$
+             webpage:'/service/www/'}
+
+  if name eq 'default' then begin
+     answer = default
+  endif
+;
+; Add in other choices as approprate
+;
+  if name eq 'helioviewer-production' then begin
+     answer = default
+     answer.local.jp2gen_write = '/home/ireland/JP2Gen_helioviewer/'
+     answer.transfer.remote.incoming = '/home/ireland/incoming/'
+  endif
+  if name eq 'helioviewer-test' then begin
+     answer = default
+     answer.local.jp2gen_write = '/home/ireland/JP2Gen_helioviewer/'
+     answer.transfer.remote.incoming = '/home/ireland/test/'
+  endif
+
+  if name eq 'delphi-test' then begin
+     answer = default
+     answer.local.jp2gen_write = '/home/ireland/JP2Gen_delphi_test/'
+     answer.transfer.remote.machine = 'delphi.nascom.nasa.gov'
+     answer.transfer.remote.incoming = '/home/ireland/test/'
+  endif
+
+
+  return,answer
 END
 

@@ -1,0 +1,10 @@
+http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA
+/home/ireland/from_LMSAL/v0.8/
+/home/ireland/test/v0.8/
+2010
+06
+23
+4500
+AIA
+/var/www/ireland/aia/transfer
+1000000
