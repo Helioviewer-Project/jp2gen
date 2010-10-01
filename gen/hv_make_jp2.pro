@@ -8,7 +8,7 @@
 ;   sufficient to create a Helioviewer-compliant JPEG2000 file.
 ;
 
-PRO HV_MAKE_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
+PRO HV_MAKE_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written, overwrite = overwrite
 ;
 ; get general information
 ;
@@ -20,7 +20,7 @@ PRO HV_MAKE_JP2,hvs,jp2_filename = jp2_filename, already_written = already_writt
 ;
 ; Write the file and log file
 ;
-  HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
+  HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written, overwrite = overwrite
   if not(already_written) then begin
      log_comment = 'directory = '+ hvs.hvsi.dir + $
                    ' ; read ' + hvs.hvsi.fitsname + $

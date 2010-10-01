@@ -9,8 +9,12 @@
 ;              rescaling or recentering)
 ;
 ;-
-PRO HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_written
+PRO HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_written, overwrite = overwrite
   progname = 'hv_write_list_jp2'
+;
+; Check for overwriting
+;
+  if not(keyword_set(overwrite)) then overwrite = 0
 ;
 ; Check if we have already written this JP2 file
 ;
@@ -18,7 +22,7 @@ PRO HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_
 ;
 ; if new, then write it and update the database for this day
 ;
-  if NOT(already_written) then begin
+  if (NOT(already_written) or overwrite) then begin
      details = hvs.hvsi.details
      storage = HV_STORAGE(nickname = details.nickname)
      loc = HV_WRITE_LIST_JP2_MKDIR(hvs.hvsi,storage.jp2_location)
