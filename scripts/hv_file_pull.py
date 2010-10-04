@@ -70,7 +70,7 @@ def hvDateFilename(yyyy,mm,dd,nickname,measurement):
 # yyyy - four digit year
 # mm - two digit month
 # dd - two digit day
-# remote_root - remote location of the AIA files
+# remote_root - remote location of the device files
 # staging_root - files from remote location are originally copied here, and have their permissions changes here
 # ingest_root - the directory where the files with the correct permissions end up
 
@@ -135,9 +135,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 
 	# Ingestion: create the ingest_today directory.  The local user must be changed to helioviewer to allow access by the ingestion process.
 	ingest_today = ingest_storage + hvss[-1]
-	hvCreateSubdir(ingest_today,localUser = localUser)
 	for directory in hvss:
-		hvCreateSubdir(ingest_today + directory,localUser = localUser)
+		hvCreateSubdir(ingest_storage + directory,localUser = localUser)
 
 	#
         # read in the database file for this measurement and date
@@ -182,7 +181,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
                 jprint('No latest JP2 file found.')
 
         # Calculate the remote directory
-        remote_location = remote_root + '/' + hvss[-1]
+        remote_location = remote_root + nickname + '/' + hvss[-1]
 
         # Open the remote location and get the file list
 	try:
@@ -258,7 +257,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	return newFilesCount
 
 # Get the JP2s
-def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0, redirect = False, daysBack = 0):
+def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,count = 0, redirect = False, daysBack = 0):
 	t1 = time.time()
 	timeStamp = createTimeStamp()
 	# Standard output + error log file names
@@ -268,7 +267,8 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 	stderrLatestFileName = 'latest.' + str(daysBack) + '__'+nickname+'__' + measurement + '.stderr.log'
 
 	# log subdirectory
-	logSubdir = hvCreateLogSubdir(staging_root,nickname,measurement,yyyy,mm,dd)
+	logSubdir = staging_root + 'log/' + nickname + '/' + hvSubdir(measurement,yyyy,mm,dd)[3] + '/'
+	hvCreateSubdir(logSubdir)
 
 	# Write a current file to web-space so you know what the script is trying to do right now.
 	currentFile = open(monitorLoc + 'current.log','w')
@@ -294,7 +294,7 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 	jprint('Beginning remote location query number ' + str(count))
 	jprint("Looking for files on this date = " + yyyy + mm + dd)
 	jprint('Using options file '+ options_file)
-	nfc = GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes)
+	nfc = GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,localUser)
 	t2 = time.time()
 	jprint('Time taken in seconds =' + str(t2 - t1))
 	if nfc > 0 :
@@ -312,17 +312,6 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 		shutil.copy(logSubdir + stderrFileName, monitorLoc + stderrLatestFileName)
 
 	return nfc
-
-#Local root - presumed to be created
-#staging_root = '/home/ireland/JP2Gen_from_LMSAL/v0.8/'
-
-# root of where the data is
-#remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
-
-# AIA measurementlength array - constant
-measurementlength = ['94','131','171','193','211','304','335','1600','1700','4500']
-
-
 #
 # Script must be called using an options file that defines the root of the
 # remote directory and the root of the local directory
@@ -341,23 +330,23 @@ else:
         # [0] = remote http location
         # [1] = local subdirectory where the files are first saved to (staging)
 	# [2] = local subdirectory where the JP2 files with the correct permissions are put for ingestion
-	# [3] = specific year
-	# [4] = specific month
-	# [5] = specific day
-	# [6] = specific measurementlength
-	# [7] = instrument nickname
-	# [8] = webspace
-	# [9] = minimum acceptable file size in bytes.  Files smaller than this are considered corrupted
-	# [10] = redirect output to file (True)
-	# [11] = number of seconds to pause the data download for if no daya was downloaded the last time
-	# [12] = minimum number of days back from the present date to consider
-	# [13] = maximum number of days back from the present date to consider (note that the range command used to implement this requires a minimum value of n to go back n-1 days)
+	# [3] = start date
+	# [4] = end date
+	# [5] = specific measurements to download - must have the same measurement values as defined in the instrument Helioviewer setup file - see JP2Gen wiki notes.
+	# [6] = nickname of the device
+	# [7] = webspace
+	# [8] = minimum acceptable file size in bytes.  Files smaller than this are considered corrupted
+	# [9] = redirect stout and stderr output to file (True)
+	# [10] = number of seconds to pause the data download for if no daya was downloaded the last time
+	# [11] = minimum number of days back from the present date to consider
+	# [12] = maximum number of days back from the present date to consider (note that the range command used to implement this requires a minimum value of n to go back n-1 days)
+	# [13] = name of the local User who is downloading the files.  This user must be in the "helioviewer" group.
         remote_root = options[0][:-1]
         staging_root = options[1][:-1]
         ingest_root = options[2][:-1]
 	startDate = (options[3][:-1]).split('/')
 	endDate = (options[4][:-1]).split('/')
-	measurementI = options[5][:-1]
+	measurements = options[5][:-1].split(',')
 	nickname = options[6][:-1]
 	monitorLoc = options[7][:-1]
 	minJP2SizeInBytes = int(options[8][:-1])
@@ -365,6 +354,7 @@ else:
 	sleep = int(options[10][:-1])
 	daysBackMin = int(options[11][:-1])
 	daysBackMax = int(options[12][:-1])
+	localUser = options[13][:-1]
 
 	# Re-direct stdout to a logfile?
 	if redirectTF == 'True':
@@ -395,8 +385,8 @@ else:
 				dd = time.strftime('%d',time.gmtime(Y))
 
 				# Go through each measurement
-				for measurement in measurementlength:
-					nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = count,redirect = redirect,daysBack = daysBack)
+				for measurement in measurements:
+					nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,count = count,redirect = redirect,daysBack = daysBack)
 					if nfc > 0:
 						gotNewData = True
 			if not gotNewData:
@@ -409,9 +399,6 @@ else:
 			yyyy = time.strftime('%Y',time.gmtime(getThisDay))
 			mm = time.strftime('%m',time.gmtime(getThisDay))
 			dd = time.strftime('%d',time.gmtime(getThisDay))
-			if measurementI == '-1':
-				for measurement in measurementlength:
-					nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
-			else:
-				nfc = GetJP2(nickname,yyyy,mm,dd,measurementI,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
+			for measurement in measurements:
+				nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,count = 0,redirect = redirect)
 			getThisDay = getThisDay + 24*60*60
