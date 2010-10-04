@@ -51,38 +51,44 @@ PRO HV_LASCO_UPDATE_ALTERNATE_BACKGROUNDS,details_file = details_file
 ;
 ; Get the remote files
 ;
-     remote_http = sock_find(server[i],'*.fts',path = path[i])
-     n = n_elements(remote_http)
-     remote_list = strarr(n)
-     for j = 0,n-1 do begin
-        remote_list[j] = HV_SPLIT_STRING(remote_http[j],'/',/last)
-     endfor
+     remote_http = sock_find(server[i],'*.fts',path = path[i],err = err)
+     if err eq '' then begin
+        n = n_elements(remote_http)
+        remote_list = strarr(n)
+        for j = 0,n-1 do begin
+           remote_list[j] = HV_SPLIT_STRING(remote_http[j],'/',/last)
+        endfor
 ;
 ; Check the local files
 ;
-     if type[i] eq 'rolled' then begin
-        subdir = 'rolled/'
-     endif else begin
-        subdir = ''
-     endelse
-     local = info.alternate_backgrounds + subdir
-     local_pathlist = file_list(local)
-     m = n_elements(local_pathlist)
-     local_list = strarr(m)
-     for j = 0,m-1 do begin
-        local_list[j] = HV_SPLIT_STRING(local_pathlist[j],'/',/last)
-     endfor
+        if type[i] eq 'rolled' then begin
+           subdir = 'rolled/'
+        endif else begin
+           subdir = ''
+        endelse
+        local = info.alternate_backgrounds + subdir
+        local_pathlist = file_list(local)
+        m = n_elements(local_pathlist)
+        local_list = strarr(m)
+        for j = 0,m-1 do begin
+           local_list[j] = HV_SPLIT_STRING(local_pathlist[j],'/',/last)
+        endfor
 ;
 ; Find which files we need to download
 ;
-     for j = 0,n-1 do begin
-        test = where(remote_list[j] eq local_list,count)
-        if count eq 0 then begin
-           out_name = local + remote_list[j]
-           sock_copy,remote_http[j],out_dir = local
-           print,progname + ': ' + remote_http[j] + ' copied to ' + out_name
-        endif
-     endfor
+        for j = 0,n-1 do begin
+           test = where(remote_list[j] eq local_list,count)
+           if count eq 0 then begin
+              out_name = local + remote_list[j]
+              sock_copy,remote_http[j],out_dir = local,err = err
+              if err eq '' then begin
+                 print,progname + ': ' + remote_http[j] + ' copied to ' + out_name
+              endif
+           endif
+        endfor
+     endif else begin
+        print,'SOCK_FIND error: '+err
+     endelse
   endfor
 return
 end
