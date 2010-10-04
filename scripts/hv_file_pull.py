@@ -61,13 +61,9 @@ def hvSubdir(measurement,yyyy,mm,dd):
 	"""Return the directory structure for helioviewer JPEG2000 files."""
 	return [yyyy + '/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
 
-# dateName
-def dateName(yyyy,mm,dd):
-	"""Create a name from year month date""" 
-	return yyyy + '_' + mm + '_' + dd
-
 # hvFilename
 def hvDateFilename(yyyy,mm,dd,nickname,measurement):
+	"""Creates a filename from the date, nickname and measurement"""
 	return yyyy + mm + dd + '__' + nickname + '__' + measurement
 
 
@@ -78,7 +74,7 @@ def hvDateFilename(yyyy,mm,dd,nickname,measurement):
 # staging_root - files from remote location are originally copied here, and have their permissions changes here
 # ingest_root - the directory where the files with the correct permissions end up
 
-def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes):
+def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,localUser):
 	jprint('Remote root: as defined in options file')
         jprint('Local root: '+staging_root)
         jprint('Ingest root: '+ingest_root)
@@ -87,27 +83,27 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	# Higher level storage for all dates and times
 	#
 
-        # Create the staging directory for the JP2s
+        # Staging: Create the staging directory for the JP2s
         jp2_dir = staging_root + 'jp2/'
         hvCreateSubdir(jp2_dir)
         staging_storage = jp2_dir + nickname + '/'
         hvCreateSubdir(staging_storage)
 
-	# Creating the quarantine directory - bad JP2s go here
+	# Quarantine: Creating the quarantine directory - bad JP2s go here
 	quarantine = staging_root + 'quarantine/'
         hvCreateSubdir(quarantine)
 
-        # JP2s are moved to these directories and have their permissions changed, etc, so they can be read by the next stage in the ingestion process.
+        # Ingestion: JP2s are moved to these directories and have their permissions changed.  The local user must be changed to helioviewer to allow access by the ingestion process.
         ingest_dir = ingest_root + 'jp2/'
         hvCreateSubdir(ingest_dir,localUser = localUser)
         ingest_storage = ingest_dir + nickname + '/'
         hvCreateSubdir(ingest_storage,localUser = localUser)
 
-        # The location of where the databases are stored
+        # Database: The location of where the databases are stored
         dbloc = staging_root + 'db/' + nickname + '/'
         hvCreateSubdir(dbloc)
 
-        # The location of where the logfiles are stored
+        # Logfile: The location of where the logfiles are stored
         logloc = staging_root + 'log/'+ nickname +'/'
         hvCreateSubdir(logloc)
 
@@ -118,24 +114,30 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	# The helioviewer subdirectory structure
 	hvss = hvSubdir(measurement,yyyy,mm,dd)
 
-        # create the staging JP2 subdirectory required
+        # Staging: create the staging JP2 subdirectory required
 	staging_today = staging_storage + hvss[-1]
 	hvCreateSubdir(staging_today)
 
-        # create the logfile subdirectory for these data
+        # Logfile: create the logfile subdirectory for these data
         logSubdir = logloc + hvss[-1]
 	hvCreateSubdir(logSubdir)
 
-        # Create the logfile filename
+        # Logfile: Create the logfile filename
 	jprint('Time stamp for this iteration = ' + timeStamp)
         logFileName = timeStamp + '.' + hvDateFilename(yyyy, mm, dd, nickname, measurement) + '.wget.log'    
 
-        # create the database subdirectory for this measurement
+        # Database: create the database subdirectory for this measurement
         dbSubdir = dbloc + hvss[-1]
 	hvCreateSubdir(dbSubdir)
 
-        # create the database filename
+        # Database: create the database filename
         dbFileName = hvDateFilename(yyyy, mm, dd, nickname, measurement) + '__db.csv'    
+
+	# Ingestion: create the ingest_today directory.  The local user must be changed to helioviewer to allow access by the ingestion process.
+	ingest_today = ingest_storage + hvss[-1]
+	hvCreateSubdir(ingest_today,localUser = localUser)
+	for directory in hvss:
+		hvCreateSubdir(ingest_today + directory,localUser = localUser)
 
 	#
         # read in the database file for this measurement and date
@@ -213,6 +215,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	                f = open(newFileListFullPath,'w')
 	                f.writelines(newlist)
 	                f.close()
+
 	                # Download only the new files
 	                jprint('Downloading new files.')
 	                localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
@@ -220,7 +223,6 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	                localDir = ' -P'+staging_today + ' '
 	                remoteBaseURL = '-B ' + remote_location + ' '
 	                command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
-	
 	                os.system(command)
 	
 	                # Write the new updated database file
@@ -229,21 +231,10 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	                f.writelines(jp2list)
 	                f.writelines(newlist)
 	                f.close()
-	                # Absolutely ensure the correct permissions on all the files
-	                change2hv(staging_today,localUser)
-	
+
 			#
-			# Moving the files from the staging directory to the ingestion directory
+			# Move the files to the ingestion directory
 			#
-			# Create the ingest_today directory
-			z = 
-			ingest_today = ingest_storage + hvss[-1]
-	                try:
-				hvCreateSubdir(ingest_storage)
-				for directory in hvss:
-					hvCreateSubdir(ingest_storage + directory)
-	                except:
-	                        jprint('Ingest directory already exists: '+ingest_today)
 	
 			# Read in the new filenames again
 	                f = open(logSubdir + '/' + newFileListName,'r')
@@ -252,6 +243,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 			jprint('New files ingested are as follows:')
 			for entry in newlist:
 				jprint(entry)
+
 	                # Move the new files to the ingest directory
 	                for name in newlist:
 	                        newFile = name[:-1]
@@ -270,8 +262,8 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 	t1 = time.time()
 	timeStamp = createTimeStamp()
 	# Standard output + error log file names
-	stdoutFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + measurement + '.stdout.log'
-	stderrFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + measurement + '.stderr.log'
+	stdoutFileName = timeStamp + '.' + hvDateFilename(yyyy, mm, dd, nickname, measurement) + '.stdout.log'
+	stderrFileName = timeStamp + '.' + hvDateFilename(yyyy, mm, dd, nickname, measurement) + '.stderr.log'
 	stdoutLatestFileName = 'latest.' + str(daysBack) + '__'+nickname+'__' + measurement + '.stdout.log'
 	stderrLatestFileName = 'latest.' + str(daysBack) + '__'+nickname+'__' + measurement + '.stderr.log'
 
@@ -292,11 +284,13 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 		saveout = sys.stdout
 		fsock = open(logSubdir + stdoutFileName, 'w')
 		sys.stdout = fsock
+		saveerr = sys.stderr
+		ferr = open(logSubdir + stderrFileName, 'w')
 
 	# Get the data
 	jprint(' ')
 	jprint(' ')
-	jprint('Measurementlength = ' + measurement)
+	jprint('Measurement = ' + measurement)
 	jprint('Beginning remote location query number ' + str(count))
 	jprint("Looking for files on this date = " + yyyy + mm + dd)
 	jprint('Using options file '+ options_file)
@@ -306,13 +300,16 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 	if nfc > 0 :
 		jprint('Average time taken in seconds = ' + str( (t2-t1)/nfc ) )
 		
-	# Put the stdout back
+	# Put the stdout/stderr back
 	if redirect:
 		sys.stdout = saveout
 		fsock.close()
+		sys.stderr = saveerr
+		ferr.close()
 
-	# Copy the most recent stdout file to some webspace.
+	# Copy the most recent stdout/stderr file to some webspace.
 		shutil.copy(logSubdir + stdoutFileName, monitorLoc + stdoutLatestFileName)
+		shutil.copy(logSubdir + stderrFileName, monitorLoc + stderrLatestFileName)
 
 	return nfc
 
