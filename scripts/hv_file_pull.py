@@ -7,14 +7,20 @@
 # Scrapes JP2 files from remote webspace and writes them to local subdirectories
 # Based on hv_aia_pull2.py
 #
+# Requires: Python 2.5 or above
+#
 # TODO: better handling of spawned wget process through the subprocess module
 # 
 #
 #
+"""
 
+Creates an SQLite database with entries in the following order
+
+"""
 from urlparse import urlsplit
 from sgmllib import SGMLParser
-import shutil, urllib2, urllib, os, time, sys, calendar
+import shutil, urllib2, urllib, os, time, sys, calendar, sqlite3
 
 # URLLister
 class URLLister(SGMLParser):
@@ -61,20 +67,38 @@ def hvSubdir(measurement,yyyy,mm,dd):
 	"""Return the directory structure for helioviewer JPEG2000 files."""
 	return [yyyy + '/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
 
-# hvFilename
+# hvDateFilename
 def hvDateFilename(yyyy,mm,dd,nickname,measurement):
 	"""Creates a filename from the date, nickname and measurement"""
 	return yyyy + mm + dd + '__' + nickname + '__' + measurement
 
+# hvParseJP2Filename
+def hvParseJP2Filename(filename):
+	z0 = filename.split('.')
+	z1 = z0[0].split('__')
+	date = z1[0].split('_')
+	time = z1[1].split('_')
+	observation = z1[2].split('_')
+	return {'date':date, 'time':time, 'observation':observation}
 
-# yyyy - four digit year
-# mm - two digit month
-# dd - two digit day
-# remote_root - remote location of the device files
-# staging_root - files from remote location are originally copied here, and have their permissions changes here
-# ingest_root - the directory where the files with the correct permissions end up
-
+# GetMeasurement
 def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,localUser):
+	""" Download JP2s from a remote website for a given device and measurement.
+	nickname = device nickname
+	yyyy = 4 digit year string
+	mm = 2 digit month string
+	dd = 2 digit day string
+	measurement = the particular measurement we want to download
+	remote_root = the location of the JP2 directory structure (http://)
+	staging_root = files from remote location are originally copied here, and then transferred to the ingestion directory
+	ingest_root = this directory holds the files to be ingested, and has all the correct permissions and ownerships set
+	monitorLoc = the local website where monitoring information on the transfer process is stored
+	timeStamp = the timeStamp associated with this particular query for data
+	minJP2SizeInBytes = the minimum size of an acceptable JP2 file.  Anything smaller and the file is assumed to be bad, and the file is quarantined
+	localUser = the name of the user who initiates the download.  This user must be in the helioviewer group.
+	"""
+
+	# Information for the user
 	jprint('Remote root: as defined in options file')
         jprint('Local root: '+staging_root)
         jprint('Ingest root: '+ingest_root)
@@ -102,6 +126,14 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
         # Database: The location of where the databases are stored
         dbloc = staging_root + 'db/' + nickname + '/'
         hvCreateSubdir(dbloc)
+
+	# Database: Connect to the database
+	try:
+		conn = sqlite3.connect(staging_root + 'db/hvFilePull.sqlite')
+		c = conn.cursor()
+		c.execute('''create table jp2files (nickname text, yyyy text, mm text, dd text, hh text, mmm text, ss text, milli text, observationTime real, measurement text, downloadedWhen text, downloadedWhenTime real, downloadedFrom text)''')
+	except:
+		jprint('Problem detected')
 
         # Logfile: The location of where the logfiles are stored
         logloc = staging_root + 'log/'+ nickname +'/'
@@ -224,16 +256,12 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	                command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
 	                os.system(command)
 	
-	                # Write the new updated database file
+	                # Database: Write the new updated database file
 	                jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
 	                f = open(dbSubdir + '/' + dbFileName,'w')
 	                f.writelines(jp2list)
 	                f.writelines(newlist)
 	                f.close()
-
-			#
-			# Move the files to the ingestion directory
-			#
 	
 			# Read in the new filenames again
 	                f = open(logSubdir + '/' + newFileListName,'r')
@@ -242,6 +270,17 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 			jprint('New files ingested are as follows:')
 			for entry in newlist:
 				jprint(entry)
+
+			# Database: create the tuple
+			try:
+				for entry in newlist:
+					p = hvParseJP2Filename(entry)
+					ttt =(nickname,p['date'][0],p['date'][1],p['date'][2],p['time'][0],p['time'][1],p['time'][2],p['time'][3],measurement,timeStamp,remote_location,)
+					c.execute('insert into jp2files values (?,?,?,?,?,?,?,?,?,?,?)',ttt)
+				conn.commit()
+			except e:
+				print 'Error:' + e
+				sys.exit(2)
 
 	                # Move the new files to the ingest directory
 	                for name in newlist:
@@ -254,6 +293,9 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	except:
 		jprint('Problem opening connection to '+remote_location+'.  Continuing with loop.')
 	        newFilesCount = -1
+
+	# Database: Close the database
+	c.close()
 	return newFilesCount
 
 # Get the JP2s
@@ -272,7 +314,7 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 
 	# Write a current file to web-space so you know what the script is trying to do right now.
 	currentFile = open(monitorLoc + 'current.log','w')
-	currentFile.write('Measurementlength = ' + measurement +'.\n')
+	currentFile.write('Measurement = ' + measurement +'.\n')
 	currentFile.write('Beginning remote location query number ' + str(count)+ '.\n')
 	currentFile.write("Looking for files on this date = " + yyyy + mm + dd+ '.\n')
 	currentFile.write('Using options file '+ options_file+ '.\n')
