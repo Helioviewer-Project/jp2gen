@@ -221,17 +221,18 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 
 	# Database NEW: Find the good files for this nickname, date and measurement.  Return the JP2 filenames
 	query = (nickname,yyyy,mm,dd,measurement,1,)
-	select jp2list 
+	c.execute('select downloadedFilename from downloadedFilename where nickname=? and yyyy=? and mm=? and dd=? and measurement=? and goodfile =?',query)
+	jp2list = c.fetchone()
 	
 
         # put the last image in some web space
-        webFileJP2 = jp2list[-1][:-1]
-        if webFileJP2.endswith('.jp2'):
-                webFile = monitorLoc + 'most_recently_downloaded_aia_' + measurement + '.jp2'
-		shutil.copy(staging_today + webFileJP2, webFile)
-                jprint('Updated latest JP2 file to a webpage: '+ webFile)
-        else:
-                jprint('No latest JP2 file found.')
+        #webFileJP2 = jp2list[-1][:-1]
+        #if webFileJP2.endswith('.jp2'):
+        #        webFile = monitorLoc + 'most_recently_downloaded_aia_' + measurement + '.jp2'
+	#	shutil.copy(staging_today + webFileJP2, webFile)
+        #        jprint('Updated latest JP2 file to a webpage: '+ webFile)
+        #else:
+        #        jprint('No latest JP2 file found.')
 
         # Calculate the remote directory
         remote_location = remote_root + nickname + '/' + hvss[-1]
@@ -330,7 +331,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 		jprint('Remote location: '+remote_location+'.  Continuing with loop.')
 	        newFilesCount = -1
 
-	# Database: Close the database
+	# Database NEW: Close the database
 	c.close()
 	return newFilesCount
 
