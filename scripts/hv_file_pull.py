@@ -14,9 +14,23 @@
 #
 #
 """
-
 Creates an SQLite database with entries in the following order
-
+nickname text,
+yyyy text,
+mm text,
+dd text,
+hh text,
+mmm text,
+ss text,
+milli text,
+observationTime real,
+measurement text,
+downloadedTimeStamp text,
+downloadedWhenTimeStart real,
+downloadedWhenTimeEnd real,
+downloadedFrom text,
+downloadedFilename text,
+goodfile 
 """
 from urlparse import urlsplit
 from sgmllib import SGMLParser
@@ -74,6 +88,7 @@ def hvDateFilename(yyyy,mm,dd,nickname,measurement):
 
 # hvParseJP2Filename
 def hvParseJP2Filename(filename):
+	""" Parse a Helioviewer JP2 filename into its component parts """
 	z0 = filename.split('.')
 	z1 = z0[0].split('__')
 	date = z1[0].split('_')
@@ -123,17 +138,17 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
         ingest_storage = ingest_dir + nickname + '/'
         hvCreateSubdir(ingest_storage,localUser = localUser)
 
-        # Database: The location of where the databases are stored
+        # Database OLD: The location of where the databases are stored
         dbloc = staging_root + 'db/' + nickname + '/'
         hvCreateSubdir(dbloc)
 
-	# Database: Connect to the database
+	# Database NEW: Connect to the database
 	try:
 		conn = sqlite3.connect(staging_root + 'db/hvFilePull.sqlite')
 		c = conn.cursor()
-		c.execute('''create table jp2files (nickname text, yyyy text, mm text, dd text, hh text, mmm text, ss text, milli text, observationTime real, measurement text, downloadedWhen text, downloadedWhenTime real, downloadedFrom text)''')
-	except:
-		jprint('Problem detected')
+		c.execute('''create table jp2files (nickname text, yyyy text, mm text, dd text, hh text, mmm text, ss text, milli text, observationTime real, measurement text, downloadedTimeStamp text, downloadedWhenTimeStart real, downloadedWhenTimeEnd real, downloadedFrom text, downloadedFilename text, goodfile )''')
+	except error:
+		jprint('Exception caught; error: '+error)
 
         # Logfile: The location of where the logfiles are stored
         logloc = staging_root + 'log/'+ nickname +'/'
@@ -162,7 +177,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
         dbSubdir = dbloc + hvss[-1]
 	hvCreateSubdir(dbSubdir)
 
-        # Database: create the database filename
+        # Database OLD: create the database filename
         dbFileName = hvDateFilename(yyyy, mm, dd, nickname, measurement) + '__db.csv'    
 
 	# Ingestion: create the ingest_today directory.  The local user must be changed to helioviewer to allow access by the ingestion process.
@@ -171,7 +186,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 		hvCreateSubdir(ingest_storage + directory,localUser = localUser)
 
 	#
-        # read in the database file for this measurement and date
+        # Database OLD: read in the database file for this measurement and date
 	#
         try:
 		# Get a list of images in the subdirectory and update the database with it
@@ -190,7 +205,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 					jprint('Quarantined '+ staging_today + testfile)
 
 		jprint('Updated database file '+ dbSubdir + '/' + dbFileName + '; number of files found = '+str(count))
-        except:
+        except error:
+		jprint('Exception caught; error: ' + error)
                 f = open(dbSubdir + '/' + dbFileName,'w')
                 jp2list = ['This file first created '+time.ctime()+'\n\n']
                 f.write(jp2list[0])
@@ -198,10 +214,15 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
         finally:
                 f.close()
 
-	# Read the db file
+	# Database OLD: Read the db file
 	f = open(dbSubdir + '/' + dbFileName,'r')
 	jp2list = f.readlines()
 	f.close()
+
+	# Database NEW: Find the good files for this nickname, date and measurement.  Return the JP2 filenames
+	query = (nickname,yyyy,mm,dd,measurement,1,)
+	select jp2list 
+	
 
         # put the last image in some web space
         webFileJP2 = jp2list[-1][:-1]
@@ -248,15 +269,22 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	                f.close()
 
 	                # Download only the new files
+			downloadedWhenTimeStart = calendar.timegm(time.gmtime())
 	                jprint('Downloading new files.')
 	                localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
 	                localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
 	                localDir = ' -P'+staging_today + ' '
 	                remoteBaseURL = '-B ' + remote_location + ' '
 	                command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
-	                os.system(command)
+			try:
+				os.system(command)
+			except error:
+				jprint('Exception caught at executing wget command; error: '+error)
+
+			# Finish of the download and transfer process
+			downloadedWhenTimeEnd = calendar.timegm(time.gmtime())
 	
-	                # Database: Write the new updated database file
+	                # Database OLD: Write the new updated database file
 	                jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
 	                f = open(dbSubdir + '/' + dbFileName,'w')
 	                f.writelines(jp2list)
@@ -271,27 +299,35 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 			for entry in newlist:
 				jprint(entry)
 
-			# Database: create the tuple
+			# Check if each of the new files is acceptable to be put into the ingestion directory
+			# Database NEW: update the database
 			try:
+				count = 0
 				for entry in newlist:
-					p = hvParseJP2Filename(entry)
-					ttt =(nickname,p['date'][0],p['date'][1],p['date'][2],p['time'][0],p['time'][1],p['time'][2],p['time'][3],measurement,timeStamp,remote_location,)
-					c.execute('insert into jp2files values (?,?,?,?,?,?,?,?,?,?,?)',ttt)
-				conn.commit()
-			except e:
-				print 'Error:' + e
-				sys.exit(2)
-
-	                # Move the new files to the ingest directory
-	                for name in newlist:
-	                        newFile = name[:-1]
-	                        if newFile.endswith('.jp2'):
-	                                shutil.copy2(staging_today + newFile,ingest_today + newFile)
-					change2hv(ingest_today + newFile,localUser)
+					testfile = entry[:-1]
+					if testfile.endswith('.jp2'):
+						stat = os.stat(staging_today + testfile)
+						if stat.st_size > minJP2SizeInBytes:
+							count = count + 1
+							shutil.copy2(staging_today + testfile,ingest_today + testfile)
+							change2hv(ingest_today + testfile,localUser)
+							goodfile = 1
+						else:
+							os.rename(staging_today + testfile,quarantine + testfile)
+							jprint('Quarantined '+ staging_today + testfile)
+							goodfile = 0
+						# update the database with good files and bad files
+						p = hvParseJP2Filename(entry)
+						ttt =(nickname,p['date'][0],p['date'][1],p['date'][2],p['time'][0],p['time'][1],p['time'][2],p['time'][3],measurement,timeStamp,downloadedWhenTimeStart,downloadedWhenTimeEnd,remote_location,entry,goodfile)
+					       	c.execute('insert into jp2files values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',ttt)
+				       		conn.commit()
+			except error:
+				jprint('Exception caught; error: ' + error)
 		else:
                 	jprint('No new files found at ' + remote_location)
 	except:
-		jprint('Problem opening connection to '+remote_location+'.  Continuing with loop.')
+		jprint('Exception caught at trying to read the remote location; error: '+error)
+		jprint('Remote location: '+remote_location+'.  Continuing with loop.')
 	        newFilesCount = -1
 
 	# Database: Close the database
