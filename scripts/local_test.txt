@@ -3,7 +3,7 @@ http://umbra.nascom.nasa.gov/people/ireland/hmitest/write/v0.8/jp2/
 /Users/ireland/JP2Gen_downloadtest/v0.8/
 2010/08/27
 2010/08/27
-magnetogram,continuum
+magnetogram
 HMI
 /Users/ireland/JP2Gen_downloadtest/pretendweb/
 1000000

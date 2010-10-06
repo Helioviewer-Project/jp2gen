@@ -104,6 +104,24 @@ def hvJP2FilenameToTime(filename):
 	t = (p['date'][0],p['date'][1],p['date'][2],p['time'][0],p['time'][1],p['time'][2])
 	return calendar.timegm(t)
 
+# hvCheckForNewFiles
+def hvCheckForNewFiles(urls,list):
+	""" Compare one list to another """
+	newList = ['']
+	newFiles = False
+	newFilesCount = 0
+	for url in urls:
+		if url.endswith('.jp2'):
+			if not url + '\n' in list:
+				newFiles = True
+				newList.extend(url + '\n')
+				newFilesCount = newFilesCount + 1
+	if newFilesCount > 0:
+		jprint('Number of new files found at remote location = ' + str(newFilesCount))
+	else:
+		jprint('No new files found at remote location.')
+	return newFiles,newFilesCount,newList
+			
 # GetMeasurement
 def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,localUser):
 	""" Download JP2s from a remote website for a given device and measurement.
@@ -184,7 +202,6 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
         # Database: create the database subdirectory for this measurement
         dbSubdir = dbloc + hvss[-1]
 	hvCreateSubdir(dbSubdir)
-	
 
         # Database OLD: create the database filename
         dbFileName = hvDateFilename(yyyy, mm, dd, nickname, measurement) + '__db.csv'    
@@ -224,7 +241,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
                 f.close()
 
 	# Database OLD: Read the db file
-	f = open(dbSubdir + '/' + dbFileName,'r')
+	f = open(dbSubdir + dbFileName,'r')
 	jp2list = f.readlines()
 	f.close()
 
@@ -232,9 +249,21 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	try:
 		query = (nickname,yyyy,mm,dd,measurement,1)
 		c.execute('select downloadedFilename from jp2files where nickname=? and yyyy=? and mm=? and dd=? and measurement=? and goodfile =?',query)
-		jp2list_test = c.fetchone()
+		jp2list_good = c.fetchall()
 	except Exception,error:
 		jprint('Exception found querying database for the good files from the database; error: '+str(error))
+
+	# Database NEW: Find the bad files for this nickname, date and measurement.  Return the JP2 filenames
+	try:
+		query = (nickname,yyyy,mm,dd,measurement,0)
+		c.execute('select downloadedFilename from jp2files where nickname=? and yyyy=? and mm=? and dd=? and measurement=? and goodfile =?',query)
+		jp2list_bad = c.fetchall()
+	except Exception,error:
+		jprint('Exception found querying database for the good files from the database; error: '+str(error))
+
+
+
+
 
         # put the last image in some web space
         #webFileJP2 = jp2list[-1][:-1]
@@ -257,19 +286,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
         	parser.close()
 
 	        # Check which files are new at the remote location
-	        newlist = ['']
-	        newFiles = False
-	        newFilesCount = 0
-	        for url in parser.urls:
-	                if url.endswith('.jp2'):
-	                        if not url + '\n' in jp2list:
-	                                newFiles = True
-	                                newlist.extend(url + '\n')
-	                                newFilesCount = newFilesCount + 1
-	        if newFilesCount > 0:
-	                jprint('Number of new files found at remote location = ' + str(newFilesCount))
-	        else:
-	                jprint('No new files found at remote location.')
+		newFiles, newFilesCount, newList = hvCheckForNewFiles(parser.urls,jp2list)
 
 	        # Write the new filenames to a file
 	        if newFiles:
@@ -277,7 +294,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 			newFileListFullPath = logSubdir + newFileListName
 	                jprint('Writing new file list to ' + newFileListFullPath)
 	                f = open(newFileListFullPath,'w')
-	                f.writelines(newlist)
+	                f.writelines(newList)
 	                f.close()
 			
 	                # Download only the new files
@@ -300,22 +317,22 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	                jprint('Writing updated ' + dbSubdir + dbFileName)
 	                f = open(dbSubdir + dbFileName,'w')
 	                f.writelines(jp2list)
-	                f.writelines(newlist)
+	                f.writelines(newList)
 	                f.close()
 	
 			# Read in the new filenames again
 	                f = open(logSubdir + newFileListName,'r')
-	                newlist = f.readlines()
+	                newList = f.readlines()
 	                f.close()
 			jprint('New files ingested are as follows:')
-			for entry in newlist:
+			for entry in newList:
 				jprint(entry)
 
 			# Check if each of the new files is acceptable to be put into the ingestion directory
 			# Database NEW: update the database
 			try:
 				count = 0
-				for entry in newlist:
+				for entry in newList:
 					testfile = entry[:-1]
 					if testfile.endswith('.jp2'):
 						stat = os.stat(staging_today + testfile)

@@ -7,7 +7,7 @@
 ;
 ;
 PRO hv_hmi_list2jp2_gs,list,$
-                    details_file = details_file,$ ; AIA details file
+                    details_file = details_file,$ ; HMI details file
                     copy2outgoing = copy2outgoing,$ ; Copy the files to an outgoing directory
                     called_by = called_by,$ ; calling program (if any)
                     transfer_direct = transfer_direct ; transfer JP2 files from local to remote direct from original JP2 archive.
@@ -146,7 +146,7 @@ PRO hv_hmi_list2jp2_gs,list,$
         date =hvsi. yy + '_' +  hvsi.mm + '_' +  hvsi.dd
         time =  hvsi.hh + '_' +  hvsi.mmm + '_' +   hvsi.ss + '_' +  hvsi.milli
 ;     observer =  observatory + '_' +  instrument + '_' +  detector
-        observation = 'SDO_AIA_AIA' + '_' +  measurement
+        observation = 'SDO_HMI_HMI' + '_' +  measurement
         jp2_filename = date + '__' + time + '__' + observation + '.jp2'
 ;
 ; Write the file
