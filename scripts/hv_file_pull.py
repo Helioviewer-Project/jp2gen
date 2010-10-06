@@ -69,12 +69,13 @@ def change2hv(z,localUser):
 # hvCreateSubdir
 def hvCreateSubdir(x, localUser='' ,out=True):
 	"""Create a helioviewer project compliant subdirectory."""
-        try:
-                os.makedirs(x)
-                change2hv(x,localUser)
-        except:
-		if out:
-			jprint('Directory already exists: ' + x)
+	if not os.path.isdir(x):
+		try:
+			os.makedirs(x)
+			change2hv(x,localUser)
+		except Exception, error:
+			if out:
+				jprint('Error found in hvCreateSubdir; error: '+str(error))
 
 # hvSubdir
 def hvSubdir(measurement,yyyy,mm,dd):
@@ -91,10 +92,17 @@ def hvParseJP2Filename(filename):
 	""" Parse a Helioviewer JP2 filename into its component parts """
 	z0 = filename.split('.')
 	z1 = z0[0].split('__')
-	date = z1[0].split('_')
-	time = z1[1].split('_')
+	D = z1[0].split('_')
+	T = z1[1].split('_')
 	observation = z1[2].split('_')
-	return {'date':date, 'time':time, 'observation':observation}
+	return {'date':[int(D[0]),int(D[1]),int(D[2])], 'time':[int(T[0]),int(T[1]),int(T[2])], 'observation':observation}
+
+# hvJP2FilenameToTime
+def hvJP2FilenameToTime(filename):
+	""" Convert a JP2 file name into a time in seconds after epoch."""
+	p = hvParseJP2Filename(filename)
+	t = (p['date'][0],p['date'][1],p['date'][2],p['time'][0],p['time'][1],p['time'][2])
+	return calendar.timegm(t)
 
 # GetMeasurement
 def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,localUser):
@@ -146,9 +154,9 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	try:
 		conn = sqlite3.connect(staging_root + 'db/hvFilePull.sqlite')
 		c = conn.cursor()
-		c.execute('''create table jp2files (nickname text, yyyy text, mm text, dd text, hh text, mmm text, ss text, milli text, observationTime real, measurement text, downloadedTimeStamp text, downloadedWhenTimeStart real, downloadedWhenTimeEnd real, downloadedFrom text, downloadedFilename text, goodfile )''')
-	except error:
-		jprint('Exception caught; error: '+error)
+		c.execute('''create table jp2files (nickname text, yyyy int, mm int, dd int, hh int, mmm int, ss int, milli int, observationTime real, measurement text, downloadedTimeStamp text, downloadedWhenTimeStart real, downloadedWhenTimeEnd real, downloadedFrom text, downloadedFilename text, goodfile )''')
+	except Exception,error:
+		jprint('Exception caught creating a new database file; error: '+str(error))
 
         # Logfile: The location of where the logfiles are stored
         logloc = staging_root + 'log/'+ nickname +'/'
@@ -176,6 +184,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
         # Database: create the database subdirectory for this measurement
         dbSubdir = dbloc + hvss[-1]
 	hvCreateSubdir(dbSubdir)
+	
 
         # Database OLD: create the database filename
         dbFileName = hvDateFilename(yyyy, mm, dd, nickname, measurement) + '__db.csv'    
@@ -191,7 +200,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
         try:
 		# Get a list of images in the subdirectory and update the database with it
 		dirList = os.listdir(staging_today)
-		f = open(dbSubdir + '/' + dbFileName,'w')
+		f = open(dbSubdir + dbFileName,'w')
 		f.write('This file created '+time.ctime()+'\n\n')
 		count = 0
 		for testfile in dirList:
@@ -204,13 +213,13 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 					os.rename(staging_today + testfile,quarantine + testfile)
 					jprint('Quarantined '+ staging_today + testfile)
 
-		jprint('Updated database file '+ dbSubdir + '/' + dbFileName + '; number of files found = '+str(count))
-        except error:
-		jprint('Exception caught; error: ' + error)
-                f = open(dbSubdir + '/' + dbFileName,'w')
+		jprint('Updated database file '+ dbSubdir + dbFileName + '; number of files found = '+str(count))
+        except Exception,error:
+		jprint('Exception caught; error: ' + str(error))
+                f = open(dbSubdir + dbFileName,'w')
                 jp2list = ['This file first created '+time.ctime()+'\n\n']
                 f.write(jp2list[0])
-                jprint('Created new database file '+ dbSubdir + '/' + dbFileName)
+                jprint('Created new database file '+ dbSubdir + dbFileName)
         finally:
                 f.close()
 
@@ -220,10 +229,12 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	f.close()
 
 	# Database NEW: Find the good files for this nickname, date and measurement.  Return the JP2 filenames
-	query = (nickname,yyyy,mm,dd,measurement,1,)
-	c.execute('select downloadedFilename from downloadedFilename where nickname=? and yyyy=? and mm=? and dd=? and measurement=? and goodfile =?',query)
-	jp2list = c.fetchone()
-	
+	try:
+		query = (nickname,yyyy,mm,dd,measurement,1)
+		c.execute('select downloadedFilename from jp2files where nickname=? and yyyy=? and mm=? and dd=? and measurement=? and goodfile =?',query)
+		jp2list_test = c.fetchone()
+	except Exception,error:
+		jprint('Exception found querying database for the good files from the database; error: '+str(error))
 
         # put the last image in some web space
         #webFileJP2 = jp2list[-1][:-1]
@@ -263,37 +274,37 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	        # Write the new filenames to a file
 	        if newFiles:
 			newFileListName = timeStamp + '.' + hvDateFilename(yyyy, mm, dd, nickname, measurement) + '.newfiles.txt'
-			newFileListFullPath = logSubdir + '/' + newFileListName
+			newFileListFullPath = logSubdir + newFileListName
 	                jprint('Writing new file list to ' + newFileListFullPath)
 	                f = open(newFileListFullPath,'w')
 	                f.writelines(newlist)
 	                f.close()
-
+			
 	                # Download only the new files
 			downloadedWhenTimeStart = calendar.timegm(time.gmtime())
 	                jprint('Downloading new files.')
-	                localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
-	                localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
+	                localLog = ' -a ' + logSubdir + logFileName + ' '
+	                localInputFile = ' -i ' + logSubdir + newFileListName + ' '
 	                localDir = ' -P'+staging_today + ' '
 	                remoteBaseURL = '-B ' + remote_location + ' '
 	                command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
 			try:
 				os.system(command)
-			except error:
-				jprint('Exception caught at executing wget command; error: '+error)
+			except Exception,error:
+				jprint('Exception caught at executing wget command; error: '+str(error))
 
 			# Finish of the download and transfer process
 			downloadedWhenTimeEnd = calendar.timegm(time.gmtime())
 	
 	                # Database OLD: Write the new updated database file
-	                jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
-	                f = open(dbSubdir + '/' + dbFileName,'w')
+	                jprint('Writing updated ' + dbSubdir + dbFileName)
+	                f = open(dbSubdir + dbFileName,'w')
 	                f.writelines(jp2list)
 	                f.writelines(newlist)
 	                f.close()
 	
 			# Read in the new filenames again
-	                f = open(logSubdir + '/' + newFileListName,'r')
+	                f = open(logSubdir + newFileListName,'r')
 	                newlist = f.readlines()
 	                f.close()
 			jprint('New files ingested are as follows:')
@@ -319,15 +330,17 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 							goodfile = 0
 						# update the database with good files and bad files
 						p = hvParseJP2Filename(entry)
-						ttt =(nickname,p['date'][0],p['date'][1],p['date'][2],p['time'][0],p['time'][1],p['time'][2],p['time'][3],measurement,timeStamp,downloadedWhenTimeStart,downloadedWhenTimeEnd,remote_location,entry,goodfile)
-					       	c.execute('insert into jp2files values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',ttt)
+						observationTime = hvJP2FilenameToTime(entry)
+						print observationTime
+						ttt =(nickname,p['date'][0],p['date'][1],p['date'][2],p['time'][0],p['time'][1],p['time'][2],p['time'][3],observationTime, measurement,timeStamp,downloadedWhenTimeStart,downloadedWhenTimeEnd,remote_location,entry,goodfile)
+					       	c.execute('insert into jp2files values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',ttt)
 				       		conn.commit()
-			except error:
-				jprint('Exception caught; error: ' + error)
+			except Exception,error:
+				jprint('Exception caught; error: ' + str(error))
 		else:
                 	jprint('No new files found at ' + remote_location)
-	except:
-		jprint('Exception caught at trying to read the remote location; error: '+error)
+	except Exception,error:
+		jprint('Exception caught at trying to read the remote location; error: '+str(error))
 		jprint('Remote location: '+remote_location+'.  Continuing with loop.')
 	        newFilesCount = -1
 
@@ -365,6 +378,7 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 		sys.stdout = fsock
 		saveerr = sys.stderr
 		ferr = open(logSubdir + stderrFileName, 'w')
+		sys.stderr = ferr
 
 	# Get the data
 	jprint(' ')
@@ -391,10 +405,31 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 		shutil.copy(logSubdir + stderrFileName, monitorLoc + stderrLatestFileName)
 
 	return nfc
+
+
+
 #
 # Script must be called using an options file that defines the root of the
 # remote directory and the root of the local directory
 #
+'''
+Parse the options
+[0] = remote http location
+[1] = local subdirectory where the files are first saved to (staging)
+[2] = local subdirectory where the JP2 files with the correct permissions are put for ingestion
+[3] = start date
+[4] = end date
+[5] = specific measurements to download - must have the same measurement values as defined in the instrument Helioviewer setup file - see JP2Gen wiki notes.
+[6] = nickname of the device
+[7] = webspace
+[8] = minimum acceptable file size in bytes.  Files smaller than this are considered corrupted
+[9] = redirect stout and stderr output to file (True)
+[10] = number of seconds to pause the data download for if no daya was downloaded the last time
+[11] = minimum number of days back from the present date to consider
+[12] = maximum number of days back from the present date to consider (note that the range command used to implement this requires a minimum value of n to go back n-1 days)
+[13] = name of the local User who is downloading the files.  This user must be in the "helioviewer" group.
+'''
+
 if len(sys.argv) <= 1:
         jprint('No options file given.  Ending.')
 else:
@@ -405,21 +440,6 @@ else:
         finally:
                 f.close()
 
-        # Parse the options
-        # [0] = remote http location
-        # [1] = local subdirectory where the files are first saved to (staging)
-	# [2] = local subdirectory where the JP2 files with the correct permissions are put for ingestion
-	# [3] = start date
-	# [4] = end date
-	# [5] = specific measurements to download - must have the same measurement values as defined in the instrument Helioviewer setup file - see JP2Gen wiki notes.
-	# [6] = nickname of the device
-	# [7] = webspace
-	# [8] = minimum acceptable file size in bytes.  Files smaller than this are considered corrupted
-	# [9] = redirect stout and stderr output to file (True)
-	# [10] = number of seconds to pause the data download for if no daya was downloaded the last time
-	# [11] = minimum number of days back from the present date to consider
-	# [12] = maximum number of days back from the present date to consider (note that the range command used to implement this requires a minimum value of n to go back n-1 days)
-	# [13] = name of the local User who is downloading the files.  This user must be in the "helioviewer" group.
         remote_root = options[0][:-1]
         staging_root = options[1][:-1]
         ingest_root = options[2][:-1]
