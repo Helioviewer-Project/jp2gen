@@ -94,8 +94,9 @@ def hvParseJP2Filename(filename):
 	z1 = z0[0].split('__')
 	D = z1[0].split('_')
 	T = z1[1].split('_')
-	observation = z1[2].split('_')
-	return {'date':[int(D[0]),int(D[1]),int(D[2])], 'time':[int(T[0]),int(T[1]),int(T[2])], 'observation':observation}
+	obs = z1[2].split('_')
+	# return (int(D[0]),int(D[1]),int(D[2]),int(T[0]),int(T[1]),int(T[2]),int(T[3]),obs[0],obs[1],obs[2],obs[3])
+	return {'date':[int(D[0]),int(D[1]),int(D[2])], 'time':[int(T[0]),int(T[1]),int(T[2]),int(T[3])], 'observation':obs}
 
 # hvJP2FilenameToTime
 def hvJP2FilenameToTime(filename):
@@ -105,14 +106,14 @@ def hvJP2FilenameToTime(filename):
 	return calendar.timegm(t)
 
 # hvCheckForNewFiles
-def hvCheckForNewFiles(urls,list):
+def hvCheckForNewFiles(urls,List):
 	""" Compare one list to another """
 	newList = ['']
 	newFiles = False
 	newFilesCount = 0
 	for url in urls:
 		if url.endswith('.jp2'):
-			if not url + '\n' in list:
+			if not url + '\n' in List:
 				newFiles = True
 				newList.extend(url + '\n')
 				newFilesCount = newFilesCount + 1
@@ -232,7 +233,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 
 		jprint('Updated database file '+ dbSubdir + dbFileName + '; number of files found = '+str(count))
         except Exception,error:
-		jprint('Exception caught; error: ' + str(error))
+		jprint('Exception caught at AAA; error: ' + str(error))
                 f = open(dbSubdir + dbFileName,'w')
                 jp2list = ['This file first created '+time.ctime()+'\n\n']
                 f.write(jp2list[0])
@@ -348,12 +349,11 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 						# update the database with good files and bad files
 						p = hvParseJP2Filename(entry)
 						observationTime = hvJP2FilenameToTime(entry)
-						print observationTime
 						ttt =(nickname,p['date'][0],p['date'][1],p['date'][2],p['time'][0],p['time'][1],p['time'][2],p['time'][3],observationTime, measurement,timeStamp,downloadedWhenTimeStart,downloadedWhenTimeEnd,remote_location,entry,goodfile)
 					       	c.execute('insert into jp2files values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',ttt)
 				       		conn.commit()
 			except Exception,error:
-				jprint('Exception caught; error: ' + str(error))
+				jprint('Exception caught updating the new database; error: ' + str(error))
 		else:
                 	jprint('No new files found at ' + remote_location)
 	except Exception,error:
