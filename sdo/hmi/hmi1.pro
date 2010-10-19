@@ -11,6 +11,9 @@
 list = file_list('~/Desktop/AIA_Data/hmi','hmi*ma*fits')
 hv_hmi_list2jp2_gs,list,details_file = 'hvs_default_hmi'
 
+list = file_list('~/Desktop/AIA_Data/hmi','hmi*con*fits')
+hv_hmi_list2jp2_gs,list,details_file = 'hvs_default_hmi'
+
 
 
 

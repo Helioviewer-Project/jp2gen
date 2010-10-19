@@ -21,7 +21,18 @@ PRO HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
 ;
 ; ===================================================================================================
 ;
+;
+; use the default LASCO-C3 HVS file is no other one is specified
+;
+  if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_lasco_c3'
+  info = CALL_FUNCTION(details_file)
+  nickname = info.nickname
+;
+; if using the alternate backgrounds, got to the web and get the
+; latest from NRL.
+;
   IF keyword_set(alternate_backgrounds) then begin
+     hv_lasco_update_alternate_backgrounds,details_file = details_file
      progname = progname + '(used alternate backgrounds from ' + alternate_backgrounds + ')'
      setenv,'MONTHLY_IMAGES=' + alternate_backgrounds
   endif
@@ -31,13 +42,7 @@ PRO HV_LASCO_C3_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
   if not(KEYWORD_SET(writtenby)) then begin
      writtenby = 'default'
   endif
-;
-; use the default LASCO-C3 file is no other one is specified
-;
-  if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_lasco_c3'
-  info = CALL_FUNCTION(details_file)
-;  info = add_tag(info,HV_WRITTENBY(writtenby),'writtenby')
-  nickname = info.nickname
+
 ;
 ; get general information
 ;

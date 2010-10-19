@@ -21,16 +21,21 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
 ;
 ; ===================================================================================================
 ;
-  IF keyword_set(alternate_backgrounds) then begin
-     progname = progname + '(used alternate backgrounds from ' + alternate_backgrounds + ')'
-     setenv,'MONTHLY_IMAGES=' + alternate_backgrounds
-  endif
-;
-; use the default LASCO-C2 file is no other one is specified
+; use the default LASCO-C2 HVS file is no other one is specified
 ;
   if not(KEYWORD_SET(details_file)) then details_file = 'hvs_default_lasco_c2'
   info = CALL_FUNCTION(details_file)
   nickname = info.nickname
+;
+; if using the alternate backgrounds, got to the web and get the
+; latest from NRL.
+;
+  IF keyword_set(alternate_backgrounds) then begin
+     hv_lasco_update_alternate_backgrounds,details_file = details_file
+     progname = progname + '(used alternate backgrounds from ' + alternate_backgrounds + ')'
+     setenv,'MONTHLY_IMAGES=' + alternate_backgrounds
+  endif
+;
 ;
 ; get general information
 ;
