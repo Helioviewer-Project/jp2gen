@@ -358,8 +358,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 								goodfile = 0
 						# update the database with good files and bad files
 						ttt =(nickname,p['date'][0],p['date'][1],p['date'][2],p['time'][0],p['time'][1],p['time'][2],p['time'][3],observationTime, measurement,timeStamp,downloadedWhenTimeStart,downloadedWhenTimeEnd,remote_location,entry,successfulDownload, goodfile)
-							c.execute('insert into jp2files values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',ttt)
-							conn.commit()
+						c.execute('insert into jp2files values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',ttt)
+						conn.commit()
 
 			except Exception,error:
 				jprint('Exception caught updating the new database; error: ' + str(error))
