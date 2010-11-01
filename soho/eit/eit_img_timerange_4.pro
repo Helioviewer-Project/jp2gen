@@ -397,7 +397,7 @@ while iday.mjd le min([end_date_utc.mjd,today_date_utc.mjd]) do begin
 ; if blocks are missing, replace them by an adjacent image from the same day
 ; (unless keyword /no_bock_fill is set)
                    IF KEYWORD_SET(no_block_fill) eq 0 THEN BEGIN 
-                      if (n_block gt 0) and (n_block le 15) and n_elements(s) ge 2 then begin
+                      if (n_block gt 0) and (n_block le 150) and n_elements(s) ge 2 then begin
                          case i_file of
                             0: begin
                                if ffhr then a=rebin(a,1024,1024)
@@ -416,7 +416,7 @@ while iday.mjd le min([end_date_utc.mjd,today_date_utc.mjd]) do begin
                                ;eit_prep, s(i_file-1), h1, a1,cosmic=cosmic
                                ;a1=rebin(a1,1024,1024)
                                ;a(ix)=a1(ix)
-                               a=a_old
+                               a(ix)=a_old(ix)
                                if ffhr then a=rebin(a,512,512)
                             end
    
@@ -428,7 +428,7 @@ while iday.mjd le min([end_date_utc.mjd,today_date_utc.mjd]) do begin
 
 ; if too many blocks are missing, pass the missing block flag to
 ; eit_prep              
-                   if (n_block gt 15) and (i_file ge 1) then begin
+                   if (n_block gt 150) and (i_file ge 1) then begin
                       i_file = i_file - 1
                       eit_prep, s[i_file], h, a, cosmic=cosmic, n_block = n_block & nmb[i_file] = n_block
 ; update size flags of replacement image:
