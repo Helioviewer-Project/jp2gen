@@ -47,6 +47,16 @@ class URLLister(SGMLParser):
                 if href:
                         self.urls.extend(href)
 
+# isFileGood
+def isFileGood(fullPathAndFilename,minimumFileSize):
+	""" Tests to see if a file meets the minimum requirements to be ingested into the database."""
+	s = os.stat(fullPathAndFilename)
+	if s.st_size > minimumFileSize:
+		answer = True
+	else:
+		answer = False
+	return answer
+
 
 # createTimeStamp
 def createTimeStamp():
@@ -189,12 +199,16 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	hvss = hvSubdir(measurement,yyyy,mm,dd)
 
         # Staging: create the staging JP2 subdirectory required
-	staging_today = staging_storage + hvss[-1]
-	hvCreateSubdir(staging_today)
+	stagingSubdir = staging_storage + hvss[-1]
+	hvCreateSubdir(stagingSubdir)
 
         # Logfile: create the logfile subdirectory for these data
         logSubdir = logloc + hvss[-1]
 	hvCreateSubdir(logSubdir)
+
+        # quarantine: create the quarantine subdirectory for these data
+        quarantineSubdir = quarantine + hvss[-1]
+	hvCreateSubdir(quarantineSubdir)
 
         # Logfile: Create the logfile filename
 	jprint('Time stamp for this iteration = ' + timeStamp)
@@ -207,8 +221,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
         # Database OLD: create the database filename
         #dbFileName = hvDateFilename(yyyy, mm, dd, nickname, measurement) + '__db.csv'    
 
-	# Ingestion: create the ingest_today directory.  The local user must be changed to helioviewer to allow access by the ingestion process.
-	ingest_today = ingest_storage + hvss[-1]
+	# Ingestion: create the ingestSubdir directory.  The local user must be changed to helioviewer to allow access by the ingestion process.
+	ingestSubdir = ingest_storage + hvss[-1]
 	for directory in hvss:
 		hvCreateSubdir(ingest_storage + directory,localUser = localUser)
 
@@ -217,19 +231,19 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	#
         #try:
 	#	# Get a list of images in the subdirectory and update the database with it
-	#	dirList = os.listdir(staging_today)
+	#	dirList = os.listdir(stagingSubdir)
 	#	f = open(dbSubdir + dbFileName,'w')
 	#	f.write('This file created '+time.ctime()+'\n\n')
 	#	count = 0
 	#	for testfile in dirList:
 	#		if testfile.endswith('.jp2'):
-	#			stat = os.stat(staging_today + testfile)
+	#			stat = os.stat(stagingSubdir + testfile)
 	#			if stat.st_size > minJP2SizeInBytes:
 	#				count = count + 1
 	#				f.write(testfile+'\n')
 	#			else:
-	#				os.rename(staging_today + testfile,quarantine + testfile)
-	#				jprint('Quarantined '+ staging_today + testfile)
+	#				os.rename(stagingSubdir + testfile,quarantine + testfile)
+	#				jprint('Quarantined '+ stagingSubdir + testfile)
 	#
 	#	jprint('Updated database file '+ dbSubdir + dbFileName + '; number of files found = '+str(count))
         #except Exception,error:
@@ -263,14 +277,11 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 		jprint('Exception found querying database for the good files from the database; error: '+str(error))
 
 
-
-
-
         # put the last image in some web space
         #webFileJP2 = jp2list[-1][:-1]
         #if webFileJP2.endswith('.jp2'):
         #        webFile = monitorLoc + 'most_recently_downloaded_aia_' + measurement + '.jp2'
-	#	shutil.copy(staging_today + webFileJP2, webFile)
+	#	shutil.copy(stagingSubdir + webFileJP2, webFile)
         #        jprint('Updated latest JP2 file to a webpage: '+ webFile)
         #else:
         #        jprint('No latest JP2 file found.')
@@ -303,7 +314,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	                jprint('Downloading new files.')
 	                localLog = ' -a ' + logSubdir + logFileName + ' '
 	                localInputFile = ' -i ' + logSubdir + newFileListName + ' '
-	                localDir = ' -P'+staging_today + ' '
+	                localDir = ' -P'+stagingSubdir + ' '
 	                remoteBaseURL = '-B ' + remote_location + ' '
 	                command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
 			try:
@@ -320,7 +331,16 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	                #f.writelines(jp2list)
 	                #f.writelines(newList)
 	                #f.close()
-	
+
+			# Transfer all the bad files to quarantine, and keep only the good ones
+			for downloaded in newFiles:
+				if not isFileGood(stagingSubdir + downloaded,  minJP2SizeInByte):
+					jprint('Quarantined '+ stagingSubdir + downloaded)
+					shutil.move(stagingSubdir + downloaded, 
+				else:
+					goodList.extend(downloaded)
+
+
 			# Read in the new filenames again
 	                f = open(logSubdir + newFileListName,'r')
 	                newList = f.readlines()
@@ -342,19 +362,19 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 
 						# Does the file exist in the staging directory?
 						successfulDownload = 0
-						if os.path.isfile(staging_today + testfile):
+						if os.path.isfile(stagingSubdir + testfile):
 							successfulDownload = 1
 
-							stat = os.stat(staging_today + testfile)
+							stat = os.stat(stagingSubdir + testfile)
 							if stat.st_size > minJP2SizeInBytes:
 								count = count + 1
-								change2hv(staging_today + testfile,localUser)
-								shutil.copy2(staging_today + testfile,ingest_today + testfile)
-				       		#change2hv(ingest_today + testfile,localUser)
+								change2hv(stagingSubdir + testfile,localUser)
+								shutil.copy2(stagingSubdir + testfile,ingestSubdir + testfile)
+				       		#change2hv(ingestSubdir + testfile,localUser)
 								goodfile = 1
 							else:
-								os.rename(staging_today + testfile,quarantine + testfile)
-								jprint('Quarantined '+ staging_today + testfile)
+								os.rename(stagingSubdir + testfile,quarantine + testfile)
+								jprint('Quarantined '+ stagingSubdir + testfile)
 								goodfile = 0
 						# update the database with good files and bad files
 						ttt =(nickname,p['date'][0],p['date'][1],p['date'][2],p['time'][0],p['time'][1],p['time'][2],p['time'][3],observationTime, measurement,timeStamp,downloadedWhenTimeStart,downloadedWhenTimeEnd,remote_location,entry,successfulDownload, goodfile)
