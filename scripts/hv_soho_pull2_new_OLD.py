@@ -313,7 +313,6 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                for name in newlist:
 	                        newFile = name[:-1]
 	                        if newFile.endswith('.jp2'):
-					print local_keep + newFile,' -> ',moveTo + newFile
 	                                shutil.copy2(local_keep + newFile,moveTo + newFile)
 					change2hv(moveTo + newFile)
 					#if os.path.exists(os.path.expanduser(local_keep + newFile)):
