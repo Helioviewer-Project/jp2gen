@@ -158,54 +158,57 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
         # create the database filename
         dbFileName = yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '__db.csv'    
 
-        # read in the database file for this wavelength and today.
-        try:
-		# Get a list of images in the subdirectory and update the database with it
-		dirList = os.listdir(local_keep)
-		f = open(dbSubdir + '/' + dbFileName,'w')
-		f.write('This file created '+time.ctime()+'\n\n')
-		count = 0
-		for testfile in dirList:
-			if testfile.endswith('.jp2'):
+	# Quarantine the bad files
+	dirList = os.listdir(local_keep)
+	inSubdirCount = 0
+	for testfile in dirList:
+		if testfile.endswith('.jp2'):
+			stat = os.stat(local_keep + testfile)
+			if stat.st_size > minJP2SizeInBytes:
+				inSubdirCount = inSubdirCount + 1
+			else:
+				os.rename(local_keep + testfile,quarantine + testfile)
+				jprint('Quarantined '+ local_keep + testfile)
+		else:
+			jprint('Quarantined '+ local_keep + testfile)
+	jprint('Number of good files found in staging location = '+str(inSubdirCount))
+
+	# Open the database file
+	try:
+		f = open(dbSubdir + '/' + dbFileName,'r')
+        	jp2list = f.readlines()
+        	jprint('Read database file '+ dbSubdir + '/' + dbFileName)
+        	jprint('Number of existing entries in database = ' + str(len(jp2list)))
+		# Get a list of the images in the subdirectory
+        	dirList = os.listdir(local_keep)
+        	# Update the jp2list with any new images which may be present
+                count = 0
+                for testfile in dirList:
+                        if testfile.endswith('.jp2'):
 				stat = os.stat(local_keep + testfile)
 				if stat.st_size > minJP2SizeInBytes:
-					count = count + 1
-					f.write(testfile+'\n')
+					if not testfile + '\n' in jp2list:
+						jp2list.extend(testfile + '\n')
+						count = count + 1
+				# If file is not big enough, quarantine it
 				else:
 					os.rename(local_keep + testfile,quarantine + testfile)
 					jprint('Quarantined '+ local_keep + testfile)
-
-		jprint('Updated database file '+ dbSubdir + '/' + dbFileName + '; number of files found = '+str(count))
-                #file = open(dbSubdir + '/' + dbFileName,'r')
-                #jp2list = file.readlines()
-                #jprint('Read database file '+ dbSubdir + '/' + dbFileName)
-                #jprint('Number of existing entries in database = ' + str(len(jp2list)))
-                # Get a list of the images in the subdirectory
-                #dirList = os.listdir(local_keep)
-                ## Update the jp2list with any new images which may be present
-                #count = 0
-                #for testfile in dirList:
-                #        if testfile.endswith('.jp2'):
-		#		stat = os.stat(local_keep + testfile)
-		#		if stat.st_size > minJP2SizeInBytes:
-		#			if not testfile + '\n' in jp2list:
-		#				jp2list.extend(testfile + '\n')
-		#				count = count + 1
-		#		# If file is not big enough, quarantine it
-		#		else:
-		#			os.rename(local_keep + testfile,quarantine + testfile)
-		#			jprint('Quarantined '+ local_keep + testfile)
-		#			
-                #if count > 0:
-                #        jprint('Number of local files found not in database: ' + str(count))
-
+					
+                if count > 0:
+                        jprint('Number of local files found not in database: ' + str(count))
+		else:
+			jprint('No new files found locally.')
+		f.close()
+		# Write the updated list
+		f = open(dbSubdir + '/' + dbFileName,'w')
+		f.writelines(jp2list)
+		f.close()
         except:
                 f = open(dbSubdir + '/' + dbFileName,'w')
                 jp2list = ['This file first created '+time.ctime()+'\n\n']
                 f.write(jp2list[0])
                 jprint('Created new database file '+ dbSubdir + '/' + dbFileName)
-        finally:
-                f.close()
 
 	# Read the db file
 	f = open(dbSubdir + '/' + dbFileName,'r')
@@ -213,13 +216,13 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	f.close()
 
         # put the last image in some web space
-        webFileJP2 = jp2list[-1][:-1]
-        if webFileJP2.endswith('.jp2'):
-                webFile = monitorLoc + 'most_recently_downloaded_aia_' + wave + '.jp2'
-		shutil.copy(local_keep + webFileJP2, webFile)
-                jprint('Updated latest JP2 file to a webpage: '+ webFile)
-        else:
-                jprint('No latest JP2 file found.')
+        #webFileJP2 = jp2list[-1][:-1]
+        #if webFileJP2.endswith('.jp2'):
+        #        webFile = monitorLoc + 'most_recently_downloaded_aia_' + wave + '.jp2'
+	#	shutil.copy(local_keep + webFileJP2, webFile)
+        #        jprint('Updated latest JP2 file to a webpage: '+ webFile)
+        #else:
+        #        jprint('No latest JP2 file found.')
 
         # Calculate the remote directory
         remote_location = remote_root + '/' + wave + '/' + todayDir + '/'
@@ -265,12 +268,23 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	
 	                os.system(command)
 	
+			# check which files are good
+			goodlist = ['']
+			for downloaded in newlist:
+				stat = os.stat(local_keep + downloaded)
+                                if stat.st_size < minJP2SizeInBytes:
+					shutil.copy2(local_keep + downloaded,quarantine + downloaded)
+					jprint('Quarantined ' + local_keep + downloaded)
+				else:
+					goodlist.extend(downloaded)
+
 	                # Write the new updated database file
 	                jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
 	                f = open(dbSubdir + '/' + dbFileName,'w')
 	                f.writelines(jp2list)
-	                f.writelines(newlist)
+	                f.writelines(goodlist)
 	                f.close()
+
 	                # Absolutely ensure the correct permissions on all the files
 	                change2hv(local_keep)
 	
@@ -295,14 +309,20 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 			jprint('New files ingested are as follows:')
 			for entry in newlist:
 				jprint(entry)
-	                # Copy the new files to the ingest directory, and then delete it
+	                # Copy the new files to the ingest directory if they are big enough
 	                for name in newlist:
 	                        newFile = name[:-1]
 	                        if newFile.endswith('.jp2'):
-	                                shutil.copy2(local_keep + newFile,moveTo + newFile)
-					change2hv(moveTo + newFile)
-					if os.path.exists(os.path.expanduser(local_keep + newFile)):
-						os.remove(local_keep + newFile)
+	                                stat = os.stat(local_keep + newFile)
+        	                        if stat.st_size > minJP2SizeInBytes:
+	                        	        shutil.copy2(local_keep + newFile,moveTo + newFile)
+						change2hv(moveTo + newFile)
+					else:
+						shutil.copy2(local_keep + newFile,quarantine + newFile)
+						jprint('Quarantined ' + local_keep + newFile)
+
+					#if os.path.exists(os.path.expanduser(local_keep + newFile)):
+					#	os.remove(local_keep + newFile)
 		else:
                 	jprint('No new files found at ' + remote_location)
 	except:
@@ -337,6 +357,9 @@ def GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLo
 		saveout = sys.stdout
 		fsock = open(logSubdir + stdoutFileName, 'w')
 		sys.stdout = fsock
+		saveerr = sys.stderr
+		ferr = open(logSubdir + stderrFileName, 'w')
+		sys.stderr = ferr
 
 	# Get the data
 	jprint(' ')
@@ -355,6 +378,8 @@ def GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLo
 	if redirect:
 		sys.stdout = saveout
 		fsock.close()
+		sys.stderr = saveerr
+		ferr.close()
 
 	# Copy the most recent stdout file to some webspace.
 		shutil.copy(logSubdir + stdoutFileName, monitorLoc + stdoutLatestFileName)
