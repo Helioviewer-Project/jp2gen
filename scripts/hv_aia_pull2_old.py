@@ -268,15 +268,23 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	
 	                os.system(command)
 	
+			f = open(newFileListFullPath,'r')
+                        thisList = f.readlines()
+                        f.close()
+
 			# check which files are good
 			goodlist = ['']
-			for downloaded in newlist:
+			for DL in thisList:
+				downloaded = DL[:-1]
+				print downloaded
 				stat = os.stat(local_keep + downloaded)
-                                if stat.st_size < minJP2SizeInBytes:
-					shutil.copy2(local_keep + downloaded,quarantine + downloaded)
-					jprint('Quarantined ' + local_keep + downloaded)
-				else:
-					goodlist.extend(downloaded)
+                                if os.path.isfile(local_keep + downloaded) and downloaded.endswith('.jp2'):
+					stat = os.stat(local_keep + downloaded)
+					if stat.st_size < minJP2SizeInBytes:
+						shutil.copy2(local_keep + downloaded,quarantine + downloaded)
+						jprint('Quarantined ' + local_keep + downloaded)
+					else:
+						goodlist.extend(downloaded)
 
 	                # Write the new updated database file
 	                jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
@@ -315,8 +323,11 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                        if newFile.endswith('.jp2'):
 	                                stat = os.stat(local_keep + newFile)
         	                        if stat.st_size > minJP2SizeInBytes:
-	                        	        shutil.copy2(local_keep + newFile,moveTo + newFile)
-						change2hv(moveTo + newFile)
+	                        	        try:
+							shutil.copy2(local_keep + newFile,moveTo + newFile)
+							change2hv(moveTo + newFile)
+						except Exception, error:
+							jprint('Error at copying , error = '+str(error))
 					else:
 						shutil.copy2(local_keep + newFile,quarantine + newFile)
 						jprint('Quarantined ' + local_keep + newFile)
@@ -325,8 +336,8 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 					#	os.remove(local_keep + newFile)
 		else:
                 	jprint('No new files found at ' + remote_location)
-	except:
-		jprint('Problem opening connection to '+remote_location+'.  Continuing with loop.')
+	except Exception, error:
+		jprint('Problem opening connection to '+remote_location+'.  Continuing with loop. Error = '+str(error))
 	        newFilesCount = -1
 	return newFilesCount
 
