@@ -77,15 +77,18 @@ def change2hv(z,localUser):
 		os.system('chown -R '+localUser+':helioviewer ' + z)
 
 # hvCreateSubdir
-def hvCreateSubdir(x, localUser='' ,out=True):
+def hvCreateSubdir(x, localUser='' ,out=True, verbose=False):
 	"""Create a helioviewer project compliant subdirectory."""
 	if not os.path.isdir(x):
 		try:
 			os.makedirs(x)
 			change2hv(x,localUser)
+			if verbose:
+				jprint('Created '+x)
 		except Exception, error:
-			if out:
+			if verbose:
 				jprint('Error found in hvCreateSubdir; error: '+str(error))
+	return x
 
 # hvSubdir
 def hvSubdir(measurement,yyyy,mm,dd):
@@ -160,36 +163,30 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	#
 
         # Staging: Create the staging directory for the JP2s
-        jp2_dir = staging_root + 'jp2/'
-        hvCreateSubdir(jp2_dir)
-        staging_storage = jp2_dir + nickname + '/'
-        hvCreateSubdir(staging_storage)
+        jp2_dir = hvCreateSubdir(staging_root + 'jp2/',verbose = True)
+        staging_storage = hvCreateSubdir(jp2_dir + nickname + '/', verbose = True)
 
 	# Quarantine: Creating the quarantine directory - bad JP2s go here
-	quarantine = staging_root + 'quarantine/'
-        hvCreateSubdir(quarantine)
+        quarantine = hvCreateSubdir(staging_root + 'quarantine/',verbose = True)
+
+	# Database: create the database subdirectory
+	dbloc = hvCreateSubdir(staging_root + 'db/',verbose = True)
 
         # Ingestion: JP2s are moved to these directories and have their permissions changed.  The local user must be changed to helioviewer to allow access by the ingestion process.
-        ingest_dir = ingest_root + 'jp2/'
-        hvCreateSubdir(ingest_dir,localUser = localUser)
-        ingest_storage = ingest_dir + nickname + '/'
-        hvCreateSubdir(ingest_storage,localUser = localUser)
-
-        # Database OLD: The location of where the databases are stored
-        #dbloc = staging_root + 'db/' + nickname + '/'
-        #hvCreateSubdir(dbloc)
+        ingest_dir = hvCreateSubdir(ingest_root + 'jp2/',localUser = localUser, verbose = True)
+        ingest_storage = hvCreateSubdir(ingest_dir + nickname + '/',localUser = localUser, verbose = True)
 
 	# Database NEW: Connect to the database
 	try:
-		conn = sqlite3.connect(staging_root + 'db/hvFilePull.sqlite')
+		jprint('Connecting to database = ' + dbloc +'hvFilePull.sqlite')
+		conn = sqlite3.connect(dbloc + 'hvFilePull.sqlite')
 		c = conn.cursor()
 		c.execute('''create table jp2files (nickname text, yyyy int, mm int, dd int, hh int, mmm int, ss int, milli int, observationTimeInSeconds real, measurement text, downloadedTimeStamp text, downloadedWhenTimeStart real, downloadedWhenTimeEnd real, downloadedFrom text, downloadedFilename text, successfulDownload int, goodfile int)''')
 	except Exception,error:
 		jprint('Exception caught creating a new database file; error: '+str(error))
 
         # Logfile: The location of where the logfiles are stored
-        logloc = staging_root + 'log/'+ nickname +'/'
-        hvCreateSubdir(logloc)
+        logloc = hvCreateSubdir(staging_root + 'log/'+ nickname +'/',verbose=True)
 
 	#
 	# Lower level storage - specific to a particular date and measurement
@@ -199,32 +196,22 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	hvss = hvSubdir(measurement,yyyy,mm,dd)
 
         # Staging: create the staging JP2 subdirectory required
-	stagingSubdir = staging_storage + hvss[-1]
-	hvCreateSubdir(stagingSubdir)
+	stagingSubdir = hvCreateSubdir(staging_storage + hvss[-1],verbose=True)
 
         # Logfile: create the logfile subdirectory for these data
-        logSubdir = logloc + hvss[-1]
-	hvCreateSubdir(logSubdir)
+        logSubdir = hvCreateSubdir(logloc + hvss[-1],verbose=True)
 
-        # quarantine: create the quarantine subdirectory for these data
-        quarantineSubdir = quarantine + hvss[-1]
-	hvCreateSubdir(quarantineSubdir)
+        # Quarantine: create the quarantine subdirectory for these data
+        quarantineSubdir = hvCreateSubdir(quarantine + hvss[-1],verbose = True)
 
         # Logfile: Create the logfile filename
 	jprint('Time stamp for this iteration = ' + timeStamp)
         logFileName = timeStamp + '.' + hvDateFilename(yyyy, mm, dd, nickname, measurement) + '.wget.log'    
 
-        # Database: create the database subdirectory for this measurement
-        #dbSubdir = dbloc + hvss[-1]
-	#hvCreateSubdir(dbSubdir)
-
-        # Database OLD: create the database filename
-        #dbFileName = hvDateFilename(yyyy, mm, dd, nickname, measurement) + '__db.csv'    
 
 	# Ingestion: create the ingestSubdir directory.  The local user must be changed to helioviewer to allow access by the ingestion process.
-	ingestSubdir = ingest_storage + hvss[-1]
 	for directory in hvss:
-		hvCreateSubdir(ingest_storage + directory,localUser = localUser)
+		ingestSubdir = hvCreateSubdir(ingest_storage + directory,localUser = localUser, verbose = True)
 
 	#
         # Database OLD: read in the database file for this measurement and date
@@ -260,6 +247,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	#jp2list = f.readlines()
 	#f.close()
 
+
+	qqqq
 	# Database NEW: Find the good files for this nickname, date and measurement.  Return the JP2 filenames
 	try:
 		query = (nickname,yyyy,mm,dd,measurement,1)
@@ -278,16 +267,11 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 
 
         # put the last image in some web space
-        #webFileJP2 = jp2list[-1][:-1]
-        #if webFileJP2.endswith('.jp2'):
-        #        webFile = monitorLoc + 'most_recently_downloaded_aia_' + measurement + '.jp2'
-	#	shutil.copy(stagingSubdir + webFileJP2, webFile)
-        #        jprint('Updated latest JP2 file to a webpage: '+ webFile)
-        #else:
-        #        jprint('No latest JP2 file found.')
+
 
         # Calculate the remote directory
         remote_location = remote_root + nickname + '/' + hvss[-1]
+	jprint('Querying remote location ' + remote_location)
 
         # Open the remote location and get the file list
 	try:
@@ -336,7 +320,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 			for downloaded in newFiles:
 				if not isFileGood(stagingSubdir + downloaded,  minJP2SizeInByte):
 					jprint('Quarantined '+ stagingSubdir + downloaded)
-					shutil.move(stagingSubdir + downloaded, 
+					shutil.move(stagingSubdir + downloaded, quarantineSubdir + downloaded)
 				else:
 					goodList.extend(downloaded)
 
@@ -465,7 +449,7 @@ Parse the options
 [2] = local subdirectory where the JP2 files with the correct permissions are put for ingestion
 [3] = start date
 [4] = end date
-[5] = specific measurements to download - must have the same measurement values as defined in the instrument Helioviewer setup file - see JP2Gen wiki notes.
+[5] = specific measurements to download - must have the same measurement values as defined in the instrument Helioviewer setup file - see JP2Gen wiki notes. Comma separated list.
 [6] = nickname of the device
 [7] = webspace
 [8] = minimum acceptable file size in bytes.  Files smaller than this are considered corrupted
