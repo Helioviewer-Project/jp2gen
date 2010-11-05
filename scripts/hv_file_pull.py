@@ -48,13 +48,32 @@ class URLLister(SGMLParser):
                         self.urls.extend(href)
 
 # isFileGood
-def isFileGood(fullPathAndFilename,minimumFileSize):
-	""" Tests to see if a file meets the minimum requirements to be ingested into the database."""
-	s = os.stat(fullPathAndFilename)
-	if s.st_size > minimumFileSize:
-		answer = True
+def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
+	""" Tests to see if a file meets the minimum requirements to be ingested into the database.
+	An entry of -1 means that the test was not performed, 0 means failure, 1 means pass
+	"""
+	answer ={"fileExists":-1,"minimumFileSize":-1,"endsWith":-1}
+
+	# Does the file exist?
+	if os.path.isfile(fullPathAndFilename):
+		answer["fileExists"] = 1
+
+			# test for file size
+			s = os.stat(fullPathAndFilename)
+			if s.st_size > minimumFileSize:
+				answer["minimumFileSize"] = 1
+			else:
+				answer["minimumFileSize"] = 0
+
+			# test that the file has the right extension
+			if endswith != '':
+				if fullPathAndFilename.endswith(endswith):
+					answer["endsWith"] = 1
+				else:
+					answer["endsWith"] = 0
 	else:
-		answer = False
+		answer["fileExists"] = 0
+
 	return answer
 
 
@@ -214,41 +233,9 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 		ingestSubdir = hvCreateSubdir(ingest_storage + directory,localUser = localUser, verbose = True)
 
 	#
-        # Database OLD: read in the database file for this measurement and date
+	# All the necessary subdirectories have been created.  Now query the database 
 	#
-        #try:
-	#	# Get a list of images in the subdirectory and update the database with it
-	#	dirList = os.listdir(stagingSubdir)
-	#	f = open(dbSubdir + dbFileName,'w')
-	#	f.write('This file created '+time.ctime()+'\n\n')
-	#	count = 0
-	#	for testfile in dirList:
-	#		if testfile.endswith('.jp2'):
-	#			stat = os.stat(stagingSubdir + testfile)
-	#			if stat.st_size > minJP2SizeInBytes:
-	#				count = count + 1
-	#				f.write(testfile+'\n')
-	#			else:
-	#				os.rename(stagingSubdir + testfile,quarantine + testfile)
-	#				jprint('Quarantined '+ stagingSubdir + testfile)
-	#
-	#	jprint('Updated database file '+ dbSubdir + dbFileName + '; number of files found = '+str(count))
-        #except Exception,error:
-	#	jprint('Exception caught at AAA; error: ' + str(error))
-        #        f = open(dbSubdir + dbFileName,'w')
-        #        jp2list = ['This file first created '+time.ctime()+'\n\n']
-        #        f.write(jp2list[0])
-        #        jprint('Created new database file '+ dbSubdir + dbFileName)
-        #finally:
-        #        f.close()
 
-	# Database OLD: Read the db file
-	#f = open(dbSubdir + dbFileName,'r')
-	#jp2list = f.readlines()
-	#f.close()
-
-
-	qqqq
 	# Database NEW: Find the good files for this nickname, date and measurement.  Return the JP2 filenames
 	try:
 		query = (nickname,yyyy,mm,dd,measurement,1)
@@ -284,16 +271,19 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	        # Check which files are new at the remote location
 		newFiles, newFilesCount, newList = hvCheckForNewFiles(parser.urls,jp2list)
 
-	        # Write the new filenames to a file
+	        #
+		# New files are located at the remote location
+		#
 	        if newFiles:
+			# Save the filenames we are attempting to download
 			newFileListName = timeStamp + '.' + hvDateFilename(yyyy, mm, dd, nickname, measurement) + '.newfiles.txt'
 			newFileListFullPath = logSubdir + newFileListName
 	                jprint('Writing new file list to ' + newFileListFullPath)
 	                f = open(newFileListFullPath,'w')
 	                f.writelines(newList)
 	                f.close()
-			
-	                # Download only the new files
+
+	                # Download the new files
 			downloadedWhenTimeStart = calendar.timegm(time.gmtime())
 	                jprint('Downloading new files.')
 	                localLog = ' -a ' + logSubdir + logFileName + ' '
@@ -306,9 +296,13 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 			except Exception,error:
 				jprint('Exception caught at executing wget command; error: '+str(error))
 
-			# Finish of the download and transfer process
+			# Finish time of the download process
 			downloadedWhenTimeEnd = calendar.timegm(time.gmtime())
 	
+			# Update the database with the filenames we just attempted to download
+			
+
+
 	                # Database OLD: Write the new updated database file
 	                #jprint('Writing updated ' + dbSubdir + dbFileName)
 	                #f = open(dbSubdir + dbFileName,'w')
@@ -316,7 +310,15 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	                #f.writelines(newList)
 	                #f.close()
 
+			# Did all the files we thought we were going to download actually download?
+			# update the database with the results
+			for downloaded in newFiles:
+				successfulDownload = 0
+				if os.path.isfile(stagingSubdir + testfile):
+					successfulDownload = 1
+
 			# Transfer all the bad files to quarantine, and keep only the good ones
+			# update the database
 			for downloaded in newFiles:
 				if not isFileGood(stagingSubdir + downloaded,  minJP2SizeInByte):
 					jprint('Quarantined '+ stagingSubdir + downloaded)
@@ -335,6 +337,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 
 			# Check if each of the new files is acceptable to be put into the ingestion directory
 			# Database NEW: update the database
+			# Transfer the files
+
 			try:
 				count = 0
 				for entry in newList:
