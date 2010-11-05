@@ -50,7 +50,7 @@ class URLLister(SGMLParser):
 # isFileGood
 def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
 	""" Tests to see if a file meets the minimum requirements to be ingested into the database.
-	An entry of -1 means that the test was not performed, 0 means failure, 1 means pass
+	An entry of -1 means that the test was not performed, 0 means failure, 1 means pass.
 	"""
 	answer ={"fileExists":-1,"minimumFileSize":-1,"endsWith":-1}
 
@@ -107,6 +107,8 @@ def hvCreateSubdir(x, localUser='' ,out=True, verbose=False):
 		except Exception, error:
 			if verbose:
 				jprint('Error found in hvCreateSubdir; error: '+str(error))
+	else:
+		jprint('Directory already exists = '+x)
 	return x
 
 # hvSubdir
@@ -313,6 +315,20 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 			# Did all the files we thought we were going to download actually download?
 			# update the database with the results
 			for downloaded in newFiles:
+				results = isFileGood(stagingSubdir + downloaded,  minJP2SizeInByte, endswith = '.jp2')
+
+				if results['fileExists'] <= 0:
+					jprint('File exists test returns ' = str(results['fileExists']))
+				else:
+					# if the sum of all the individual entries is not equal to the number of entries, quarantine it.
+					# sum(results) ne number of elements in results
+					if results['minimumFileSize'] == 0:
+						jprint('Quarantining file  = '+ stagingSubdir + downloaded)
+						# report on what was wrong.
+						shutil.move(stagingSubdir + downloaded, quarantineSubdir + downloaded)
+					else:
+
+
 				successfulDownload = 0
 				if os.path.isfile(stagingSubdir + testfile):
 					successfulDownload = 1
