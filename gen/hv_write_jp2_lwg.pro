@@ -271,7 +271,7 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
         for j=0,ntags-1 do begin
            if (where(j eq jhv) ne -1) then begin 
-              print,strmid(tagnames[j],0,3)
+              ;print,strmid(tagnames[j],0,3)
               if (strmid(tagnames[j],0,3) eq 'HV_') THEN BEGIN
                  reduced = HV_XML_COMPLIANCE( strtrim(tagnames[j],2) )
                  xh+='<'+reduced+'>'+HV_XML_COMPLIANCE(strtrim(string(header.(j)),2))+'</'+reduced+'>'+lf
