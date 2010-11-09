@@ -34,7 +34,10 @@
 ;     19-Sep-2009 (SEG) - soho-arch is down, so saving fits on sas and making gifs from them
 ;     21-Sep-2009 (SEG) - Will always read fits files from mdisas (now saved to mdisas and soho-archive
 ;			  in go_fits_sci160k.pro) in the event that we cannot access soho-arch.
-;     04-Dec-2009 (SEG) - Updating the flat_field file from flat_Dec2008.fits to flat_Dec2009.fits
+;     04-Dec-2009 (SEG) - Updating the flat_field file from
+;                         flat_Dec2008.fits to flat_Dec2009.fits
+;     08-Nov-2010 (JI)  - Image is rotated to take care of the new
+;                         SOHO orientation.
 ;-
 
 PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoing,output = output, date_start = date_start, date_end = date_end
@@ -182,13 +185,21 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
               endcase
 ;
 ; De-rotate if necessary
-;           
-              if (sxpar(h, 'CROT') eq 180) then begin
+;
+              sohoRotAngle = sxpar(h, 'CROT')
+              if (sohoRotAngle eq 180) then begin
                  img = rotate(img,2)
-                 hd = add_tag(hd,180.0,'hv_rotation')
               endif else begin
-                 hd = add_tag(hd,0.0,'hv_rotation')
+                 if (sohoRotAngle ne 0) then begin
+                    img = rot(img,sohoRotAngle,/interp,missing = 0.0)                 ; IDL says the images are rotated clockwise
+                    header = add_tag(header,header.crpix1,'hv_crpix1_original')       ; keep a store of the original sun centre
+                    header = add_tag(header,header.crpix2,'hv_crpix2_original')
+                    rotatedSolarCentre = HV_CALC_ROT_CENTRE( [header.crpix1,header.crpix2], sohoRotAngle, [511.5, 511.5] ) ; calculate the new solar centre given that we have performed a clockwise rotation on the original image
+                    header.crpix1 = rotatedSolarCentre[0]
+                    header.crpix2 = rotatedSolarCentre[1]
+                 endif
               endelse
+              hd = add_tag(hd,sohoRotAngle,'hv_rotation')
 ;
 ; Add in error report
 ;

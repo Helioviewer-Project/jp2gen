@@ -259,20 +259,6 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         endwhile
         xh+='</comment>'+lf
 ;
-; Helioviewer XML tags
-;
-;        xh+='<Helioviewer>'+lf
-;        for j=0,ntags-1 do begin
-;           if (where(j eq jhv) ne -1) then begin      
-;              if (strmid(tagnames[j],0,3) eq 'HV_') THEN BEGIN
-;                 reduced = strmid(tagnames[j],3,strlen(tagnames[j])-3)
-;                 reduced = tagnames[j]
-;                 xh+='<'+reduced+'>'+strtrim(string(header.(j)),2)+'</'+reduced+'>'+lf
-;              endif
-;           endif
-;       endfor
-
-;
 ; Close the FITS information
 ;
         xh+='</fits>'+lf
@@ -281,25 +267,37 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
         xh+='<helioviewer>'+lf
 ;
+; Helioviewer XML tags
+;
+        for j=0,ntags-1 do begin
+           if (where(j eq jhv) ne -1) then begin 
+              print,strmid(tagnames[j],0,3)
+              if (strmid(tagnames[j],0,3) eq 'HV_') THEN BEGIN
+                 reduced = HV_XML_COMPLIANCE( strtrim(tagnames[j],2) )
+                 xh+='<'+reduced+'>'+HV_XML_COMPLIANCE(strtrim(string(header.(j)),2))+'</'+reduced+'>'+lf
+              endif
+           endif
+       endfor
+;
 ; Original rotation state
 ;
-        xh+='<HV_ROTATION>'+HV_XML_COMPLIANCE(strtrim(string(header.hv_rotation),2))+'</HV_ROTATION>'+lf
+;        xh+='<HV_ROTATION>'+HV_XML_COMPLIANCE(strtrim(string(header.hv_rotation),2))+'</HV_ROTATION>'+lf
 ;
 ; JP2GEN version
 ;
-        xh+='<HV_JP2GEN_VERSION>'+HV_XML_COMPLIANCE(trim(g.source.jp2gen_version))+'</HV_JP2GEN_VERSION>'+lf
+;        xh+='<HV_JP2GEN_VERSION>'+HV_XML_COMPLIANCE(trim(g.source.jp2gen_version))+'</HV_JP2GEN_VERSION>'+lf
 ;
 ; JP2GEN branch revision
 ;
-        xh+='<HV_JP2GEN_BRANCH_REVISION>'+HV_XML_COMPLIANCE(trim(g.source.jp2gen_branch_revision))+'</HV_JP2GEN_BRANCH_REVISION>'+lf
+;        xh+='<HV_JP2GEN_BRANCH_REVISION>'+HV_XML_COMPLIANCE(trim(g.source.jp2gen_branch_revision))+'</HV_JP2GEN_BRANCH_REVISION>'+lf
 ;
 ; HVS setup file
 ;
-        xh+='<HV_HVS_DETAILS_FILENAME>'+HV_XML_COMPLIANCE(trim(details.hvs_details_filename))+'</HV_HVS_DETAILS_FILENAME>'+lf
+;        xh+='<HV_HVS_DETAILS_FILENAME>'+HV_XML_COMPLIANCE(trim(details.hvs_details_filename))+'</HV_HVS_DETAILS_FILENAME>'+lf
 ;
 ; HVS setup file version
 ;
-        xh+='<HV_HVS_DETAILS_FILENAME_VERSION>'+HV_XML_COMPLIANCE(trim(details.hvs_details_filename_version))+'</HV_HVS_DETAILS_FILENAME_VERSION>'+lf
+;        xh+='<HV_HVS_DETAILS_FILENAME_VERSION>'+HV_XML_COMPLIANCE(trim(details.hvs_details_filename_version))+'</HV_HVS_DETAILS_FILENAME_VERSION>'+lf
 ;
 ; JP2 comments
 ;
