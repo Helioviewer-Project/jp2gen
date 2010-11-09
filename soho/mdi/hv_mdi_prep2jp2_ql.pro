@@ -191,7 +191,12 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
                  img = rotate(img,2)
               endif else begin
                  if (sohoRotAngle ne 0) then begin
-                    img = rot(img,sohoRotAngle,/interp)
+                    img = rot(img,sohoRotAngle,/interp,missing = 0.0)                 ; IDL says the images are rotated clockwise
+                    header = add_tag(header,header.crpix1,'hv_crpix1_original')       ; keep a store of the original sun centre
+                    header = add_tag(header,header.crpix2,'hv_crpix2_original')
+                    rotatedSolarCentre = HV_CALC_ROT_CENTRE( [header.crpix1,header.crpix2], sohoRotAngle, [511.5, 511.5] ) ; calculate the new solar centre given that we have performed a clockwise rotation on the original image
+                    header.crpix1 = rotatedSolarCentre[0]
+                    header.crpix2 = rotatedSolarCentre[1]
                  endif
               endelse
               hd = add_tag(hd,sohoRotAngle,'hv_rotation')
