@@ -39,8 +39,9 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_writ
         header = add_tag(header,header.crpix1,'hv_crpix1_original')     ; keep a store of the original sun centre
         header = add_tag(header,header.crpix2,'hv_crpix2_original')
         rotatedSolarCentre = HV_CALC_ROT_CENTRE( [header.crpix1,header.crpix2], sohoRotAngle, [511.5, 511.5] ) ; calculate the new solar centre given that we have performed a clockwise rotation on the original image
-        header.crpix1 = rotatedSolarCentre[0]
-        header.crpix2 = rotatedSolarCentre[1]
+        b0 = shift(b0,(rotatedSolarCentre[0]-511.5),(rotatedSolarCentre[1]-511.5))
+        header.crpix1 = 511.5
+        header.crpix2 = 511.5
      endif
   endelse
 

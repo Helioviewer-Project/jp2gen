@@ -41,7 +41,7 @@ FUNCTION HVS_VERSION3_AIA
 ; Each measurement requires some details to control the creation of
 ; JP2 files
 ;
-  d = {measurement: "", n_levels: 8, n_layers: 8, idl_bitdepth: 8, bit_rate: [0.5,0.01],dataMin:0.0,dataMax:0.0,dataScalingType:0,dataExptime:0.0}
+  d = {measurement: "", n_levels: 8, n_layers: 8, idl_bitdepth: 8, bit_rate: [0.5,0.01],dataMin:0.0,dataMax:0.0,dataScalingType:0,dataExptime:0.0,gamma:1.0}
 ;
 ; In this case, each AIA measurement requires the same type of details
 ;
@@ -76,6 +76,7 @@ FUNCTION HVS_VERSION3_AIA
   b.details[0].dataMax = 250.0;50.0
   b.details[0].dataScalingType = 1 ; 0 - linear, 1 - sqrt, 3 - log10
   b.details[0].dataExptime = 4.99803
+  b.details[0].gamma = 1.0
 ;
 ; 131
 ;
@@ -84,10 +85,11 @@ FUNCTION HVS_VERSION3_AIA
   b.details[1].n_layers = 8 ; REQUIRED
   b.details[1].idl_bitdepth = 8 ; REQUIRED
   b.details[1].bit_rate = [0.5,0.01] ; REQUIRED
-  b.details[1].dataMin = 0.1
-  b.details[1].dataMax = 250.0
+  b.details[1].dataMin = 0.1; 0.0
+  b.details[1].dataMax = 500.0 ; 1900.0
   b.details[1].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
   b.details[1].dataExptime = 6.99685
+  b.details[1].gamma = 3.2
 
 ;
 ; 171
@@ -101,6 +103,7 @@ FUNCTION HVS_VERSION3_AIA
   b.details[2].dataMax = 14000.0
   b.details[2].dataScalingType = 1 ; 0 - linear, 1 - sqrt, 3 - log10
   b.details[2].dataExptime = 4.99803
+  b.details[2].gamma = 1.0
 
 ;
 ; 193
@@ -114,6 +117,7 @@ FUNCTION HVS_VERSION3_AIA
   b.details[3].dataMax = 8000.0
   b.details[3].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
   b.details[3].dataExptime = 2.99950
+  b.details[3].gamma = 4.0
 
 ;
 ; 211
@@ -127,6 +131,7 @@ FUNCTION HVS_VERSION3_AIA
   b.details[4].dataMax = 4000.0
   b.details[4].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
   b.details[4].dataExptime = 4.99801
+  b.details[4].gamma = 4.0
 
 ;
 ; 304
@@ -140,6 +145,7 @@ FUNCTION HVS_VERSION3_AIA
   b.details[5].dataMax = 700;2000.0
   b.details[5].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
   b.details[5].dataExptime = 4.99441
+  b.details[5].gamma = 1.0
 
 ;
 ; 335
@@ -153,6 +159,7 @@ FUNCTION HVS_VERSION3_AIA
   b.details[6].dataMax = 1000.0;1500.0
   b.details[6].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
   b.details[6].dataExptime = 6.99734
+  b.details[6].gamma = 1.8
 
 ;
 ; 1600
@@ -166,6 +173,8 @@ FUNCTION HVS_VERSION3_AIA
   b.details[7].dataMax = 625.0
   b.details[7].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
   b.details[7].dataExptime = 2.99911
+  b.details[7].gamma = 1.0
+
 ;
 ; 1700
 ;
@@ -178,6 +187,7 @@ FUNCTION HVS_VERSION3_AIA
   b.details[8].dataMax = 2500.0
   b.details[8].dataScalingType = 1 ; 0 - linear, 1 - sqrt, 3 - log10
   b.details[8].dataExptime = 1.00026
+  b.details[8].gamma = 1.0
 
 ;
 ; 4500
@@ -191,6 +201,7 @@ FUNCTION HVS_VERSION3_AIA
   b.details[9].dataMax = 38000.0^2
   b.details[9].dataScalingType = 0 ; 0 - linear, 1 - sqrt, 3 - log10
   b.details[9].dataExptime = 1.00026
+  b.details[9].gamma = 1.0
 
 ;
 ; Verify
