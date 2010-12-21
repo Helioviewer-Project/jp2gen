@@ -52,27 +52,33 @@ def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
 	""" Tests to see if a file meets the minimum requirements to be ingested into the database.
 	An entry of -1 means that the test was not performed, 0 means failure, 1 means pass.
 	"""
-	answer ={"fileExists":-1,"minimumFileSize":-1,"endsWith":-1}
+	answer ={"isFileGood":True,"fileExists":-1,"minimumFileSize":-1,"endsWith":-1}
 
 	# Does the file exist?
 	if os.path.isfile(fullPathAndFilename):
 		answer["fileExists"] = 1
-
-			# test for file size
-			s = os.stat(fullPathAndFilename)
-			if s.st_size > minimumFileSize:
-				answer["minimumFileSize"] = 1
+		# test for file size
+		s = os.stat(fullPathAndFilename)
+		if s.st_size > minimumFileSize:
+			answer["minimumFileSize"] = 1
+		else:
+			answer["minimumFileSize"] = 0
+		
+		# test that the file has the right extension
+		if endswith != '':
+			if fullPathAndFilename.endswith(endswith):
+				answer["endsWith"] = 1
 			else:
-				answer["minimumFileSize"] = 0
-
-			# test that the file has the right extension
-			if endswith != '':
-				if fullPathAndFilename.endswith(endswith):
-					answer["endsWith"] = 1
-				else:
-					answer["endsWith"] = 0
+				answer["endsWith"] = 0
 	else:
 		answer["fileExists"] = 0
+
+	# Has the file passed all the tests?
+	isFileGood = True
+	for i in answer.itervalues():
+		if i == 0:
+			isFileGood = False
+	answer["isFileGood"] = isFileGood
 
 	return answer
 
@@ -114,7 +120,8 @@ def hvCreateSubdir(x, localUser='' ,out=True, verbose=False):
 # hvSubdir
 def hvSubdir(measurement,yyyy,mm,dd):
 	"""Return the directory structure for helioviewer JPEG2000 files."""
-	return [yyyy + '/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
+	#return [yyyy + '/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
+	return [measurement + '/', measurement + '/' + yyyy + '/', measurement + '/' + yyyy+'/'+mm+'/', measurement + '/' + yyyy+'/'+mm+'/'+dd+'/', measurement + '/' + yyyy+'/'+mm+'/'+dd+'/' ]
 
 # hvDateFilename
 def hvDateFilename(yyyy,mm,dd,nickname,measurement):
@@ -139,6 +146,13 @@ def hvJP2FilenameToTimeInSeconds(filename):
 	t = (p['date'][0],p['date'][1],p['date'][2],p['time'][0],p['time'][1],p['time'][2])
 	return calendar.timegm(t)
 
+# hvJP2FilenameToTimeInMilliseconds
+def hvJP2FilenameToTimeInMilliseconds(filename):
+	""" Convert a JP2 file name into a time in milliseconds after epoch."""
+	seconds = hvJP2FilenameToTimeInSeconds(filename)
+	p = hvParseJP2Filename(filename)
+	return 1000.0*seconds + p['time'][3]
+
 # hvCheckForNewFiles
 def hvCheckForNewFiles(urls,List):
 	""" Compare one list to another """
@@ -158,7 +172,7 @@ def hvCheckForNewFiles(urls,List):
 	return newFiles,newFilesCount,newList
 			
 # GetMeasurement
-def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,localUser):
+def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,localUser,dbName):
 	""" Download JP2s from a remote website for a given device and measurement.
 	nickname = device nickname
 	yyyy = 4 digit year string
@@ -199,10 +213,10 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 
 	# Database NEW: Connect to the database
 	try:
-		jprint('Connecting to database = ' + dbloc +'hvFilePull.sqlite')
-		conn = sqlite3.connect(dbloc + 'hvFilePull.sqlite')
+		jprint('Connecting to database = ' + dbloc + dbName)
+		conn = sqlite3.connect(dbloc + dbName)
 		c = conn.cursor()
-		c.execute('''create table jp2files (nickname text, yyyy int, mm int, dd int, hh int, mmm int, ss int, milli int, observationTimeInSeconds real, measurement text, downloadedTimeStamp text, downloadedWhenTimeStart real, downloadedWhenTimeEnd real, downloadedFrom text, downloadedFilename text, successfulDownload int, goodfile int)''')
+		c.execute('''create table TableTest (filename text, observationTimeInMilliseconds real, isFileGood int)''')
 	except Exception,error:
 		jprint('Exception caught creating a new database file; error: '+str(error))
 
@@ -297,92 +311,43 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 				os.system(command)
 			except Exception,error:
 				jprint('Exception caught at executing wget command; error: '+str(error))
-
-			# Finish time of the download process
-			downloadedWhenTimeEnd = calendar.timegm(time.gmtime())
-	
-			# Update the database with the filenames we just attempted to download
 			
-
-
-	                # Database OLD: Write the new updated database file
-	                #jprint('Writing updated ' + dbSubdir + dbFileName)
-	                #f = open(dbSubdir + dbFileName,'w')
-	                #f.writelines(jp2list)
-	                #f.writelines(newList)
-	                #f.close()
-
-			# Did all the files we thought we were going to download actually download?
-			# update the database with the results
+			# Look at the downloaded files and see if they pass all the 'goodness' tests
+			# 
 			for downloaded in newFiles:
-				results = isFileGood(stagingSubdir + downloaded,  minJP2SizeInByte, endswith = '.jp2')
+				
+				# full file paths
+				staged = stagingSubdir + downloaded
+				quarantined = quarantineSubdir + downloaded
+				ingested = ingestSubdir + downloaded
 
-				if results['fileExists'] <= 0:
-					jprint('File exists test returns ' = str(results['fileExists']))
+				# return the analysis on each file
+				inStaging = isFileGood(staged,  minJP2SizeInByte, endswith = '.jp2')
+
+				# Is the staged file good?
+				if not inStaging['isFileGood']:
+					jprint('Quarantining file  = '+ staged)
+					shutil.move(staged, quarantined)
+					ttt =(downloaded,milli,0)
+					c.execute('insert into TableTest values (?,?,?)',ttt)
+					conn.commit()
 				else:
-					# if the sum of all the individual entries is not equal to the number of entries, quarantine it.
-					# sum(results) ne number of elements in results
-					if results['minimumFileSize'] == 0:
-						jprint('Quarantining file  = '+ stagingSubdir + downloaded)
-						# report on what was wrong.
-						shutil.move(stagingSubdir + downloaded, quarantineSubdir + downloaded)
+					change2hv(staged,localUser)
+					shutil.copy2(staged,ingested)
+					inIngest = isFileGood(ingested,  minJP2SizeInByte, endswith = '.jp2')
+					# Is the ingested file good?
+					if not inIngest['isFileGood']:
+						jprint('Quarantining file  = '+ ingested)
+						shutil.move(ingested, quarantined)
+						ttt =(downloaded,milli,0)
+						c.execute('insert into TableTest values (?,?,?)',ttt)
+						conn.commit()
 					else:
-
-
-				successfulDownload = 0
-				if os.path.isfile(stagingSubdir + testfile):
-					successfulDownload = 1
-
-			# Transfer all the bad files to quarantine, and keep only the good ones
-			# update the database
-			for downloaded in newFiles:
-				if not isFileGood(stagingSubdir + downloaded,  minJP2SizeInByte):
-					jprint('Quarantined '+ stagingSubdir + downloaded)
-					shutil.move(stagingSubdir + downloaded, quarantineSubdir + downloaded)
-				else:
-					goodList.extend(downloaded)
-
-
-			# Read in the new filenames again
-	                f = open(logSubdir + newFileListName,'r')
-	                newList = f.readlines()
-	                f.close()
-			jprint('New files ingested are as follows:')
-			for entry in newList:
-				jprint(entry)
-
-			# Check if each of the new files is acceptable to be put into the ingestion directory
-			# Database NEW: update the database
-			# Transfer the files
-
-			try:
-				count = 0
-				for entry in newList:
-					testfile = entry[:-1]
-					if testfile.endswith('.jp2'):
-						# File details
-						p = hvParseJP2Filename(entry)
-						observationTime = hvJP2FilenameToTimeInSeconds(entry)
-
-						# Does the file exist in the staging directory?
-						successfulDownload = 0
-						if os.path.isfile(stagingSubdir + testfile):
-							successfulDownload = 1
-
-							stat = os.stat(stagingSubdir + testfile)
-							if stat.st_size > minJP2SizeInBytes:
-								count = count + 1
-								change2hv(stagingSubdir + testfile,localUser)
-								shutil.copy2(stagingSubdir + testfile,ingestSubdir + testfile)
-				       		#change2hv(ingestSubdir + testfile,localUser)
-								goodfile = 1
-							else:
-								os.rename(stagingSubdir + testfile,quarantine + testfile)
-								jprint('Quarantined '+ stagingSubdir + testfile)
-								goodfile = 0
-						# update the database with good files and bad files
-						ttt =(nickname,p['date'][0],p['date'][1],p['date'][2],p['time'][0],p['time'][1],p['time'][2],p['time'][3],observationTime, measurement,timeStamp,downloadedWhenTimeStart,downloadedWhenTimeEnd,remote_location,entry,successfulDownload, goodfile)
-						c.execute('insert into jp2files values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',ttt)
+						# update the database with good files
+						jprint('Moved file '+ staged + ' to ' + ingested)
+						milli = hvJP2FilenameToTimeInMilliseconds(downloaded)
+						ttt =(downloaded,milli,1)
+						c.execute('insert into TableTest values (?,?,?)',ttt)
 						conn.commit()
 
 			except Exception,error:
@@ -437,7 +402,7 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 	jprint('Beginning remote location query number ' + str(count))
 	jprint("Looking for files on this date = " + yyyy + mm + dd)
 	jprint('Using options file '+ options_file)
-	nfc = GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,localUser)
+	nfc = GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,localUser,dbName)
 	t2 = time.time()
 	jprint('Time taken in seconds =' + str(t2 - t1))
 	if nfc > 0 :
@@ -478,6 +443,7 @@ Parse the options
 [11] = minimum number of days back from the present date to consider
 [12] = maximum number of days back from the present date to consider (note that the range command used to implement this requires a minimum value of n to go back n-1 days)
 [13] = name of the local User who is downloading the files.  This user must be in the "helioviewer" group.
+[14] = name of the SQLite database to connect to
 '''
 
 if len(sys.argv) <= 1:
