@@ -48,11 +48,11 @@ class URLLister(SGMLParser):
                         self.urls.extend(href)
 
 # isFileGood
-def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
+def isFileGood(fullPathAndFilename,minimumFileSize,endsWith='', label = 'no label given'):
 	""" Tests to see if a file meets the minimum requirements to be ingested into the database.
 	An entry of -1 means that the test was not performed, 0 means failure, 1 means pass.
 	"""
-	answer ={"isFileGood":True,"fileExists":-1,"minimumFileSize":-1,"endsWith":-1}
+	answer ={"isFileGood":True,"fileExists":-1,"minimumFileSize":-1,"endsWith":-1,"label":label}
 
 	# Does the file exist?
 	if os.path.isfile(fullPathAndFilename):
@@ -120,8 +120,8 @@ def hvCreateSubdir(x, localUser='' ,out=True, verbose=False):
 # hvSubdir
 def hvSubdir(measurement,yyyy,mm,dd):
 	"""Return the directory structure for helioviewer JPEG2000 files."""
-	#return [yyyy + '/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
-	return [measurement + '/', measurement + '/' + yyyy + '/', measurement + '/' + yyyy+'/'+mm+'/', measurement + '/' + yyyy+'/'+mm+'/'+dd+'/', measurement + '/' + yyyy+'/'+mm+'/'+dd+'/' ]
+	return [yyyy + '/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
+	#return [measurement + '/', measurement + '/' + yyyy + '/', measurement + '/' + yyyy+'/'+mm+'/', measurement + '/' + yyyy+'/'+mm+'/'+dd+'/', measurement + '/' + yyyy+'/'+mm+'/'+dd+'/' ]
 
 # hvDateFilename
 def hvDateFilename(yyyy,mm,dd,nickname,measurement):
@@ -172,11 +172,11 @@ def hvCheckForNewFiles(urls,List):
 	return newFiles,newFilesCount,newList
 	
 # check the remote location for files
-def hvCheckRemoteLocation(location, localFileSystem = False):
+def hvCheckRemoteLocation(location):
 	"""Get a list of files at a given location. Can be used on files located on a remote webpage, or on a local file system.
 	Default is to examine a remote webpage.
 	"""
-	if not localFileSystem:
+	if location.startswith('http://'):
 		usock = urllib.urlopen(location)
 		parser = URLLister()
 		parser.feed(usock.read())
@@ -292,7 +292,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 
         # Open the remote location and get the file list
 	try:
-		potentialJP2Files = hvCheckRemoteLocation(remote_location,localFileSystem = True)
+		potentialJP2Files = hvCheckRemoteLocation(remote_location)
 
 	        # Check which files are new at the remote location
 		newFiles, newFilesCount, newList = hvCheckForNewFiles(potentialJP2Files,jp2list_good)
@@ -308,20 +308,29 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	                f.close()
 
 	                # Download the new files
-			downloadedWhenTimeStart = calendar.timegm(time.gmtime())
+			startOfFileAcquisitionTime = calendar.timegm(time.gmtime())
 	                jprint('Downloading new files.')
+			# download from a website
 			if remoteBaseURL.startswith('http://'):
 				localLog = ' -a ' + logSubdir + logFileName + ' '
 				localInputFile = ' -i ' + logSubdir + newFileListName + ' '
 				localDir = ' -P'+stagingSubdir + ' '
 				remoteBaseURL = '-B ' + remote_location + ' '
 				command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
+				try:
+					os.system(command)
+				except Exception,error:
+					jprint('Exception caught at executing wget command; error: '+str(error))
+			# copy from a local file system
 			else:
-				????
-			try:
-				os.system(command)
-			except Exception,error:
-				jprint('Exception caught at executing wget command; error: '+str(error))
+				try:
+					f = open(newFileListFullPath,'r')
+					localFiles = f.readlines()
+					f.close()
+					for fName in localFiles:
+						shutil.copy(remote_location + fName, stagingSubdir + fName)
+				except Exception,error:
+					jprint('Exception caught copying files from local file system; error: '+str(error))
 			
 			# Look at the downloaded files and see if they pass all the 'goodness' tests
 			# 
@@ -333,7 +342,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 				ingested = ingestSubdir + downloaded
 
 				# return the analysis on each file
-				inStaging = isFileGood(staged,  minJP2SizeInByte, endswith = '.jp2')
+				inStaging = isFileGood(staged,  minJP2SizeInByte, endswith = '.jp2', label ='staging')
 
 				# Is the staged file good or bad?
 				# table TableTest (jp2Filename text, yyyy int, mm int, dd int, nickname text, measurement text, isFileGood int)
@@ -341,31 +350,42 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 					# the file is bad
 					jprint('Quarantining file  = '+ staged)
 					shutil.move(staged, quarantined)
-					ttt = (downloaded,yyyy,mm,dd,nickname,measurement,0)
-					c.execute('insert into TableTest values (?,?,?,?,?,?,?)',ttt)
-					conn.commit()
+					isFileGoodDB = 0
+					confirmedIngestedTime = '-1.0'
 				else:
 					# the file is good; first move it to the ingestion directory
 					change2hv(staged,localUser)
-					shutil.copy2(staged,ingested)
-					inIngest = isFileGood(ingested,  minJP2SizeInByte, endswith = '.jp2')
+					shutil.move(staged,ingested)
+					inIngest = isFileGood(ingested,  minJP2SizeInByte, endswith = '.jp2', label = 'ingestion')
 					# Is the ingested file good?
 					if not inIngest['isFileGood']:
 						# the ingested file is bad
 						jprint('Quarantining file  = '+ ingested)
 						shutil.move(ingested, quarantined)
-						ttt = (downloaded,yyyy,mm,dd,nickname,measurement,0)
-						c.execute('insert into TableTest values (?,?,?,?,?,?,?)',ttt)
-						conn.commit()
+						isFileGoodDB = 0
+						confirmedIngestedTime = '-1.0'
 					else:
 						# update the database with good files
+						confirmedIngestedTime = calendar.timegm(time.gmtime())
 						jprint('Moved file '+ staged + ' to ' + ingested)
-						ttt = (downloaded,yyyy,mm,dd,nickname,measurement,1)
-						c.execute('insert into TableTest values (?,?,?,?,?,?,?)',ttt)
-						conn.commit()
+						isFileGoodDB = 1
+				# Update the database
+				try:
+					# Update the table of 
+					ttt = (downloaded,yyyy,mm,dd,nickname,measurement,isFileGoodDB)
+					c.execute('insert into TableTest values (?,?,?,?,?,?,?)',ttt)
+					conn.commit()
+					# Update the table that contains details on how precisely the bad file is bad
+					# database table
+					# failedWhere = 'staging' or 'ingestion'
+					#
+					# create table quarantineReasons (filename text, failedWhere text, fileExists int, minimumFileSize int, endsWith int
+					# sss = (downloaded, fileTest['label'], fileTest['fileExists'], fileTest['minimumFileSize'], fileTest['endsWith']
+					# c.execute('insert into quarantineReasons values (?,?,?,?,?)',sss)
+					# conn.commit()
+				except Exception,error:
+					jprint('Exception caught trying to update the database; error = '+ str(error))
 
-			except Exception,error:
-				jprint('Exception caught updating the new database; error: ' + str(error))
 		else:
                 	jprint('No new files found at ' + remote_location)
 	except Exception,error:
