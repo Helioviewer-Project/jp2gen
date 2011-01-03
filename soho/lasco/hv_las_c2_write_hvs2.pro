@@ -104,7 +104,16 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ;        sunc.ycen = sz[1]/2.0 - bb ; 
         ;hd.crpix1 = sunc.xcen
         ;hd.crpix2 = sunc.ycen
-        ;rotate_by_this = get_soho_roll(hd.date_obs + ' ' + hd.time_obs)
+                                ;rotate_by_this =
+                                ;get_soho_roll(hd.date_obs + ' ' +
+                                ;hd.time_obs)
+
+;
+; NOTE - In the ROT command, define a pivot_centre instead of using
+;        sunc.xcen etc.  This provides for greater flexibility of
+;        taking care of offsets etc.
+;
+
         crotaExist = tag_exist(hd,'CROTA')
 ;        crota1Exist = tag_exist(hd,'CROTA1')
 ;        crota2Exist = tag_exist(hd,'CROTA2')
