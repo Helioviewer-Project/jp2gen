@@ -98,15 +98,39 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ;        hd.crpix1 = sunc.xcen
 ;        hd.crpix2 = sunc.ycen
 ;        print,progname + ': quicklook FITS files.'
-        aa = sunc.xcen - sz[0]/2.0 ; difference between array centre and sun centre
-        bb = sunc.ycen - sz[1]/2.0 ; difference between array centre and sun centre
-        sunc.xcen = sz[0]/2.0 - aa ; sun centre appears to be in a different place
-        sunc.ycen = sz[1]/2.0 - bb ; 
+;        aa = sunc.xcen - sz[0]/2.0 ; difference between array centre and sun centre
+;        bb = sunc.ycen - sz[1]/2.0 ; difference between array centre and sun centre
+;        sunc.xcen = sz[0]/2.0 - aa ; sun centre appears to be in a different place
+;        sunc.ycen = sz[1]/2.0 - bb ; 
         ;hd.crpix1 = sunc.xcen
         ;hd.crpix2 = sunc.ycen
-        rotate_by_this = get_soho_roll(hd.date_obs + ' ' + hd.time_obs)
-        if (abs(rotate_by_this) ge 170.0) then begin
-           image_new = rotate(image_new,2)
+        ;rotate_by_this = get_soho_roll(hd.date_obs + ' ' + hd.time_obs)
+        crotaExist = tag_exist(hd,'CROTA')
+;        crota1Exist = tag_exist(hd,'CROTA1')
+;        crota2Exist = tag_exist(hd,'CROTA2')
+
+        if crotaExist then begin
+;
+;          have to zero out the edges in order to avoid a streaky
+;          image at the edge of the data
+;
+           image_new[0,*] = 0
+           image_new[*,0] = 0
+           image_new[1023,*] = 0
+           image_new[*,1023] = 0
+           rotate_by_this = hd.crota
+           if (rotate_by_this eq 180) then begin
+              image_new = rot(image_new,-180,1.0,sunc.xcen,sunc.ycen,/pivot,/interp)
+           endif else begin
+              if not(rotate_by_this eq 0) then begin
+                 image_new = rot(image_new,-rotate_by_this,1.0,sunc.xcen,sunc.ycen,/interp,/pivot)
+              endif
+           endelse
+;
+;          block out the inner and outer occulting disk
+;
+           image_new = circle_mask(image_new, sunc.xcen, sunc.ycen, 'LT', r_occ*r_sun, mask=0)
+           image_new = circle_mask(image_new, sunc.xcen, sunc.ycen, 'GT', r_occ_out*r_sun, mask=0)
         endif
      endif else begin
         rotate_by_this = hd.crota1
@@ -115,30 +139,30 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ;
 ; block out the inner occulting disk
 ;
-     xim = sz(0)/2.0
-     yim = sz(1)/2.0
+;;     xim = sz(0)/2.0
+;;     yim = sz(1)/2.0
 
-     a = xim - sunc.xcen
-     b = yim - sunc.ycen
+;;     a = xim - sunc.xcen
+;;     b = yim - sunc.ycen
 ;     if (abs(hd.crota1) ge 170.0) then begin
-     if (abs(rotate_by_this) ge 170.0) then begin
-        image_new = circle_mask(image_new, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
+;;     if (abs(rotate_by_this) ge 170.0) then begin
+;;       image_new = circle_mask(image_new, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
 ;        alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
-     endif else begin
-        image_new = circle_mask(image_new, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
+;;     endif else begin
+;;        image_new = circle_mask(image_new, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
 ;        alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
-     endelse
+;;     endelse
 ;
 ; remove the outer corner areas which have no data
 ;
 ;     if (abs(hd.crota1) ge 170.0) then begin
-     if (abs(rotate_by_this) ge 170.0) then begin
-        image_new = circle_mask(image_new, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
+;;     if (abs(rotate_by_this) ge 170.0) then begin
+;;        image_new = circle_mask(image_new, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
 ;        alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
-     endif else begin
-        image_new = circle_mask(image_new, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
+;;     endif else begin
+;;        image_new = circle_mask(image_new, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
 ;        alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
-     endelse  
+;;     endelse  
 ;
 ; add the tag_name 'R_SUN' to the header information
 ;
