@@ -1,9 +1,9 @@
-http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA/
+http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/
 /Users/ireland/JP2Gen_downloadtest/staging/v0.8/
 /Users/ireland/JP2Gen_downloadtest/v0.8/
 2010/06/18
 2010/06/18
--1
+94
 AIA
 /Users/ireland/JP2Gen_downloadtest/pretendweb/
 1000000
@@ -12,3 +12,4 @@ False
 0
 2
 ireland
+dbTest1.sqlite
