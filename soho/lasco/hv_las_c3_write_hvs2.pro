@@ -126,39 +126,26 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
            pylonimaCopy[1023,*] = 0
            pylonimaCopy[*,1023] = 0
 
-
-           rotate_by_this = hd.crota
-           if (rotate_by_this eq 180) then begin
-              image_new = rot(image_new,-180,1.0,sunc.xcen,sunc.ycen,/pivot,/interp)
-              pylonima_rotated = rot(pylonimaCopy,-180,1.0,sunc.xcen,sunc.ycen,/pivot,/interp)
-           endif else begin
-              if not(rotate_by_this eq 0) then begin
-                 image_new = rot(image_new,-rotate_by_this,1.0,sunc.xcen,sunc.ycen,/interp,/pivot)
-                 pylonima_rotated = rot(pylonimaCopy,-rotate_by_this,1.0,sunc.xcen,sunc.ycen,/interp,/pivot)
-              endif
-           endelse
+           orientation = hd.crota
+           pivotCenter = [sunc.xcen,sunc.ycen]
+           if not(orientation eq 0) then begin
+              image_new = rot(image_new,-orientation,1.0,pivotCenter[0],pivotCenter[1],/pivot,/interp)
+              pylonima_rotated = rot(pylonimaCopy,-orientation,1.0,pivotCenter[0],pivotCenter[1],/pivot,/interp)
+           endif
 ;
 ;          block out the inner and outer occulting disk
 ;
-           image_new = circle_mask(image_new, sunc.xcen, sunc.ycen, 'LT', r_occ*r_sun, mask=0)
-           image_new = circle_mask(image_new, sunc.xcen, sunc.ycen, 'GT', r_occ_out*r_sun, mask=0)
+           image_new = circle_mask(image_new, pivotCenter[0],pivotCenter[1], 'LT', r_occ*r_sun, mask=0)
+           image_new = circle_mask(image_new, pivotCenter[0],pivotCenter[1], 'GT', r_occ_out*r_sun, mask=0)
         endif
      endif else begin
         rotate_by_this = hd.crota1
         pivot_centre = [sunc.xcen,sunc.ycen]
         print,progname + ': using archived FITS files.'
      endelse
-
-     
 ;
-; Pylon Image
+; Apply the C3 mask
 ;
-;     pylonima_rotated = rot(pylonima, hd.crota1, 1, xim,yim)
-;     pylonima_rotated = rot(pylonima, rotate_by_this, 1, pivot_centre[0],pivot_centre[1],/pivot)
-;     pylonima_rotated = rotate(pylonima, 2);rotate_by_this, 1, old_sunc.xcen,old_sunc.ycen,/pivot)
-
-     transparent_index = where(pylonima_rotated eq 2)
-;     alpha_mask(transparent_index) = 0
      zero_index = where(pylonima_rotated ge 2)
      image_new(zero_index) = 0
 ;
@@ -166,30 +153,6 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;
      pylon_index = where(pylonima_rotated eq 3)
      image_new(pylon_index) = 1
-;
-; Mask the Image
-;
-
-;     if (abs(rotate_by_this) ge 170.0) then begin
-;         image_new = circle_mask(image_new, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
-;;         alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
-;        hd.crpix1 = 512+a
-;        hd.crpix2 = 512+b
-;      endif else begin
-;         image_new = circle_mask(image_new, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
-;;         alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
-;      endelse
-;; ;
-;; ; remove the outer corner areas which have no data and create the mask
-;; ;
-;      if (abs(rotate_by_this) ge 170.0) then begin
-;         image_new = circle_mask(image_new, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
-;;         alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
-;      endif else begin
-;         image_new = circle_mask(image_new, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
-;;         alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
-;      endelse      
-
 ;
 ; add the tag_name 'R_SUN' to the hd information
 ;

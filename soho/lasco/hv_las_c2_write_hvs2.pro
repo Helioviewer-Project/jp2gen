@@ -84,36 +84,6 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
 ;
      using_quicklook = HV_USING_QUICKLOOK_PROCESSING(details.called_by)
      if using_quicklook then begin
-;        answer = HV_LASCO_HANDLE_QUICKLOOK(image_new,hd,sunc)
-;        rotate_by_this = 0.0
-;        rotate_by_this = get_soho_roll(date_obs + ' ' + time_obs)
-;        imtemp = image_new
-;        image_new = 0.0*image_new
-;        image_new = rot(imtemp,rotate_by_this, 1, sunc.xcen,sunc.ycen,/pivot)
-;        image_new = rotate(imtemp,2)
-;        aa = sunc.xcen - sz[0]/2.0 ; difference between array centre and sun centre
-;        bb = sunc.ycen - sz[1]/2.0 ; difference between array centre and sun centre
-;        sunc.xcen = sz[0]/2.0 - aa ; sun centre appears to be in a different place
-;        sunc.ycen = sz[1]/2.0 - bb ; 
-;        hd.crpix1 = sunc.xcen
-;        hd.crpix2 = sunc.ycen
-;        print,progname + ': quicklook FITS files.'
-;        aa = sunc.xcen - sz[0]/2.0 ; difference between array centre and sun centre
-;        bb = sunc.ycen - sz[1]/2.0 ; difference between array centre and sun centre
-;        sunc.xcen = sz[0]/2.0 - aa ; sun centre appears to be in a different place
-;        sunc.ycen = sz[1]/2.0 - bb ; 
-        ;hd.crpix1 = sunc.xcen
-        ;hd.crpix2 = sunc.ycen
-                                ;rotate_by_this =
-                                ;get_soho_roll(hd.date_obs + ' ' +
-                                ;hd.time_obs)
-
-;
-; NOTE - In the ROT command, define a pivot_centre instead of using
-;        sunc.xcen etc.  This provides for greater flexibility of
-;        taking care of offsets etc.
-;
-
         crotaExist = tag_exist(hd,'CROTA')
 ;        crota1Exist = tag_exist(hd,'CROTA1')
 ;        crota2Exist = tag_exist(hd,'CROTA2')
@@ -127,14 +97,11 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
            image_new[*,0] = 0
            image_new[1023,*] = 0
            image_new[*,1023] = 0
-           rotate_by_this = hd.crota
-           if (rotate_by_this eq 180) then begin
-              image_new = rot(image_new,-180,1.0,sunc.xcen,sunc.ycen,/pivot,/interp)
-           endif else begin
-              if not(rotate_by_this eq 0) then begin
-                 image_new = rot(image_new,-rotate_by_this,1.0,sunc.xcen,sunc.ycen,/interp,/pivot)
-              endif
-           endelse
+           orientation = hd.crota
+           pivotCenter = [sunc.xcen,sunc.ycen]
+           if not(orientation eq 0) then begin
+              image_new = rot(image_new,-orientation,1.0,pivotCenter[0],pivotCenter[1],/pivot,/interp)
+           endif
 ;
 ;          block out the inner and outer occulting disk
 ;
@@ -145,33 +112,6 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
         rotate_by_this = hd.crota1
         print,progname + ': using archived FITS files.'
      endelse
-;
-; block out the inner occulting disk
-;
-;;     xim = sz(0)/2.0
-;;     yim = sz(1)/2.0
-
-;;     a = xim - sunc.xcen
-;;     b = yim - sunc.ycen
-;     if (abs(hd.crota1) ge 170.0) then begin
-;;     if (abs(rotate_by_this) ge 170.0) then begin
-;;       image_new = circle_mask(image_new, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
-;        alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
-;;     endif else begin
-;;        image_new = circle_mask(image_new, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
-;        alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
-;;     endelse
-;
-; remove the outer corner areas which have no data
-;
-;     if (abs(hd.crota1) ge 170.0) then begin
-;;     if (abs(rotate_by_this) ge 170.0) then begin
-;;        image_new = circle_mask(image_new, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
-;        alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
-;;     endif else begin
-;;        image_new = circle_mask(image_new, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
-;        alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
-;;     endelse  
 ;
 ; add the tag_name 'R_SUN' to the header information
 ;
