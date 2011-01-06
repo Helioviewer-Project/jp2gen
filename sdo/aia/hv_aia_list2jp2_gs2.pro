@@ -138,7 +138,18 @@ PRO hv_aia_list2jp2_gs2,list,$
 ;     endif
      exptime = hd.exptime
 
-     img = (img*info.details[this_wave].dataExptime/exptime > (info.details[this_wave].dataMin)) < info.details[this_wave].dataMax
+     img = (img*info.details[this_wave].dataExptime/(1.0*exptime) > (info.details[this_wave].dataMin)) < info.details[this_wave].dataMax
+;
+; From aia_fits2jpeg_2011013.pro 
+;
+     ;if (info.details[this_wave].fixedImageValue[0] ne -1) and (info.details[this_wave].fixedImageValue[1] ne -1) then begin
+     ;   img[0,0] = info.details[this_wave].fixedImageValue[0]
+     ;   img[0,1] = info.details[this_wave].fixedImageValue[1]
+     ;endif
+     img[0,0] = 0
+     img[0,1] = 500000
+
+     print,measurement, img[0,0], img[0,1]
 
      if info.details[this_wave].dataScalingType eq 0 then begin
         img = bytscl(img,/nan)
