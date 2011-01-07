@@ -143,18 +143,20 @@ PRO hv_aia_list2jp2_gs2,list,$
         img[0,1] = info.details[this_wave].fixedImageValue[1]
      endif
 
-     img = (img > (info.details[this_wave].dataMin)) < info.details[this_wave].dataMax
-
-     if info.details[this_wave].dataScalingType eq 0 then begin
-        img = bytscl(img,/nan)
-     endif
-     if info.details[this_wave].dataScalingType eq 1 then begin
-        img = bytscl(sqrt(img),/nan)
-     endif
-     if info.details[this_wave].dataScalingType eq 3 then begin
-        img = bytscl(alog10(img),/nan)
-     endif
-;     img = bytscl( (float(img)/255.0)^info.details[this_wave].gamma )
+     if measurement eq '171' then begin
+        img = bytscl(((img-5)>.1)^.5<40>1)
+     endif else begin
+        img = (img > (info.details[this_wave].dataMin)) < info.details[this_wave].dataMax
+        if info.details[this_wave].dataScalingType eq 0 then begin
+           img = bytscl(img,/nan)
+        endif
+        if info.details[this_wave].dataScalingType eq 1 then begin
+           img = bytscl(sqrt(img),/nan)
+        endif
+        if info.details[this_wave].dataScalingType eq 3 then begin
+           img = bytscl(alog10(img),/nan)
+        endif
+     endelse
 
      hd = add_tag(hd,info.observatory,'hv_observatory')
      hd = add_tag(hd,info.instrument,'hv_instrument')

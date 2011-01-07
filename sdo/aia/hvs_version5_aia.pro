@@ -105,9 +105,10 @@ FUNCTION HVS_VERSION5_AIA
   b.details[2].dataMin = 200.0
   b.details[2].dataMax = 14000.0
   b.details[2].dataScalingType = 1 ; 0 - linear, 1 - sqrt, 3 - log10
-  b.details[2].dataExptime = 4.99803
+  b.details[2].dataExptime = 1.0;4.99803
   b.details[2].gamma = 1.0
   b.details[2].fixedImageValue = [-1,-1]
+  b.details[2].fixedImageValue = [0,500000]
 ;
 ; 193
 ;
