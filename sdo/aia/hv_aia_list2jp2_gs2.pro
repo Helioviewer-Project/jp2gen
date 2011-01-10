@@ -139,6 +139,7 @@ PRO hv_aia_list2jp2_gs2,list,$
 ;     endif
      exptime = hd.exptime
      img = (img*info.details[this_wave].dataExptime/(1.0*exptime))
+
      if (info.details[this_wave].fixedImageValue[0] ne -1) and (info.details[this_wave].fixedImageValue[1] ne -1) then begin
         img[0,0] = info.details[this_wave].fixedImageValue[0]
         img[0,1] = info.details[this_wave].fixedImageValue[1]

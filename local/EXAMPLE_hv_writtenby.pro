@@ -22,7 +22,7 @@
 ; webpage: the location of the JP2Gen monitoring webpage.  
 ;          This webpage will allow you to monitor file creation and transfer services of your JP2 installtion
 ;
-FUNCTION HV_WRITTENBY,name
+FUNCTION HV_WRITTENBY,name = name
 
   default = {local:{institute:'NASA-GSFC',$
                     contact:'Helioviewer Project (webmaster@helioviewer.org)',$

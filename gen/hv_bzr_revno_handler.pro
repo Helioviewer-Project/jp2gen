@@ -9,7 +9,8 @@ FUNCTION HV_BZR_REVNO_HANDLER,loc
   if err[0] eq '' then begin
      out = list
   endif else begin
-     out ='No valid revision number found. '+ strjoin(err,':')
+     wby = HV_WRITTENBY()
+     out ='No valid revision number found. Bazaar not installed? Using HV_WRITTENBY manually included revision number: '+ wby.manual_revision_number + ' : ' + strjoin(err,':')
   endelse
 
 ;  if isarray(out) then begin
