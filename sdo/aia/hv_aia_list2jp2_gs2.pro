@@ -1,8 +1,9 @@
 ;
 ; 22 April 2010
 ;
-; Version 3 of conversion of SDO data to JP2
-; Based on the AIA data analysis guide.
+; Version 5 of conversion of SDO data to JP2
+; Based on aia_fits2jpeg.pro that is used to create JPEG files for
+; GSFC SDO website.
 ;
 ; Implements LMSAL Sun Today image scaling
 ;
