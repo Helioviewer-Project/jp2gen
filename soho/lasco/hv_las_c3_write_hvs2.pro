@@ -71,14 +71,14 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;
 ; block out the inner occulting disk
 ;
-     xim = sz(0)/2.0
-     yim = sz(1)/2.0
+;     xim = sz(0)/2.0
+;     yim = sz(1)/2.0
 
-     a = xim - sunc.xcen
-     b = yim - sunc.ycen
+;     a = xim - sunc.xcen
+;     b = yim - sunc.ycen
 
-     a = xim - hd.crpix1
-     b = yim - hd.crpix2
+;     a = xim - hd.crpix1
+;     b = yim - hd.crpix2
 
 ;     image_new = shift(image_new,a,b)
 
@@ -89,33 +89,64 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;     stop
 
      using_quicklook = HV_USING_QUICKLOOK_PROCESSING(details.called_by)
+;;      if using_quicklook then begin
+;; ;        answer = HV_LASCO_HANDLE_QUICKLOOK(image_new,hd,sunc)
+;; ;        image_new = answer.image_new
+;; ;        hd = answer.hd
+;; ;        sunc = answer.sunc
+;; ;        rotate_by_this = answer.rotate_by_this
+;;         aa = sunc.xcen - sz[0]/2.0 ; difference between array centre and sun centre
+;;         bb = sunc.ycen - sz[1]/2.0 ; difference between array centre and sun centre
+;;         sunc.xcen = sz[0]/2.0 - aa ; sun centre appears to be in a different place
+;;         sunc.ycen = sz[1]/2.0 - bb ; 
+;;         rotate_by_this = get_soho_roll(hd.date_obs + ' ' + hd.time_obs)
+;;         pivot_centre = [sz[0]/2.0,sz[1]/2.0]
+;;      endif else begin
+;;         rotate_by_this = hd.crota1
+;;         pivot_centre = [sunc.xcen,sunc.ycen]
+;;         print,progname + ': using archived FITS files.'
+;;      endelse
+
      if using_quicklook then begin
-;        answer = HV_LASCO_HANDLE_QUICKLOOK(image_new,hd,sunc)
-;        image_new = answer.image_new
-;        hd = answer.hd
-;        sunc = answer.sunc
-;        rotate_by_this = answer.rotate_by_this
-        aa = sunc.xcen - sz[0]/2.0 ; difference between array centre and sun centre
-        bb = sunc.ycen - sz[1]/2.0 ; difference between array centre and sun centre
-        sunc.xcen = sz[0]/2.0 - aa ; sun centre appears to be in a different place
-        sunc.ycen = sz[1]/2.0 - bb ; 
-        rotate_by_this = get_soho_roll(hd.date_obs + ' ' + hd.time_obs)
-        pivot_centre = [sz[0]/2.0,sz[1]/2.0]
+        crotaExist = tag_exist(hd,'CROTA')
+
+        if crotaExist then begin
+;
+;          have to zero out the edges in order to avoid a streaky
+;          image at the edge of the data
+;
+           image_new[0,*] = 0
+           image_new[*,0] = 0
+           image_new[1023,*] = 0
+           image_new[*,1023] = 0
+
+           pylonimaCopy = pylonima
+           pylonimaCopy[0,*] = 0
+           pylonimaCopy[*,0] = 0
+           pylonimaCopy[1023,*] = 0
+           pylonimaCopy[*,1023] = 0
+
+           orientation = hd.crota
+           ;pivotCenter = [sunc.xcen,sunc.ycen]
+           pivotCenter = [hd.crpix1,hd.crpix2]
+           if not(orientation eq 0) then begin
+              image_new = rot(image_new,orientation,1.0,pivotCenter[0],pivotCenter[1],/pivot,/interp,missing = 0.0)
+              pylonima_rotated = rot(pylonimaCopy,orientation,1.0,pivotCenter[0],pivotCenter[1],/pivot,/interp)
+           endif
+;
+;          block out the inner and outer occulting disk
+;
+           image_new = circle_mask(image_new, pivotCenter[0],pivotCenter[1], 'LT', r_occ*r_sun, mask=0)
+           image_new = circle_mask(image_new, pivotCenter[0],pivotCenter[1], 'GT', r_occ_out*r_sun, mask=0)
+        endif
      endif else begin
         rotate_by_this = hd.crota1
         pivot_centre = [sunc.xcen,sunc.ycen]
         print,progname + ': using archived FITS files.'
      endelse
-     
 ;
-; Pylon Image
+; Apply the C3 mask
 ;
-;     pylonima_rotated = rot(pylonima, hd.crota1, 1, xim,yim)
-     pylonima_rotated = rot(pylonima, rotate_by_this, 1, pivot_centre[0],pivot_centre[1],/pivot)
-;     pylonima_rotated = rotate(pylonima, 2);rotate_by_this, 1, old_sunc.xcen,old_sunc.ycen,/pivot)
-
-     transparent_index = where(pylonima_rotated eq 2)
-;     alpha_mask(transparent_index) = 0
      zero_index = where(pylonima_rotated ge 2)
      image_new(zero_index) = 0
 ;
@@ -123,30 +154,6 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;
      pylon_index = where(pylonima_rotated eq 3)
      image_new(pylon_index) = 1
-;
-; Mask the Image
-;
-
-      if (abs(rotate_by_this) ge 170.0) then begin
-;         image_new = circle_mask(image_new, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
-;;         alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'LT', r_occ*r_sun, mask=0)
-        hd.crpix1 = 512+a
-        hd.crpix2 = 512+b
-      endif else begin
-;         image_new = circle_mask(image_new, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
-;;         alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'LT', r_occ*r_sun, mask=0)
-      endelse
-;; ;
-;; ; remove the outer corner areas which have no data and create the mask
-;; ;
-      if (abs(rotate_by_this) ge 170.0) then begin
-         image_new = circle_mask(image_new, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
-;;         alpha_mask = circle_mask(alpha_mask, xim+a, yim+b, 'GT', r_occ_out*r_sun, mask=0)
-      endif else begin
-         image_new = circle_mask(image_new, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
-;;         alpha_mask = circle_mask(alpha_mask, xim-a, yim-b, 'GT', r_occ_out*r_sun, mask=0)
-      endelse      
-
 ;
 ; add the tag_name 'R_SUN' to the hd information
 ;

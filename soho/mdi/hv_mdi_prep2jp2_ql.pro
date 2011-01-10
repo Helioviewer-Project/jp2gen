@@ -101,7 +101,7 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
 ; Flatfield file
 ;
      ff_file = info.flatfield_file
-  
+
      if (n_elements(types) eq 0) then types = ['maglc_fd', 'igram_fd']
      for itype=0,n_elements(types)-1 do begin
         type = types(itype)
@@ -189,15 +189,26 @@ PRO HV_MDI_PREP2JP2_QL,details_file = details_file, copy2outgoing = copy2outgoin
               sohoRotAngle = sxpar(h, 'CROT')
               if (sohoRotAngle eq 180) then begin
                  img = rotate(img,2)
+                 ;window,3
+                 ;plot_image,img, title = 'most recent 180 degree orientation ' + hd.DATE_OBS
               endif else begin
                  if (sohoRotAngle ne 0) then begin
-                    img = rot(img,sohoRotAngle,/interp,missing = 0.0)                 ; IDL says the images are rotated clockwise
-                    hd = add_tag(hd,hd.crpix1,'hv_crpix1_original')       ; keep a store of the original sun centre
-                    hd = add_tag(hd,hd.crpix2,'hv_crpix2_original')
-                    rotatedSolarCentre = HV_CALC_ROT_CENTRE( [hd.crpix1,hd.crpix2], sohoRotAngle, [511.5, 511.5] ) ; calculate the new solar centre given that we have performed a clockwise rotation on the original image
-                    hd.crpix1 = rotatedSolarCentre[0]
-                    hd.crpix2 = rotatedSolarCentre[1]
-                 endif
+                    pivotCenter = [hd.crpix1,hd.crpix2]
+                    ;window,0
+                    ;plot_image,img,title = hd.DATE_OBS
+                    img = rot(img,sohoRotAngle,1.0,pivotCenter[0],pivotCenter[1],/pivot,/interp,missing = 0.0)                 ; IDL says the images are rotated clockwise
+                    ;window,1
+                    ;plot_image,img,title = 'rotated '+ hd.DATE_OBS
+                    ;read, dummy
+                    ;hd = add_tag(hd,hd.crpix1,'hv_crpix1_original')       ; keep a store of the original sun centre
+                    ;hd = add_tag(hd,hd.crpix2,'hv_crpix2_original')
+                    ;rotatedSolarCentre = HV_CALC_ROT_CENTRE( [hd.crpix1,hd.crpix2], sohoRotAngle, [511.5, 511.5] ) ; calculate the new solar centre given that we have performed a clockwise rotation on the original image
+                    ;hd.crpix1 = rotatedSolarCentre[0]
+                    ;hd.crpix2 = rotatedSolarCentre[1]
+                 endif else begin
+                    ;window,2
+                    ;plot_image,img, title = 'most recent zero degree orientation ' + hd.DATE_OBS
+                 endelse
               endelse
               hd = add_tag(hd,sohoRotAngle,'hv_rotation')
 ;

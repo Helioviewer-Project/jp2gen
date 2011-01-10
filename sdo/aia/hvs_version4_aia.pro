@@ -1,6 +1,8 @@
 ;
-; Function which defines the EIT JP2 encoding parameters for each type
+; Function which defines the AIA encoding parameters for each type
 ; of measurement
+;
+; Version 4.  Based on the scaling algorithm aia_fits2jpeg from 2011/01/03
 ;
 ; Minimum required Helioviewer Setup (HVS) structure tags.
 ;
@@ -32,7 +34,7 @@
 ;
 ;
 
-FUNCTION HVS_VERSION3_AIA
+FUNCTION HVS_VERSION4_AIA
 ;
 ; Get some general setup details.
 ;
@@ -72,10 +74,10 @@ FUNCTION HVS_VERSION3_AIA
   b.details[0].n_layers = 8 ; REQUIRED
   b.details[0].idl_bitdepth = 8 ; REQUIRED
   b.details[0].bit_rate = [0.5,0.01] ; REQUIRED
-  b.details[0].dataMin = 0.25;3.0
-  b.details[0].dataMax = 250.0;50.0
-  b.details[0].dataScalingType = 1 ; 0 - linear, 1 - sqrt, 3 - log10
-  b.details[0].dataExptime = 4.99803
+  b.details[0].dataMin = 0.1;0.25;3.0
+  b.details[0].dataMax = 30.0;250.0;50.0
+  b.details[0].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
+  b.details[0].dataExptime = 3.0;4.99803
   b.details[0].gamma = 1.0
 ;
 ; 131
@@ -85,7 +87,7 @@ FUNCTION HVS_VERSION3_AIA
   b.details[1].n_layers = 8 ; REQUIRED
   b.details[1].idl_bitdepth = 8 ; REQUIRED
   b.details[1].bit_rate = [0.5,0.01] ; REQUIRED
-  b.details[1].dataMin = 0.1; 0.0
+  b.details[1].dataMin = 0.7; 0.0
   b.details[1].dataMax = 500.0 ; 1900.0
   b.details[1].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
   b.details[1].dataExptime = 6.99685
@@ -113,10 +115,10 @@ FUNCTION HVS_VERSION3_AIA
   b.details[3].n_layers = 8
   b.details[3].idl_bitdepth = 8
   b.details[3].bit_rate = [0.5,0.01]
-  b.details[3].dataMin = 1.0
-  b.details[3].dataMax = 8000.0
+  b.details[3].dataMin = 20.0;1.0
+  b.details[3].dataMax = 2500.0;8000.0
   b.details[3].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
-  b.details[3].dataExptime = 2.99950
+  b.details[3].dataExptime = 2.0;2.99950
   b.details[3].gamma = 4.0
 
 ;
@@ -127,10 +129,10 @@ FUNCTION HVS_VERSION3_AIA
   b.details[4].n_layers = 8
   b.details[4].idl_bitdepth = 8
   b.details[4].bit_rate = [0.5,0.01]
-  b.details[4].dataMin = 0.25
-  b.details[4].dataMax = 4000.0
+  b.details[4].dataMin = 7.0
+  b.details[4].dataMax = 1500.0
   b.details[4].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
-  b.details[4].dataExptime = 4.99801
+  b.details[4].dataExptime = 3.0;4.99801
   b.details[4].gamma = 4.0
 
 ;
@@ -141,10 +143,10 @@ FUNCTION HVS_VERSION3_AIA
   b.details[5].n_layers = 8 ; REQUIRED
   b.details[5].idl_bitdepth = 8 ; REQUIRED
   b.details[5].bit_rate = [0.5,0.01] ; REQUIRED
-  b.details[5].dataMin = 0.0;60.0
-  b.details[5].dataMax = 700;2000.0
+  b.details[5].dataMin = 0.8;0.0;60.0
+  b.details[5].dataMax = 250.0;700;2000.0
   b.details[5].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
-  b.details[5].dataExptime = 4.99441
+  b.details[5].dataExptime = 1.0;4.99441
   b.details[5].gamma = 1.0
 
 ;
@@ -155,10 +157,10 @@ FUNCTION HVS_VERSION3_AIA
   b.details[6].n_layers = 8 ; REQUIRED
   b.details[6].idl_bitdepth = 8 ; REQUIRED
   b.details[6].bit_rate = [0.5,0.01] ; REQUIRED
-  b.details[6].dataMin = 0.25;8.0
-  b.details[6].dataMax = 1000.0;1500.0
+  b.details[6].dataMin = 0.4;0.25;8.0
+  b.details[6].dataMax = 80.0;1000.0;1500.0
   b.details[6].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
-  b.details[6].dataExptime = 6.99734
+  b.details[6].dataExptime = 4.0;1.0;6.99734
   b.details[6].gamma = 1.8
 
 ;
@@ -169,10 +171,10 @@ FUNCTION HVS_VERSION3_AIA
   b.details[7].n_layers = 8 ; REQUIRED
   b.details[7].idl_bitdepth = 8 ; REQUIRED
   b.details[7].bit_rate = [0.5,0.01] ; REQUIRED
-  b.details[7].dataMin = 100.0
-  b.details[7].dataMax = 625.0
+  b.details[7].dataMin = 20.0;100.0
+  b.details[7].dataMax = 400.0;625.0
   b.details[7].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
-  b.details[7].dataExptime = 2.99911
+  b.details[7].dataExptime = 1.0;2.99911
   b.details[7].gamma = 1.0
 
 ;
@@ -183,10 +185,10 @@ FUNCTION HVS_VERSION3_AIA
   b.details[8].n_layers = 8 ; REQUIRED
   b.details[8].idl_bitdepth = 8 ; REQUIRED
   b.details[8].bit_rate = [0.5,0.01] ; REQUIRED
-  b.details[8].dataMin = 100.0
-  b.details[8].dataMax = 2500.0
+  b.details[8].dataMin = 220.0;100.0
+  b.details[8].dataMax = 5000.0;2500.0
   b.details[8].dataScalingType = 1 ; 0 - linear, 1 - sqrt, 3 - log10
-  b.details[8].dataExptime = 1.00026
+  b.details[8].dataExptime = 1.0;1.00026
   b.details[8].gamma = 1.0
 
 ;
@@ -197,10 +199,10 @@ FUNCTION HVS_VERSION3_AIA
   b.details[9].n_layers = 8 ; REQUIRED
   b.details[9].idl_bitdepth = 8 ; REQUIRED
   b.details[9].bit_rate = [0.5,0.01] ; REQUIRED
-  b.details[9].dataMin = 0.25
-  b.details[9].dataMax = 38000.0^2
-  b.details[9].dataScalingType = 0 ; 0 - linear, 1 - sqrt, 3 - log10
-  b.details[9].dataExptime = 1.00026
+  b.details[9].dataMin = 4000.0;0.25
+  b.details[9].dataMax = 20000.0;38000.0^2
+  b.details[9].dataScalingType = 3 ; 0 - linear, 1 - sqrt, 3 - log10
+  b.details[9].dataExptime = 1.0;1.00026
   b.details[9].gamma = 1.0
 
 ;

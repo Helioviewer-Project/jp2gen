@@ -35,12 +35,23 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_writ
         b0[1018:1023,*] = 0.0
         b0[*,0:5] = 0.0
         b0[*,1018:1023] = 0.0
-        b0 = rot(b0,sohoRotAngle,/interp,missing = 0.0)                 ; IDL says the images are rotated clockwise
-        header = add_tag(header,header.crpix1,'hv_crpix1_original')     ; keep a store of the original sun centre
-        header = add_tag(header,header.crpix2,'hv_crpix2_original')
-        rotatedSolarCentre = HV_CALC_ROT_CENTRE( [header.crpix1,header.crpix2], sohoRotAngle, [511.5, 511.5] ) ; calculate the new solar centre given that we have performed a clockwise rotation on the original image
-        header.crpix1 = rotatedSolarCentre[0]
-        header.crpix2 = rotatedSolarCentre[1]
+        b0 = rot(b0,sohoRotAngle,1.0,header.crpix1,header.crpix2,/pivot,/interp,missing = 0.0)
+        ;print,'********************',header.crpix1,header.crpix2
+        ;pivotCenter = [header.crpix1,header.crpix2]
+        ;pivotCenter = [511.5,511.5]
+        ;b0 = HV_MOVE_IMAGE(b0,header.crpix1,header.crpix2)
+        ;header = add_tag(header,header.crpix1,'hv_crpix1_original')     ; keep a store of the original sun centre
+        ;header = add_tag(header,header.crpix2,'hv_crpix2_original')
+        ;header.crpix1 = 511.5
+        ;header.crpix2 = 511.5
+
+        ;b0 = rot(b0,sohoRotAngle,1.0,pivotCenter[0],pivotCenter[1],/pivot,/interp,missing = 0.0) ; IDL says the images are rotated clockwise
+        ;header = add_tag(header,header.crpix1,'hv_crpix1_original')     ; keep a store of the original sun centre
+        ;header = add_tag(header,header.crpix2,'hv_crpix2_original')
+        ;rotatedSolarCentre = HV_CALC_ROT_CENTRE( [header.crpix1,header.crpix2], sohoRotAngle, [511.5, 511.5] ) ; calculate the new solar centre given that we have performed a clockwise rotation on the original image
+        ;b0 = HV_MOVE_IMAGE(b0,rotatedSolarCentre[0],rotatedSolarCentre[1])
+        ;header.crpix1 = rotatedSolarCentre[0]
+        ;header.crpix2 = rotatedSolarCentre[1]
      endif
   endelse
 

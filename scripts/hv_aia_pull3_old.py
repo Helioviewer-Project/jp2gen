@@ -61,11 +61,11 @@ def hvCreateSubdir(x,out=True):
 			jprint('Directory already exists: ' + x)
 
 # Directory Structure
-def hvSubdir(measurement,yyyy,mm,dd):
-	return [measurement+'/', measurement+'/'+yyyy+'/', measurement+'/'+yyyy+'/'+mm+'/', measurement+'/'+yyyy+'/'+mm+'/'+dd+'/']
 #def hvSubdir(measurement,yyyy,mm,dd):
-#	"""Return the directory structure for helioviewer JPEG2000 files."""
-#	return [yyyy + '/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
+#	return [measurement+'/', measurement+'/'+yyyy+'/', measurement+'/'+yyyy+'/'+mm+'/', measurement+'/'+yyyy+'/'+mm+'/'+dd+'/']
+def hvSubdir(measurement,yyyy,mm,dd):
+	"""Return the directory structure for helioviewer JPEG2000 files."""
+	return [yyyy + '/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
 
 
 # Define the log directory
@@ -126,21 +126,22 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 
         # get the JP2s for this wavelength
         # create the local JP2 subdirectory required
-        local_keep = local_storage + wave + '/' + todayDir + '/'
+        local_keep = local_storage + todayDir + '/' + wave + '/'
         try:
                 os.makedirs(local_keep)
                 change2hv(local_storage)
-                change2hv(local_storage + wave)
-                change2hv(local_storage + wave + '/' + yyyy)
-                change2hv(local_storage + wave + '/' + yyyy + '/' + mm)
-                change2hv(local_storage + wave + '/' + yyyy + '/' + mm + '/' + dd)
+                #change2hv(local_storage + wave)
+                change2hv(local_storage + '/' + yyyy)
+                change2hv(local_storage + '/' + yyyy + '/' + mm)
+                change2hv(local_storage + '/' + yyyy + '/' + mm + '/' + dd)
+		change2hv(local_storage + '/' + yyyy + '/' + mm + '/' + dd + '/' + wave)
 		jprint('Created '+ local_keep)
         except:
                 jprint('Directory already exists: '+ local_keep)
 
 
         # create the logfile subdirectory for this wavelength
-        logSubdir = logloc + wave + '/' + todayDir + '/'
+        logSubdir = logloc + todayDir + '/' + wave + '/'
         try:
                 os.makedirs(logSubdir)
 		jprint('Created log directory: ' + logSubdir)
@@ -152,7 +153,7 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
         logFileName = timeStamp + '.' + yyyy + '_' + mm + '_' + dd + '__'+nickname+'__' + wave + '.wget.log'    
 
         # create the database subdirectory for this wavelength
-        dbSubdir = dbloc + wave + '/' + todayDir + '/'
+        dbSubdir = dbloc + todayDir + '/' + wave + '/'
         try:
                 os.makedirs(dbSubdir)
 		jprint('Created log directory: ' + dbSubdir)
@@ -229,7 +230,7 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
         #        jprint('No latest JP2 file found.')
 
         # Calculate the remote directory
-        remote_location = remote_root + wave + '/' + todayDir + '/'
+        remote_location = remote_root + '/' + todayDir + '/' +  wave + '/'
 
         # Open the remote location and get the file list
 	try:
@@ -304,13 +305,13 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 			# Moving the files from the download directory to the ingestion directory
 			#
 			# Create the moveTo directory
-			moveTo = ingest_storage  + wave + '/' + yyyy + '/' + mm + '/' + dd + '/'
+			moveTo = ingest_storage  + yyyy + '/' + mm + '/' + dd + '/' + wave + '/'
 	                try:
 				hvCreateSubdir(ingest_storage)
-				hvCreateSubdir(ingest_storage + wave)
-				hvCreateSubdir(ingest_storage + wave + '/' + yyyy)
-				hvCreateSubdir(ingest_storage + wave + '/' + yyyy + '/' + mm)
-				hvCreateSubdir(ingest_storage + wave + '/' + yyyy + '/' + mm + '/' + dd)
+				hvCreateSubdir(ingest_storage + '/' + yyyy)
+				hvCreateSubdir(ingest_storage + '/' + yyyy + '/' + mm)
+				hvCreateSubdir(ingest_storage + '/' + yyyy + '/' + mm + '/' + dd)
+				hvCreateSubdir(ingest_storage + '/' + yyyy + '/' + mm + '/' + dd + '/' + wave)
 	                except:
 	                        jprint('Ingest directory already exists: '+moveTo)
 	

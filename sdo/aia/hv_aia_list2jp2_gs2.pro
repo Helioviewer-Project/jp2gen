@@ -1,8 +1,9 @@
 ;
 ; 22 April 2010
 ;
-; Version 3 of conversion of SDO data to JP2
-; Based on the AIA data analysis guide.
+; Version 5 of conversion of SDO data to JP2
+; Based on aia_fits2jpeg.pro that is used to create JPEG files for
+; GSFC SDO website.
 ;
 ; Implements LMSAL Sun Today image scaling
 ;
@@ -137,18 +138,27 @@ PRO hv_aia_list2jp2_gs2,list,$
 ;        img[lmax] = info.details[this_wave].dataMax
 ;     endif
      exptime = hd.exptime
+     img = (img*info.details[this_wave].dataExptime/(1.0*exptime))
+     if (info.details[this_wave].fixedImageValue[0] ne -1) and (info.details[this_wave].fixedImageValue[1] ne -1) then begin
+        img[0,0] = info.details[this_wave].fixedImageValue[0]
+        img[0,1] = info.details[this_wave].fixedImageValue[1]
+     endif
 
-     img = (img*info.details[this_wave].dataExptime/exptime > (info.details[this_wave].dataMin)) < info.details[this_wave].dataMax
+     if measurement eq '171' then begin
+        img = bytscl(((img-5)>.1)^.5<40>1)
+     endif else begin
+        img = (img > (info.details[this_wave].dataMin)) < info.details[this_wave].dataMax
+        if info.details[this_wave].dataScalingType eq 0 then begin
+           img = bytscl(img,/nan)
+        endif
+        if info.details[this_wave].dataScalingType eq 1 then begin
+           img = bytscl(sqrt(img),/nan)
+        endif
+        if info.details[this_wave].dataScalingType eq 3 then begin
+           img = bytscl(alog10(img),/nan)
+        endif
+     endelse
 
-     if info.details[this_wave].dataScalingType eq 0 then begin
-        img = bytscl(img,/nan)
-     endif
-     if info.details[this_wave].dataScalingType eq 1 then begin
-        img = bytscl(sqrt(img),/nan)
-     endif
-     if info.details[this_wave].dataScalingType eq 3 then begin
-        img = bytscl(alog10(img),/nan)
-     endif
      hd = add_tag(hd,info.observatory,'hv_observatory')
      hd = add_tag(hd,info.instrument,'hv_instrument')
      hd = add_tag(hd,info.detector,'hv_detector')
