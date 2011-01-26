@@ -83,7 +83,8 @@ PRO hv_aia_list2jp2_gs2,list,$
      z = strsplit(fullname,path_sep(),/extract) ; split up to get filename
      nz = n_elements(z)
      fitsname = z[nz-1]
-     img = readfits(fullname,hd)   ; get image and data
+;     img = readfits(fullname,hd)   ; get image and data
+     read_sdo, fullname, hd, img, parent_out='$HOME/tmp', /uncomp_delete, /mixed   ; get image and data
      hd = fitshead2struct(hd)
 ;
 ; Check that this FITS file is supported

@@ -56,8 +56,8 @@ FUNCTION HVS_VERSION5_AIA
        instrument:'AIA',$ ; REQUIRED
        detector:'AIA',$ ; REQUIRED
        nickname:'AIA',$ ; REQUIRED
-       hvs_details_filename:'hvs_version3.pro',$ ; REQUIRED
-       hvs_details_filename_version:'3.0'} ; REQUIRED
+       hvs_details_filename:'hvs_version5.pro',$ ; REQUIRED
+       hvs_details_filename_version:'5.0'} ; REQUIRED
 ;
 ; Scaling algorithm
 ;
