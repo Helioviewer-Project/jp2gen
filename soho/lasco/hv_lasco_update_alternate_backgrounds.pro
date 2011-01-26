@@ -29,21 +29,34 @@ PRO HV_LASCO_UPDATE_ALTERNATE_BACKGROUNDS,details_file = details_file
 ;
 ; Server, path and type
 ;
-  server = strarr(2)
-  path = strarr(2)
-  type = strarr(2)
+  server = strarr(4)
+  path = strarr(4)
+  type = strarr(4)
 ;
-; Rolled
+; NRL - Rolled
 ;
   server[0] = 'http://lasco-www.nrl.navy.mil'
   path[0] = '/content/retrieve/monthly/rolled'
   type[0] = 'rolled'
 ;
-; Regular
+; NRL - Regular
 ;
   server[1] = 'http://lasco-www.nrl.navy.mil'
   path[1] = '/content/retrieve/monthly'
   type[1] = 'regular'
+;
+; GSFC - Rolled
+;
+  server[2] = 'http://umbra.nascom.nasa.gov'
+  path[2] = '/lasco/bkg/rolled'
+  type[2] = 'rolled'
+;
+; GSFC - Regular
+;
+  server[3] = 'http://umbra.nascom.nasa.gov'
+  path[3] = '/lasco/bkg'
+  type[3] = 'regular'
+
 ;
 ; Query the remote server and download
 ;
