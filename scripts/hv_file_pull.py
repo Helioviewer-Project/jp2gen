@@ -126,9 +126,9 @@ def hvCreateSubdir(x, localUser='' ,out=True, verbose=False):
 def hvSubdir(measurement,yyyy,mm,dd):
 	"""Return the directory structure for helioviewer JPEG2000 files."""
 	# New Style
-	#return [yyyy + '/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
+	return [yyyy + '/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
 	# Old Style
-	return [measurement + '/', measurement + '/' + yyyy + '/', measurement + '/' + yyyy+'/'+mm+'/', measurement + '/' + yyyy+'/'+mm+'/'+dd+'/', measurement + '/' + yyyy+'/'+mm+'/'+dd+'/' ]
+	#return [measurement + '/', measurement + '/' + yyyy + '/', measurement + '/' + yyyy+'/'+mm+'/', measurement + '/' + yyyy+'/'+mm+'/'+dd+'/', measurement + '/' + yyyy+'/'+mm+'/'+dd+'/' ]
 
 # hvDateFilename
 def hvDateFilename(yyyy,mm,dd,nickname,measurement):
@@ -222,9 +222,9 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	# Database NEW: Connect to the database
 	try:
 		jprint('Connecting to database = ' + dbloc + dbName)
-		conn = sqlite3.connect(dbloc + dbName)
+		conn = sqlite3.connect(fullPathAndName)
 		c = conn.cursor()
-		c.execute('''create table TableTest (filename text, nickname text, measurement text, yyyy int, mm int, dd int, observationTimeInMilliseconds real, isFileGood int)''')
+		c.execute('''create table TableTest (filename text, nickname text, measurement text, yyyy int, mm int, dd int, observationTimeInMilliseconds real, logFileName text, isFileGood int)''')
 	except Exception,error:
 		jprint('Exception caught creating a new database file; error: '+str(error))
 
@@ -304,10 +304,10 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	                f.writelines(newList)
 	                f.close()
 
-			staged = stagingSubdir + '2010_06_18__00_49_32_125__SDO_AIA_AIA_94.jp2'
-			analyzeFile = isFileGood(staged,  minJP2SizeInBytes, endsWith = '.jp2')
-			print analyzeFile
-			dsjfhd
+			#staged = stagingSubdir + '2010_06_18__00_49_32_125__SDO_AIA_AIA_94.jp2'
+			#analyzeFile = isFileGood(staged,  minJP2SizeInBytes, endsWith = '.jp2')
+			#print analyzeFile
+			#dsjfhd
 
 	                # Download the new files
 			downloadedWhenTimeStart = calendar.timegm(time.gmtime())
@@ -343,6 +343,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 					jprint('Quarantining file  = '+ staged)
 					shutil.move(staged, quarantined)
 				else:
+					# file is good - copy it to the ingestion directory
 					change2hv(staged,localUser)
 					shutil.copy2(staged,ingested)
 					analyzeFile = isFileGood(ingested,  minJP2SizeInBytes, endsWith = '.jp2')
@@ -359,9 +360,15 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 				# Update the database
 				try:
 			       		milli = hvJP2FilenameToTimeInMilliseconds(downloaded)
-		       			ttt =(downloaded,nickname,measurement,yyyy,mm,dd,milli,analyzeFile['isFileGoodDB'])
-	       				c.execute('insert into TableTest values (?,?,?,?,?,?,?,?)',ttt)
-				       	conn.commit()
+					# if the downloaded file is in the bad list, a download has already been attempted
+					# this means that there is an entry in the database that must be updated with the latest
+					# attempted download time, and the latest log file that contained the filename
+					if downloaded in jp2list_bad:
+
+					else:
+						ttt =(downloaded,nickname,measurement,yyyy,mm,dd,milli,analyzeFile['isFileGoodDB'])
+						c.execute('insert into TableTest values (?,?,?,?,?,?,?,?)',ttt)
+						conn.commit()
 			       	except Exception,error:
 		       			jprint('Exception caught updating the new database; error: ' + str(error))
 		else:
