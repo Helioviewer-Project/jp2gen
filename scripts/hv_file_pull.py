@@ -47,6 +47,21 @@ class URLLister(SGMLParser):
                 if href:
                         self.urls.extend(href)
 
+# Get a list of files at the passed location
+
+def hvGetFilesAtLocation(location):
+"""get a list of files at a given location, either from a webpage or from a directory somewhere"""
+	if location[0:7] == 'http://':
+		usock = urllib.urlopen(remote_location)
+		parser = URLLister()
+		parser.feed(usock.read())
+		usock.close()
+		parser.close()
+		files = parser.urls
+	else:
+		files = os.listdir(location)
+	return files
+
 # isFileGood
 def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
 	""" Tests to see if a file meets the minimum requirements to be ingested into the database.
@@ -217,13 +232,13 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
         ingest_dir = hvCreateSubdir(ingest_root + 'jp2/',localUser = localUser, verbose = True)
         ingest_storage = hvCreateSubdir(ingest_dir + nickname + '/',localUser = localUser, verbose = True)
 
-	# Database NEW: Connect to the database
+	# Database: Connect to the database
 	try:
 		if not os.path.isfile(dbloc + dbName):
 			jprint('Creating database and connecting to it = ' + dbloc + dbName)
 			conn = sqlite3.connect(dbloc + dbName)
 			c = conn.cursor()
-			c.execute('''create table TableTest (filename text, nickname text, measurement text, yyyy int, mm int, dd int, observationTimeInMilliseconds real, logFileName text, isFileGood int)''')
+			c.execute('''create table TableTest (filename text, nickname text, measurement text, yyyy int, mm int, dd int, observationTimeInMilliseconds real, logFileName text, downloadTimeStart real, downloadTimeEnd real, isFileGood int)''')
 		else:
 			jprint('Connecting to database = ' + dbloc + dbName)
 			conn = sqlite3.connect(dbloc + dbName)
@@ -251,10 +266,12 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	jprint('Time stamp for this iteration = ' + timeStamp)
         logFileName = timeStamp + '.' + hvDateFilename(yyyy, mm, dd, nickname, measurement) + '.wget.log'    
 
-
 	# Ingestion: create the ingestSubdir directory.  The local user must be changed to helioviewer to allow access by the ingestion process.
 	for directory in hvss:
 		ingestSubdir = hvCreateSubdir(ingest_storage + directory,localUser = localUser, verbose = True)
+
+        # Calculate the remote directory
+        remote_location = remote_root + nickname + '/' + hvss[-1]
 
 	#
 	# All the necessary subdirectories have been created.  Now query the database 
@@ -277,23 +294,23 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 		jprint('Exception found querying database for the bad files from the database; error: '+str(error))
 
 
-        # put the last image in some web space
+	# Check the staging directory for any files that may have been downloaded but not ingested the last time around
+	try:
+		jprint('Querying staging subdirectory = '+stagingSubdir)
+		inStaging = hvGetFilesAtLocation(stagingSubdir)
+		newFiles, newFilesCount, newList = hvCheckForNewFiles(inStaging,jp2list_good)
+	except Exception,error:
+		jprint('Exception caught checking the staging directory for any files that may have been downloaded but not ingested the last time around; error: '+str(error))
 
 
-        # Calculate the remote directory
-        remote_location = remote_root + nickname + '/' + hvss[-1]
-	jprint('Querying remote location ' + remote_location)
 
         # Open the remote location and get the file list
 	try:
-        	usock = urllib.urlopen(remote_location)
-        	parser = URLLister()
-        	parser.feed(usock.read())
-        	usock.close()
-        	parser.close()
+		jprint('Querying remote location ' + remote_location)
+		urls = hvGetFilesAtLocation(remote_location)
 
 	        # Check which files are new at the remote location
-		newFiles, newFilesCount, newList = hvCheckForNewFiles(parser.urls,jp2list_good)
+		newFiles, newFilesCount, newList = hvCheckForNewFiles(urls,jp2list_good)
 
 	        #
 		# New files are located at the remote location
@@ -313,7 +330,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 			#dsjfhd
 
 	                # Download the new files
-			downloadedWhenTimeStart = calendar.timegm(time.gmtime())
+			# When the download started
+			downloadTimeStart = calendar.timegm(time.gmtime())
 	                jprint('Downloading new files.')
 	                localLog = ' -a ' + logSubdir + logFileName + ' '
 	                localInputFile = ' -i ' + logSubdir + newFileListName + ' '
@@ -324,12 +342,19 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 				os.system(command)
 			except Exception,error:
 				jprint('Exception caught at executing wget command; error: '+str(error))
+			# When the download ended
+			downloadTimeEnd = calendar.timegm(time.gmtime())
 			
+			#
 			# Look at the downloaded files and see if they pass all the 'goodness' tests
 			#
+			# Download attempt filenames
 			f = open(newFileListFullPath,'r')
 	                newListJP2 = f.readlines()
 	                f.close()
+			#
+			# Go through each of 
+			#
 			for DL in newListJP2:
 				downloaded = DL[:-1]
 				# full file paths
@@ -340,7 +365,6 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 				analyzeFile = isFileGood(staged,  minJP2SizeInBytes, endsWith = '.jp2')
 
 				# Is the staged file good?
-				# (filename text, nickname text, measurement text, yyyy int, mm int, dd int, observationTimeInMilliseconds real, isFileGood int)''')
 				if not analyzeFile['isFileGood']:
 					# Quarantine: create the quarantine subdirectory for these data
 					quarantineSubdir = hvCreateSubdir(quarantine + hvss[-1],verbose = True)
@@ -376,8 +400,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 						conn.commit()
 					else:
 						jprint('Creating a database entry for file = '+ downloaded)
-						ttt =(downloaded,nickname,measurement,yyyy,mm,dd,milli,newFileListName,analyzeFile['isFileGoodDB'])
-						c.execute('insert into TableTest values (?,?,?,?,?,?,?,?,?)',ttt)
+						ttt =(downloaded,nickname,measurement,yyyy,mm,dd,milli,newFileListName,downloadTimeStart,downloadTimeEnd, analyzeFile['isFileGoodDB'])
+						c.execute('insert into TableTest values (?,?,?,?,?,?,?,?,?,?,?)',ttt)
 						conn.commit()
 			       	except Exception,error:
 		       			jprint('Exception caught updating the new database; error: ' + str(error))
