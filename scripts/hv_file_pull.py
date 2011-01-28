@@ -54,8 +54,6 @@ def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
 	"""
 	answer = {"fileExists":-1,"minimumFileSize":-1,"isFileGoodDB":-1}
 
-	print fullPathAndFilename
-
 	# Does the file exist?
 	if os.path.isfile(fullPathAndFilename):
 		answer["fileExists"] = 1
@@ -167,9 +165,9 @@ def hvCheckForNewFiles(urls,List):
 	newFiles = False
 	newFilesCount = 0
 	for url in urls:
-		print url
 		if url.endswith('.jp2'):
-			if not url + '\n' in List:
+			if not (url,) in List:
+			#if not url + '\n' in List:
 				newFiles = True
 				newList.extend(url + '\n')
 				newFilesCount = newFilesCount + 1
@@ -221,10 +219,15 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 
 	# Database NEW: Connect to the database
 	try:
-		jprint('Connecting to database = ' + dbloc + dbName)
-		conn = sqlite3.connect(fullPathAndName)
-		c = conn.cursor()
-		c.execute('''create table TableTest (filename text, nickname text, measurement text, yyyy int, mm int, dd int, observationTimeInMilliseconds real, logFileName text, isFileGood int)''')
+		if not os.path.isfile(dbloc + dbName):
+			jprint('Creating database and connecting to it = ' + dbloc + dbName)
+			conn = sqlite3.connect(dbloc + dbName)
+			c = conn.cursor()
+			c.execute('''create table TableTest (filename text, nickname text, measurement text, yyyy int, mm int, dd int, observationTimeInMilliseconds real, logFileName text, isFileGood int)''')
+		else:
+			jprint('Connecting to database = ' + dbloc + dbName)
+			conn = sqlite3.connect(dbloc + dbName)
+			c = conn.cursor()
 	except Exception,error:
 		jprint('Exception caught creating a new database file; error: '+str(error))
 
@@ -259,8 +262,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 
 	# Database: Find the good files for this nickname, date and measurement.  Return the JP2 filenames
 	try:
-		query = (nickname,yyyy,mm,dd,measurement,1)
-		c.execute('select filename from TableTest where nickname=? and yyyy=? and mm=? and dd=? and measurement=? and isFileGood =?',query)
+		query = (nickname,yyyy,mm,dd,measurement,1,)
+		c.execute('select filename from TableTest where nickname=? and yyyy=? and mm=? and dd=? and measurement=? and isFileGood=?',query)
 		jp2list_good = c.fetchall()
 	except Exception,error:
 		jprint('Exception found querying database for the good files from the database; error: '+str(error))
@@ -271,7 +274,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 		c.execute('select filename from TableTest where nickname=? and yyyy=? and mm=? and dd=? and measurement=? and isFileGood =?',query)
 		jp2list_bad = c.fetchall()
 	except Exception,error:
-		jprint('Exception found querying database for the good files from the database; error: '+str(error))
+		jprint('Exception found querying database for the bad files from the database; error: '+str(error))
 
 
         # put the last image in some web space
@@ -323,16 +326,18 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 				jprint('Exception caught at executing wget command; error: '+str(error))
 			
 			# Look at the downloaded files and see if they pass all the 'goodness' tests
-			# 
-			for downloaded in newFiles:
-				
+			#
+			f = open(newFileListFullPath,'r')
+	                newListJP2 = f.readlines()
+	                f.close()
+			for DL in newListJP2:
+				downloaded = DL[:-1]
 				# full file paths
 				staged = stagingSubdir + downloaded
 				ingested = ingestSubdir + downloaded
 
 				# return the analysis on each file
 				analyzeFile = isFileGood(staged,  minJP2SizeInBytes, endsWith = '.jp2')
-				print analyzeFile['isFileGood']
 
 				# Is the staged file good?
 				# (filename text, nickname text, measurement text, yyyy int, mm int, dd int, observationTimeInMilliseconds real, isFileGood int)''')
@@ -345,7 +350,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 				else:
 					# file is good - copy it to the ingestion directory
 					change2hv(staged,localUser)
-					shutil.copy2(staged,ingested)
+					shutil.move(staged,ingested)
 					analyzeFile = isFileGood(ingested,  minJP2SizeInBytes, endsWith = '.jp2')
 					# Is the ingested file good?
 					if not analyzeFile['isFileGood']:
@@ -362,12 +367,17 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 			       		milli = hvJP2FilenameToTimeInMilliseconds(downloaded)
 					# if the downloaded file is in the bad list, a download has already been attempted
 					# this means that there is an entry in the database that must be updated with the latest
-					# attempted download time, and the latest log file that contained the filename
+					# attempted download time, and the latest log file that contained the filename, and the
+					# fact the file is now a good one.
 					if downloaded in jp2list_bad:
-
+						jprint('Updating the database entry for the file = '+ downloaded)
+						ttt = ()
+						c.execute('update',ttt)
+						conn.commit()
 					else:
-						ttt =(downloaded,nickname,measurement,yyyy,mm,dd,milli,analyzeFile['isFileGoodDB'])
-						c.execute('insert into TableTest values (?,?,?,?,?,?,?,?)',ttt)
+						jprint('Creating a database entry for file = '+ downloaded)
+						ttt =(downloaded,nickname,measurement,yyyy,mm,dd,milli,newFileListName,analyzeFile['isFileGoodDB'])
+						c.execute('insert into TableTest values (?,?,?,?,?,?,?,?,?)',ttt)
 						conn.commit()
 			       	except Exception,error:
 		       			jprint('Exception caught updating the new database; error: ' + str(error))
