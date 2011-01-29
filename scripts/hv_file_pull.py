@@ -65,9 +65,9 @@ def hvDoQuarantine(quarantine,location,downloaded,staged):
 # Get a list of files at the passed location
 
 def hvGetFilesAtLocation(location):
-"""get a list of files at a given location, either from a webpage or from a directory somewhere"""
+	"""get a list of files at a given location, either from a webpage or from a directory somewhere"""
 	if beginsWithHTTP(location):
-		usock = urllib.urlopen(remote_location)
+		usock = urllib.urlopen(location)
 		parser = URLLister()
 		parser.feed(usock.read())
 		usock.close()
@@ -204,9 +204,9 @@ def hvCheckForNewFiles(urls,List):
 				newList.extend(url + '\n')
 				newFilesCount = newFilesCount + 1
 	if newFilesCount > 0:
-		jprint('Number of new files found at remote location = ' + str(newFilesCount))
+		jprint('Number of new files found at location = ' + str(newFilesCount))
 	else:
-		jprint('No new files found at remote location.')
+		jprint('No new files found at location.')
 	return newFiles,newFilesCount,newList
 			
 # GetMeasurement
@@ -291,7 +291,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
         remote_location = remote_root + nickname + '/' + hvss[-1]
 
 	# Now query the database: first compare the DB to the contents of the local staging directory, and then to the contents of the remote directory
-	for i in range(0,1):
+	for i in range(0,2):
 		# Database: Find the good files for this nickname, date and measurement.  Return the JP2 filenames
 		try:
 			query = (nickname,yyyy,mm,dd,measurement,1)
@@ -317,7 +317,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 		try:
 			jprint('Querying file location = '+fileLocation)
 			inLocation, fileLocationExtension = hvGetFilesAtLocation(fileLocation)
-			newFiles, newFilesCount, newList, fileLocationExtension = hvCheckForNewFiles(inLocation,jp2list_good)
+			newFiles, newFilesCount, newList = hvCheckForNewFiles(inLocation,jp2list_good)
+			print inLocation
 			if newFiles:
 				newFileListName = timeStamp + '.' + hvDateFilename(yyyy, mm, dd, nickname, measurement) + fileLocationExtension
 				newFileListFullPath = logSubdir + newFileListName
@@ -390,18 +391,14 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 									ttt =(downloaded,nickname,measurement,yyyy,mm,dd,milli,newFileListName,downloadTimeStart,downloadTimeEnd, analyzeFile['isFileGoodDB'])
 									c.execute('insert into TableTest values (?,?,?,?,?,?,?,?,?,?,?)',ttt)
 									conn.commit()
-								except Exception,error:
-									jprint('Exception caught updating the new database; error: ' + str(error))
+							except Exception,error:
+						       		jprint('Exception caught updating the new database; error: ' + str(error))
 			else:
-				jprint('No new files found at ' + filelocation)
+				jprint('No new files found at ' + fileLocation)
 				newFilesCount = 0
 		except Exception,error:
-			jprint('Exception caught at trying to read the file location'+fileLocation+'; continuing with loop; error: '+str(error))
+			jprint('Exception caught at trying to read the file location: '+fileLocation+'; continuing with loop; error: '+str(error))
 			newFilesCount = -1
-
-	except Exception,error:
-		jprint('Exception caught checking the location '+fileLocation+' for any files that may have been downloaded but not ingested the last time around; error: '+str(error))
-		newFilesCount = -1
 
 	# Database: close the database
 	c.close()
