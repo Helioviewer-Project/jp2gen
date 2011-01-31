@@ -318,7 +318,6 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 			jprint('Querying file location = '+fileLocation)
 			inLocation, fileLocationExtension = hvGetFilesAtLocation(fileLocation)
 			newFiles, newFilesCount, newList = hvCheckForNewFiles(inLocation,jp2list_good)
-			print inLocation
 			if newFiles:
 				newFileListName = timeStamp + '.' + hvDateFilename(yyyy, mm, dd, nickname, measurement) + fileLocationExtension
 				newFileListFullPath = logSubdir + newFileListName
@@ -345,8 +344,6 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 				f = open(newFileListFullPath,'r')
 				newListJP2 = f.readlines()
 				f.close()
-				# When the download ended
-				downloadTimeEnd = calendar.timegm(time.gmtime())
 				#
 				# Go through each file and ingest it
 				#
@@ -381,6 +378,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 								# this means that there is an entry in the database that must be updated with the latest
 								# attempted download time, and the latest log file that contained the filename, and the
 								# fact the file is now a good one.
+								# Fix the download end time to now: process has finished.
+								downloadTimeEnd = calendar.timegm(time.gmtime())
 								if (downloaded,) in jp2list_bad:
 									jprint('Updating the database entry for the file = '+ downloaded)
 									ttt = ()
