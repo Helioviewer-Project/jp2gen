@@ -91,20 +91,21 @@ FUNCTION HV_MDI_INT_WRITE_HVS2,infile,rootdir,details = details
 ;
 ; save
 ;
-  hvs = {dir:'NotGiven',$
+  hvsi = {dir:'NotGiven',$
          fitsname:hd.datafile,$
-         img:image_new,$
          header:hd,$
          measurement:measurement,$
          yy:yy, mm:mm, dd:dd, hh:hh, mmm:mmm, ss:ss, milli:milli,$
          details:details}
+
+  hvs = {img:image_new,hvsi:hvsi}
 
   HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written
   if not(already_written) then begin
      log_comment = 'read ' + infile + $
                    ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
                    ' ; at ' + systime(0)
-     HV_LOG_WRITE,hvs,log_comment + ' ; wrote ' + jp2_filename
+     HV_LOG_WRITE,hvsi,log_comment + ' ; wrote ' + jp2_filename
   endif else begin
      jp2_filename = 'already_written'
   endelse

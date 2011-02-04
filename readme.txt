@@ -1,7 +1,11 @@
 JP2Gen
 ======
 
-Code to convert solar FITS data to JPEG2000 format for use with the Helioviewer Project.
+Code to convert solar FITS data to JPEG2000 format for use with the
+Helioviewer Project.
+
+For questions/comments, please contact Jack.Ireland@nasa.gov .
+
 
 General purpose
 ---------------

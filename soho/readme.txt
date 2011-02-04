@@ -3,6 +3,8 @@ jp2gen/soho
 
 Scripts to convert SOHO data to JPEG2000 format for use with the Helioviewer Project.
 
+For questions/comments, please contact Jack.Ireland@nasa.gov .
+
 
 SOHO
 ----
@@ -44,7 +46,7 @@ hv_lasco_prep2jp2_ql,/c3,/alternate_backgrounds,/copy2outgoing,details_file = 'h
 
 hv_lasco_prep2jp2_ql,/c2,/alternate_backgrounds,/copy2outgoing,details_file = 'hvs_highbitrate_lasco_c2'
 
-hv_mdi_prep2jp2_ql,date_start = '2010/09/23',/copy2outgoing,details_file = 'hvs_highbitrate_mdi' 
+hv_mdi_prep2jp2_ql,/copy2outgoing,details_file = 'hvs_highbitrate_mdi',date_start = '2010/09/23'
 
 
 Transfer and web updating

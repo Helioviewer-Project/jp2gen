@@ -7,6 +7,8 @@ Note: the code to support AIA and HMI uses less of the functionality of jp2gen/g
 
 A solution to this issue is to put all the separate functions of jp2gen into one file.  This cuts down on function calls and so speeds up processing to a level where we can keep up with the SDO data rate.  Therefore when there are major changes to jp2gen/gen care must be taken to ensure that the new improved functionality is carried over to jp2gen/sdo .
 
+For questions/comments, please contact Jack.Ireland@nasa.gov .
+
 
 AIA
 ---
