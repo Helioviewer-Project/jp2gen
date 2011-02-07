@@ -295,7 +295,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 		# Database: Find the good files for this nickname, date and measurement.  Return the JP2 filenames
 		try:
 			query = (nickname,yyyy,mm,dd,measurement,1)
-			c.execute('select filename from TableTest where nickname=? and yyyy=? and mm=? and dd=? and measurement=? and isFileGood =?',query)
+			c.execute('SELECT filename FROM TableTest WHERE nickname=? AND yyyy=? AND mm=? AND dd=? AND measurement=? AND isFileGood =?',query)
 			jp2list_good = c.fetchall()
 		except Exception,error:
 			jprint('Exception found querying database for the bad files from the database; error: '+str(error))
@@ -303,7 +303,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 		# Database: Find the bad files for this nickname, date and measurement.  Return the JP2 filenames
 		try:
 			query = (nickname,yyyy,mm,dd,measurement,0)
-			c.execute('select filename from TableTest where nickname=? and yyyy=? and mm=? and dd=? and measurement=? and isFileGood =?',query)
+			c.execute('SELECT filename FROM TableTest WHERE nickname=? AND yyyy=? AND mm=? AND dd=? AND measurement=? AND isFileGood =?',query)
 			jp2list_bad = c.fetchall()
 		except Exception,error:
 			jprint('Exception found querying database for the bad files from the database; error: '+str(error))
@@ -340,6 +340,10 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 						os.system(command)
 					except Exception,error:
 						jprint('Exception caught at executing wget command; error: '+str(error))
+
+				# When the download time ends
+				downloadTimeEnd = calendar.timegm(time.gmtime())
+
 				# Get the filenames
 				f = open(newFileListFullPath,'r')
 				newListJP2 = f.readlines()
@@ -356,39 +360,64 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 					# return the analysis on each file
 					analyzeFile = isFileGood(staged,  minJP2SizeInBytes, endsWith = '.jp2')
 					
+					# Observation time in milliseconds of the file
+					milli = hvJP2FilenameToTimeInMilliseconds(downloaded)
+
 					# Is the staged file good?
 					if not analyzeFile['isFileGood']:
-						# Quarantine the staged file
+						# Quarantine the staged file and update the database
 						info = hvDoQuarantine(quarantine,hvss[-1],downloaded,staged)
+						if (filename,) in jp2list_bad:
+							# File is already in the DB as bad: update the details
+							jprint('Quarantined file: updating database entry for file = ' + downloaded)
+							ttt = (downloadTimeStart,downloadTimeEnd,logFileName,filename)
+							c.execute('UPDATE TableTest SET downloadTimeStart=?,downloadTimeEnd=?,logFileName=? WHERE filename=?',ttt)
+							conn.commit()
+						else:
+							# New bad file: enter it into the DB
+							jprint('Quarantined file: creating database entry for file = ' + downloaded)
+							ttt = (downloaded,nickname,measurement,yyyy,mm,dd,milli,newFileListName,downloadTimeStart,downloadTimeEnd,0)
+							c.execute('INSERT INTO TableTest VALUES (?,?,?,?,?,?,?,?,?,?,?)',ttt)
+							conn.commit()
 					else:
-						# file is good - copy it to the ingestion directory
+						# file is good - move it to the ingestion directory
 						change2hv(staged,localUser)
 						shutil.move(staged,ingested)
 						analyzeFile = isFileGood(ingested,  minJP2SizeInBytes, endsWith = '.jp2')
 						# Is the ingested file good?
 						if not analyzeFile['isFileGood']:
-							# Quarantine the ingested file
+							# Quarantine the ingested file and update the database
 							info = hvDoQuarantine(quarantine,hvss[-1],downloaded,ingested)
+							if (filename,) in jp2list_bad:
+							# File is already in the DB as bad: update the details
+								jprint('Quarantined file: updating database entry for file = ' + downloaded)
+								ttt = (downloadTimeStart,downloadTimeEnd,logFileName,filename)
+								c.execute('UPDATE TableTest SET downloadTimeStart=?,downloadTimeEnd=?,logFileName=? WHERE filename=?',ttt)
+								conn.commit()
+							else:
+							# New bad file: enter it into the DB
+								jprint('Quarantined file: creating database entry for file = ' + downloaded)
+								ttt = (downloaded,nickname,measurement,yyyy,mm,dd,milli,newFileListName,downloadTimeStart,downloadTimeEnd,0)
+								c.execute('INSERT INTO TableTest VALUES (?,?,?,?,?,?,?,?,?,?,?)',ttt)
+								conn.commit()
 						else:
 							jprint('Moved file '+ staged + ' to ' + ingested)
 							# Update the database
 							try:
-								milli = hvJP2FilenameToTimeInMilliseconds(downloaded)
 								# if the downloaded file is in the bad list, a download has already been attempted
 								# this means that there is an entry in the database that must be updated with the latest
 								# attempted download time, and the latest log file that contained the filename, and the
 								# fact the file is now a good one.
 								# Fix the download end time to now: process has finished.
-								downloadTimeEnd = calendar.timegm(time.gmtime())
 								if (downloaded,) in jp2list_bad:
-									jprint('Updating the database entry for the file = '+ downloaded)
-									ttt = ()
-									c.execute('update',ttt)
+									jprint('Ingested: updating the database entry for the file = '+ downloaded)
+									ttt = (downloadTimeStart,downloadTimeEnd,logFileName,filename)
+									c.execute('UPDATE TableTest SET isFileGood=1,downloadTimeStart=?,downloadTimeEnd=?,logFileName=? WHERE filename=?',ttt)
 									conn.commit()
 								else:
-									jprint('Creating a database entry for file = '+ downloaded)
+									jprint('Ingested: creating a database entry for file = '+ downloaded)
 									ttt =(downloaded,nickname,measurement,yyyy,mm,dd,milli,newFileListName,downloadTimeStart,downloadTimeEnd, analyzeFile['isFileGoodDB'])
-									c.execute('insert into TableTest values (?,?,?,?,?,?,?,?,?,?,?)',ttt)
+									c.execute('INSERT INTO TableTest VALUES (?,?,?,?,?,?,?,?,?,?,?)',ttt)
 									conn.commit()
 							except Exception,error:
 						       		jprint('Exception caught updating the new database; error: ' + str(error))
@@ -404,7 +433,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	return newFilesCount
 
 # Get the JP2s
-def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,count = 0, redirect = False, daysBack = 0):
+def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,count = 0, redirect = False, daysBack = 0,beginTimeStamp):
 	t1 = time.time()
 	timeStamp = createTimeStamp()
 	# Standard output + error log file names
@@ -438,6 +467,7 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 	# Get the data
 	jprint(' ')
 	jprint(' ')
+	jprint('Download script begun = ' + beginTimeStamp)
 	jprint('Measurement = ' + measurement)
 	jprint('Beginning remote location query number ' + str(count))
 	jprint("Looking for files on this date = " + yyyy + mm + dd)
@@ -485,10 +515,12 @@ Parse the options
 [13] = name of the local User who is downloading the files.  This user must be in the "helioviewer" group.
 [14] = name of the SQLite database to connect to
 '''
-
 if len(sys.argv) <= 1:
         jprint('No options file given.  Ending.')
 else:
+	# Get the time that the script was set running
+	beginTimeStamp = createTimeStamp()
+	# Read the options file
         options_file = sys.argv[1]
         try:
                 f = open(options_file,'r')
@@ -542,7 +574,7 @@ else:
 
 				# Go through each measurement
 				for measurement in measurements:
-					nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,count = count,redirect = redirect,daysBack = daysBack)
+					nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,count = count,redirect = redirect,daysBack = daysBack,beginTimeStamp)
 					if nfc > 0:
 						gotNewData = True
 			if not gotNewData:
@@ -556,5 +588,5 @@ else:
 			mm = time.strftime('%m',time.gmtime(getThisDay))
 			dd = time.strftime('%d',time.gmtime(getThisDay))
 			for measurement in measurements:
-				nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,count = 0,redirect = redirect)
+				nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,count = 0,redirect = redirect,beginTimeStamp)
 			getThisDay = getThisDay + 24*60*60
