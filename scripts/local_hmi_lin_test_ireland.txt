@@ -8,7 +8,7 @@ HMI
 /home/ireland/JP2Gen_downloadtest/pretendweb/
 1000000
 False
-1000000
+900
 0
 2
 ireland

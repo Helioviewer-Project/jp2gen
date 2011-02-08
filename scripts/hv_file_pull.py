@@ -240,7 +240,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
         staging_storage = hvCreateSubdir(jp2_dir + nickname + '/', verbose = True)
 
 	# Quarantine: Creating the quarantine directory - bad JP2s go here
-        quarantine = hvCreateSubdir(staging_root + 'quarantine/',verbose = True)
+        quarantine = hvCreateSubdir(staging_root + 'quarantine/'+ nickname + '/',verbose = True)
 
 	# Database: create the database subdirectory
 	dbloc = hvCreateSubdir(staging_root + 'db/',verbose = True)
@@ -433,7 +433,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	return newFilesCount
 
 # Get the JP2s
-def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,count = 0, redirect = False, daysBack = 0,beginTimeStamp):
+def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,beginTimeStamp, count = 0, redirect = False, daysBack = 0):
 	t1 = time.time()
 	timeStamp = createTimeStamp()
 	# Standard output + error log file names
@@ -574,10 +574,11 @@ else:
 
 				# Go through each measurement
 				for measurement in measurements:
-					nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,count = count,redirect = redirect,daysBack = daysBack,beginTimeStamp)
+					nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,beginTimeStamp,count = count,redirect = redirect,daysBack = daysBack)
 					if nfc > 0:
 						gotNewData = True
 			if not gotNewData:
+				jprint('Sleeping for '+str(sleep)+' seconds.')
 				time.sleep(sleep)
 
 	else:
@@ -588,5 +589,5 @@ else:
 			mm = time.strftime('%m',time.gmtime(getThisDay))
 			dd = time.strftime('%d',time.gmtime(getThisDay))
 			for measurement in measurements:
-				nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,count = 0,redirect = redirect,beginTimeStamp)
+				nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,beginTimeStamp,count = 0,redirect = redirect)
 			getThisDay = getThisDay + 24*60*60
