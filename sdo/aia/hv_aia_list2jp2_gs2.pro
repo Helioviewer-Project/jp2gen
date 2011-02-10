@@ -1,26 +1,9 @@
 ;
-; 22 April 2010
+; 4 February 2011
 ;
-; Version 5 of conversion of SDO data to JP2
+; Conversion of SDO data to JP2
 ; Based on aia_fits2jpeg.pro that is used to create JPEG files for
 ; GSFC SDO website.
-;
-; Implements LMSAL Sun Today image scaling
-;
-;0: return,bytscl((image*(2.99911/exptime)<1000)) ; 1600
-;1: return,bytscl((image*(1.00026/exptime)<2500)) ; 1700
-;2: return,bytscl((image*(1.00026/exptime)<26000.)) ; 4500
-;3: return,bytscl(sqrt((image*(4.99803/exptime)>3<100))) ; 94
-;4: return,bytscl(alog10((image*(6.99685/exptime)>10<1400))) ; 131
-;5: return,bytscl(alog10((image*(4.99803/exptime)>200<14000))) ; 171
-;6: return,bytscl(alog10((image*(2.99950/exptime)>120<11000))) ; 193
-;7: return,bytscl(alog10((image*(4.99801/exptime)>60<13000))) ; 211
-;8: return,bytscl(alog10((image*(4.99941/exptime)>60<2000))) ; 304
-;9: return,bytscl(alog10((image*(6.99734/exptime)>8<1500))) ; 335
-;
-;
-;
-;
 ;
 PRO hv_aia_list2jp2_gs2,list,$
                     details_file = details_file,$ ; AIA details file
@@ -49,6 +32,10 @@ PRO hv_aia_list2jp2_gs2,list,$
 ; Storage
 ;
   storage = HV_STORAGE(nickname = info.nickname)
+;
+; Working directory
+;
+  parent_out = info.parent_out
 ;
 ; get general information
 ;
@@ -84,8 +71,12 @@ PRO hv_aia_list2jp2_gs2,list,$
      nz = n_elements(z)
      fitsname = z[nz-1]
 ;     img = readfits(fullname,hd)   ; get image and data
-     read_sdo, fullname, hd, img, parent_out='$HOME/tmp', /uncomp_delete, /mixed   ; get image and data
-     hd = fitshead2struct(hd)
+;     hd = fitshead2struct(hd)
+     read_sdo, fullname, hd, img, parent_out=parent_out, /uncomp_delete, /mixed   ; get image and data
+;
+; This string will describe what is done to the data
+;
+     hv_img_function = 'Two-dimensional image data IMG'
 ;
 ; Check that this FITS file is supported
 ;
@@ -140,24 +131,39 @@ PRO hv_aia_list2jp2_gs2,list,$
 ;     endif
      exptime = hd.exptime
      img = (img*info.details[this_wave].dataExptime/(1.0*exptime))
-
-     if (info.details[this_wave].fixedImageValue[0] ne -1) and (info.details[this_wave].fixedImageValue[1] ne -1) then begin
-        img[0,0] = info.details[this_wave].fixedImageValue[0]
-        img[0,1] = info.details[this_wave].fixedImageValue[1]
+     hv_img_function = hv_img_function + ' : IMG = IMG/image_exposure_time'
+     fiv0 = info.details[this_wave].fixedImageValue[0]
+     fiv1 = info.details[this_wave].fixedImageValue[1]     
+     if (fiv0 ne -1) and (fiv1 ne -1) then begin
+        img[0,0] = fiv0
+        img[0,1] = fiv1
+        hv_img_function = hv_img_function + ' : IMG[0,0] = ' + trim(fiv0)
+        hv_img_function = hv_img_function + ' : IMG[0,1] = ' + trim(fiv1)
      endif
 
      if measurement eq '171' then begin
         img = bytscl(((img-5)>.1)^.5<40>1)
+        hv_img_function = hv_img_function + ' : IMG = BYTSCL(((IMG-5)>.1)^.5<40>1)'
+        dminString = 'see hv_img_function'
+        dmaxString = 'see hv_img_function'
      endif else begin
-        img = (img > (info.details[this_wave].dataMin)) < info.details[this_wave].dataMax
+        dmin = info.details[this_wave].dataMin
+        dmax = info.details[this_wave].dataMax
+        dminString = trim(dmin)
+        dmaxString = trim(dmax)
+        img = (img > (dmin)) < dmax
+        hv_img_function = hv_img_function + ' : IMG = (IMG > '+trim(dmin) + ') < '+trim(dmax)
         if info.details[this_wave].dataScalingType eq 0 then begin
            img = bytscl(img,/nan)
+           hv_img_function = hv_img_function + ' : IMG = BYTSCL(IMG,/NAN)'
         endif
         if info.details[this_wave].dataScalingType eq 1 then begin
            img = bytscl(sqrt(img),/nan)
+           hv_img_function = hv_img_function + ' : IMG = BYTSCL(SQRT(IMG),/NAN)'
         endif
         if info.details[this_wave].dataScalingType eq 3 then begin
            img = bytscl(alog10(img),/nan)
+           hv_img_function = hv_img_function + ': IMG = BYTSCL(ALOG10(IMG),/NAN)'
         endif
      endelse
 
@@ -329,6 +335,12 @@ PRO hv_aia_list2jp2_gs2,list,$
 ; Explicit support from the Helioviewer Project
 ;
      xh+='<HV_SUPPORTED>TRUE</HV_SUPPORTED>'+lf
+;
+; Clipping values and scaling function
+;
+     xh+='<HV_IMG_DMIN>'+dminString+'</HV_IMG_DMIN>'+lf
+     xh+='<HV_IMG_DMAX>'+dmaxString+'</HV_IMG_DMAX>'+lf
+     xh+='<HV_IMG_FUNCTION>'+hv_img_function+'</HV_IMG_FUNCTION>'+lf
 ;
 ; Close the Helioviewer information
 ;

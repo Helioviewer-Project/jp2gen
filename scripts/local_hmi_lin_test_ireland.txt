@@ -1,0 +1,15 @@
+http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/
+/home/ireland/JP2Gen_downloadtest/staging/v0.8/
+/home/ireland/JP2Gen_downloadtest/v0.8/
+-1/-1/-1
+-1/-1/-1
+magnetogram,continuum
+HMI
+/home/ireland/JP2Gen_downloadtest/pretendweb/
+1000000
+False
+900
+0
+2
+ireland
+dbTest2.sqlite

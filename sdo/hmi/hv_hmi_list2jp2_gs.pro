@@ -70,6 +70,10 @@ PRO hv_hmi_list2jp2_gs,list,$
      img = readfits(fullname,hd)   ; get image and data
      hd = fitshead2struct(hd)
 ;
+; This string will describe what is done to the data
+;
+     hv_img_function = 'Two-dimensional image data IMG'
+;
 ; Check that this FITS file is supported
 ;
      flag = 0
@@ -93,21 +97,30 @@ PRO hv_hmi_list2jp2_gs,list,$
            rrr = hd.RSUN_OBS/hd.CDELT1
            ss2 = circle_mask(img, hd.CRPIX1, hd.CRPIX2, 'GE', rrr )
            if (ss2(0) ne -1) then img(ss2)=-300000.0
+           hv_img_function = hv_img_function + ' : SS2 = CIRCLE_MASK(IMG, HD.CRPIX1, HD.CRPIX2, "GE", HD.RSUN_OBS/HD.CDELT1 ) : IF (SS2(0) NE -1) THEN IMG(SS2)=-300000.0'
         endif
 ;
 ; Construct an HVS
 ;
+        dmin = info.details[this_wave].dataMin
+        dmax = info.details[this_wave].dataMax
+        dminString = trim(dmin)
+        dmaxString = trim(dmax)
+
         tobs = HV_PARSE_CCSDS(hd.date_obs)
-        img = (img > (info.details[this_wave].dataMin)) < info.details[this_wave].dataMax
+        img = (img > (dmin)) < dmax
 
         if info.details[this_wave].dataScalingType eq 0 then begin
            img = bytscl(img,/nan)
+           hv_img_function = hv_img_function + ' : IMG = BYTSCL(IMG,/NAN)'
         endif
         if info.details[this_wave].dataScalingType eq 1 then begin
            img = bytscl(sqrt(img),/nan)
+           hv_img_function = hv_img_function + ' : IMG = BYTSCL(SQRT(IMG),/NAN)'
         endif
         if info.details[this_wave].dataScalingType eq 3 then begin
            img = bytscl(alog10(img),/nan)
+           hv_img_function = hv_img_function + ': IMG = BYTSCL(ALOG10(IMG),/NAN)'
         endif
         hd = add_tag(hd,info.observatory,'hv_observatory')
         hd = add_tag(hd,info.instrument,'hv_instrument')
@@ -276,6 +289,12 @@ PRO hv_hmi_list2jp2_gs,list,$
 ; Explicit support from the Helioviewer Project
 ;
         xh+='<HV_SUPPORTED>TRUE</HV_SUPPORTED>'+lf
+;
+; Clipping values and scaling function
+;
+        xh+='<HV_IMG_DMIN>'+dminString+'</HV_IMG_DMIN>'+lf
+        xh+='<HV_IMG_DMAX>'+dmaxString+'</HV_IMG_DMAX>'+lf
+        xh+='<HV_IMG_FUNCTION>'+hv_img_function+'</HV_IMG_FUNCTION>'+lf
 ;
 ; Close the Helioviewer information
 ;
