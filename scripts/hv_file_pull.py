@@ -308,9 +308,6 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	queryTimeStart = yyyy + '-' + mm + '-' + dd + ' 00:00:00.000'
 	queryTimeEnd   = yyyy + '-' + mm + '-' + dd + ' 23:59:59.999'
 
-	print queryTimeStart
-	print queryTimeEnd
-
 	# Now query the database: first compare the DB to the contents of the local staging directory, and then to the contents of the remote directory
 	for i in range(0,2):
 		# Database: Find the good files for this nickname, date and measurement.  Return the JP2 filenames
@@ -322,7 +319,6 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 			jp2list_good = c.fetchall()
 		except Exception,error:
 			jprint('Exception found querying database for the bad files from the database; error: '+str(error))
-		print jp2list_good
 
 		# Database: Find the bad files for this nickname, date and measurement.  Return the JP2 filenames
 		try:
