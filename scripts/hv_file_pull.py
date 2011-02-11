@@ -360,6 +360,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 						os.system(command)
 					except Exception,error:
 						jprint('Exception caught at executing wget command; error: '+str(error))
+				else:
+					files_found = os.listdir(remote_location)
 
 				# When the download time ends
 				downloadTimeEnd = datetime.datetime.utcnow()
