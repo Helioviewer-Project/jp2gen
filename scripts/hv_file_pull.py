@@ -80,7 +80,7 @@ def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
 	An entry of -1 means that the test was not performed, 0 means failure, 1 means pass.
 	"""
 	tests = {"fileExists":-1,"minimumFileSize":-1,"endsWith":-1}
-	isFileGood = True
+	isFileGoodTF = True
 	isFileGoodDB = 1
 	fileProblem = 0
 
@@ -111,12 +111,10 @@ def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
 	isFileGoodDB = 1
 	for i in tests.itervalues():
 		if i == 0:
-			isFileGood = False
+			isFileGoodTF = False
 			isFileGoodDB = 0
-	tests["isFileGood"] = isFileGood
-	tests["isFileGoodDB"] = isFileGoodDB
 
-	return tests, isFileGood, isFileGoodDB
+	return isFileGoodTF, isFileGoodDB, fileProblem
 
 
 # createTimeStamp
@@ -383,7 +381,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 					ingested = ingestSubdir + downloaded
 					
 					# return the analysis on each file
-					analyzeFile = isFileGood(staged,  minJP2SizeInBytes, endsWith = '.jp2')
+					isFileGoodTF, isFileGoodDB, fileProblem = isFileGood(staged,  minJP2SizeInBytes, endsWith = '.jp2')
 					
 					# Observation time stamp
 					observationTimeStamp = hvJP2FilenameToTimeStamp(downloaded)
