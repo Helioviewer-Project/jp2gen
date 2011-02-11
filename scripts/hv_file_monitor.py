@@ -310,13 +310,15 @@ while True:
         #
         # Copy the contents of the current directory to the most recent
         #
-        contents = os.listdir(mostRecentDir)
-        for f in contents:
-            os.remove(mostRecentDir + f)
-
-        contents = os.listdir(summaryDir)
-        for f in contents:
-            shutil.copy2(summaryDir + f, mostRecentDir + f)
+        if daysBack == 0:
+            # empty the most recent directory
+            contents = os.listdir(mostRecentDir)
+            for f in contents:
+                os.remove(mostRecentDir + f)
+            # fill the directory with the contents of the summary directory when daysBack == 0
+            contents = os.listdir(summaryDir)
+            for f in contents:
+                shutil.copy2(summaryDir + f, mostRecentDir + f)
     #
     # Sleep
     #
