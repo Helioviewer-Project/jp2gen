@@ -224,6 +224,8 @@ while True:
         dayNicknames = hvDBUniqueNicknames(dbloc,dbName,dayStart, dayEnd)
         n = len(dayNicknames)
 
+        previousDate = str( (datetime.datetime.utcnow() - datetime.timedelta(days=daysBack-1)).date() )
+        previousDay = .replace('-','/') + '/'
         #
         # Make the Storage directory
         #

@@ -79,41 +79,44 @@ def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
 	""" Tests to see if a file meets the minimum requirements to be ingested into the database.
 	An entry of -1 means that the test was not performed, 0 means failure, 1 means pass.
 	"""
-	answer = {"fileExists":-1,"minimumFileSize":-1,"isFileGoodDB":-1,"fileProblem":-1}
+	tests = {"fileExists":-1,"minimumFileSize":-1,"endsWith":-1}
+	isFileGood = True
+	isFileGoodDB = 1
+	fileProblem = 0
 
 	# Does the file exist?
 	if os.path.isfile(fullPathAndFilename):
-		answer["fileExists"] = 1
+		tests["fileExists"] = 1
 		# test for file size
 		s = os.stat(fullPathAndFilename)
 		if s.st_size > minimumFileSize:
-			answer["minimumFileSize"] = 1
+			tests["minimumFileSize"] = 1
 		else:
-			answer["fileProblem"] = answer["fileProblem"] + 2
-			answer["minimumFileSize"] = 0
+			fileProblem = fileProblem + 2
+			tests["minimumFileSize"] = 0
 		
 		# test that the file has the right extension
 		if endsWith != '':
 			if fullPathAndFilename.endswith(endsWith):
-				answer["endsWith"] = 1
+				tests["endsWith"] = 1
 			else:
-				answer["fileProblem"] = answer["fileProblem"] + 4
-				answer["endsWith"] = 0
+				fileProblem = fileProblem + 4
+				tests["endsWith"] = 0
 	else:
-		answer["fileProblem"] = answer["fileProblem"] + 1
-		answer["fileExists"] = 0
+		fileProblem = fileProblem + 1
+		tests["fileExists"] = 0
 
 	# Has the file passed all the tests?
 	isFileGood = True
 	isFileGoodDB = 1
-	for i in answer.itervalues():
+	for i in tests.itervalues():
 		if i == 0:
 			isFileGood = False
 			isFileGoodDB = 0
-	answer["isFileGood"] = isFileGood
-	answer["isFileGoodDB"] = isFileGoodDB
+	tests["isFileGood"] = isFileGood
+	tests["isFileGoodDB"] = isFileGoodDB
 
-	return {"isFileGood":isFileGood,"fileExists":answer["fileExists"],"minimumFileSize":answer["minimumFileSize"],"isFileGoodDB":answer["isFileGoodDB"],"fileProblem":answer["fileProblem"]}
+	return tests, isFileGood, isFileGoodDB
 
 
 # createTimeStamp
