@@ -210,7 +210,7 @@ mostRecentDir = monitorLoc + 'mostrecent/'
 if not os.path.isdir(mostRecentDir):
     os.makedirs(mostRecentDir)
 
-dateBackMax = str( (datetime.datetime.utcnow() - datetime.timedelta(days=daysBackMax-1)).date() )
+dateBackMax = str( (datetime.datetime.utcnow() + datetime.timedelta(days=daysBackMax-1)).date() )
 
 #
 # Do the summary plots broken down by all files, nickname, then nickname/measurement
