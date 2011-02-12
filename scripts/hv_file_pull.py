@@ -388,7 +388,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 					print observationTimeStamp
 
 					# Is the staged file good?
-					if not analyzeFile['isFileGood']:
+					if not isFileGoodTF:
 						# Quarantine the staged file and update the database
 						info = hvDoQuarantine(quarantine,hvss[-1],downloaded,staged)
 						if (downloaded,) in jp2list_bad:
@@ -400,16 +400,16 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 						else:
 							# New bad file: enter it into the DB
 							jprint('Quarantined file: creating database entry for file = ' + downloaded)
-							ttt = (downloaded,nickname,measurement,observationTimeStamp,downloadTimeStart,downloadTimeEnd,newFileListName,0,analyzeFile['fileProblem'])
+							ttt = (downloaded,nickname,measurement,observationTimeStamp,downloadTimeStart,downloadTimeEnd,newFileListName,0,fileProblem)
 							c.execute('INSERT INTO TableTest VALUES (?,?,?,?,?,?,?,?,?)',ttt)
 							conn.commit()
 					else:
 						# file is good - move it to the ingestion directory
 						change2hv(staged,localUser)
 						shutil.move(staged,ingested)
-						analyzeFile = isFileGood(ingested,  minJP2SizeInBytes, endsWith = '.jp2')
+						isFileGoodTF, isFileGoodDB, fileProblem = isFileGood(ingested,  minJP2SizeInBytes, endsWith = '.jp2')
 						# Is the ingested file good?
-						if not analyzeFile['isFileGood']:
+						if not isFileGoodTF:
 							# Quarantine the ingested file and update the database
 							info = hvDoQuarantine(quarantine,hvss[-1],downloaded,ingested)
 							if (downloaded,) in jp2list_bad:
@@ -421,7 +421,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 							else:
 							# New bad file: enter it into the DB
 								jprint('Quarantined file: creating database entry for file = ' + downloaded)
-								ttt = (downloaded,nickname,measurement,observationTimeStamp,downloadTimeStart,downloadTimeEnd,newFileListName,0,analyzeFile['fileProblem'])
+								ttt = (downloaded,nickname,measurement,observationTimeStamp,downloadTimeStart,downloadTimeEnd,newFileListName,0,fileProblem)
 								c.execute('INSERT INTO TableTest VALUES (?,?,?,?,?,?,?,?,?)',ttt)
 								conn.commit()
 						else:
@@ -440,7 +440,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 									conn.commit()
 								else:
 									jprint('Ingested: creating a database entry for file = '+ downloaded)
-									ttt = (downloaded,nickname,measurement,observationTimeStamp,downloadTimeStart,downloadTimeEnd,newFileListName,0,analyzeFile['fileProblem'])
+									ttt = (downloaded,nickname,measurement,observationTimeStamp,downloadTimeStart,downloadTimeEnd,newFileListName,1,fileProblem)
 									c.execute('INSERT INTO TableTest VALUES (?,?,?,?,?,?,?,?,?)',ttt)
 									conn.commit()
 							except Exception,error:
