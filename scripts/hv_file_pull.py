@@ -80,7 +80,6 @@ def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
 	An entry of -1 means that the test was not performed, 0 means failure, 1 means pass.
 	"""
 	tests = {"fileExists":-1,"minimumFileSize":-1,"endsWith":-1}
-	isFileGoodTF = True
 	isFileGoodDB = 1
 	fileProblem = 0
 
@@ -107,14 +106,12 @@ def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
 		tests["fileExists"] = 0
 
 	# Has the file passed all the tests?
-	isFileGood = True
 	isFileGoodDB = 1
 	for i in tests.itervalues():
 		if i == 0:
-			isFileGoodTF = False
 			isFileGoodDB = 0
 
-	return isFileGoodTF, isFileGoodDB, fileProblem
+	return isFileGoodDB, fileProblem
 
 
 # createTimeStamp
@@ -381,14 +378,14 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 					ingested = ingestSubdir + downloaded
 					
 					# return the analysis on each file
-					isFileGoodTF, isFileGoodDB, fileProblem = isFileGood(staged,  minJP2SizeInBytes, endsWith = '.jp2')
+					isFileGoodDB, fileProblem = isFileGood(staged,  minJP2SizeInBytes, endsWith = '.jp2')
 					
 					# Observation time stamp
 					observationTimeStamp = hvJP2FilenameToTimeStamp(downloaded)
 					print observationTimeStamp
 
 					# Is the staged file good?
-					if not isFileGoodTF:
+					if not isFileGoodDB:
 						# Quarantine the staged file and update the database
 						info = hvDoQuarantine(quarantine,hvss[-1],downloaded,staged)
 						if (downloaded,) in jp2list_bad:
@@ -407,9 +404,9 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 						# file is good - move it to the ingestion directory
 						change2hv(staged,localUser)
 						shutil.move(staged,ingested)
-						isFileGoodTF, isFileGoodDB, fileProblem = isFileGood(ingested,  minJP2SizeInBytes, endsWith = '.jp2')
+						isFileGoodDB, fileProblem = isFileGood(ingested,  minJP2SizeInBytes, endsWith = '.jp2')
 						# Is the ingested file good?
-						if not isFileGoodTF:
+						if not isFileGoodDB:
 							# Quarantine the ingested file and update the database
 							info = hvDoQuarantine(quarantine,hvss[-1],downloaded,ingested)
 							if (downloaded,) in jp2list_bad:
