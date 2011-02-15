@@ -107,6 +107,19 @@ def hvDBNumberFilesByNicknameAndMeasurement(dbloc, dbName, timeStart, timeEnd, g
         result = []
     return result
 
+def hvDBMostRecentJP2(dbloc, dbName, timeEnd, daysBackMax, goodbad, nickname, measurement):
+    try:
+        con = sqlite3.connect(dbloc + dbName, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+        cur = con.cursor()
+        ttt = (timeStart, timeEnd, goodbad, nickname, measurement)
+        cur.execute("SELECT filename FROM TableTest WHERE observationTimeStamp>? AND observationTimeStamp<? AND isFileGood=? AND nickname=? AND measurement=?", (ttt))
+        result = len(cur.fetchall())
+        cur.close()
+    except Exception,error:
+        print 'Error reading database for most recent JP2: error = '+error
+        result = []
+    return result
+
 def hvDBGetMeasurementsPerNickname(dbloc, dbName, timeStart, timeEnd, goodbad, nickname):
     try:
         con = sqlite3.connect(dbloc + dbName, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
@@ -119,6 +132,26 @@ def hvDBGetMeasurementsPerNickname(dbloc, dbName, timeStart, timeEnd, goodbad, n
         print 'Error reading database for unique nicknames: error = '+error
         result = []
     return uniq(results)
+
+def hvDateDaysBackFromNow(daysBack, relativeLink = ''):
+    datePrevious = str( (datetime.datetime.utcnow() - datetime.timedelta(days=daysBack)).date() )
+    linkPrevious = relativeLink + previousDate.replace('-','/') + '/'
+    return datePrevious, linkPrevious
+
+def hvReadOptionsFile(optionsFile):
+    if len(sys.argv) <= 1:
+        print 'No options file given.  Ending.'
+    else:
+	# Get the time that the script was set running
+	#beginTimeStamp = createTimeStamp()
+	# Read the options file
+        try:
+                f = open(optionsFile,'r')
+                options = f.readlines()
+        finally:
+                f.close()
+
+        return {"remoteRoot":options[0][:-1], "stagingRoot":options[1][:-1], "ingestRoot":options[2][:-1], "startDate":(options[3][:-1]).split('/'), "endDate":(options[4][:-1]).split('/'), "measurements":options[5][:-1].split(','), "nickname":options[6][:-1], "monitorLoc":options[7][:-1], "minJP2SizeInBytes": int(options[8][:-1]), "redirectTF": options[9][:-1], "sleep": int(options[10][:-1]), "daysBackMin": int(options[11][:-1]), "daysBackMax": int(options[12][:-1]), "localUser": options[13][:-1], "dbName": options[14][:-1]}
 
 
 def hvHourTimesForDate(date,hr):
@@ -166,50 +199,39 @@ def hvPlotHistogram(p,title,fname,color = 'blue'):
     plt.title(title)
     plt.savefig(fname,format = 'png')
     plt.clf()
-    #print fname
 
 ###### Main program
 
+options = hvReadOptionsFile(sys.argv)
+dbloc = options["dbloc"] #'/home/ireland/JP2Gen_downloadtest/staging/v0.8/db/'
+dbName = options["dbName"] #'dbTest2.sqlite'
+daysBackMin = options["daysBackMin"]
+daysBackMax = options["daysBackMax"]
+sleep = options["sleep"]
+monitorLoc = options["monitorLoc"]
 
-if len(sys.argv) <= 1:
-        print 'No options file given.  Ending.'
-else:
-	# Get the time that the script was set running
-	#beginTimeStamp = createTimeStamp()
-	# Read the options file
-        options_file = sys.argv[1]
-        try:
-                f = open(options_file,'r')
-                options = f.readlines()
-        finally:
-                f.close()
-
-        remote_root = options[0][:-1]
-        staging_root = options[1][:-1]
-        ingest_root = options[2][:-1]
-	startDate = (options[3][:-1]).split('/')
-	endDate = (options[4][:-1]).split('/')
-	measurements = options[5][:-1].split(',')
-	nickname = options[6][:-1]
-	monitorLoc = options[7][:-1]
-	minJP2SizeInBytes = int(options[8][:-1])
-	redirectTF = options[9][:-1]
-	sleep = int(options[10][:-1])
-	daysBackMin = int(options[11][:-1])
-	daysBackMax = int(options[12][:-1])
-	localUser = options[13][:-1]
-	dbName = options[14][:-1]
-
-
-dbloc = '/home/ireland/JP2Gen_downloadtest/staging/v0.8/db/'
-dbName = 'dbTest2.sqlite'
-
-date = str(datetime.datetime.utcnow().date())
-
-mostRecentDir = monitorLoc + 'mostrecent/'
+#
+# Where we keep the report from today
+#
+locationToday = 'yyyy/mm/dd/'
+#
+# Expresses the depth at which all the summary reports are stored
+#
+relativeLink = '../../../'
+#
+# Location on the local system where the most recent summary reports are stored
+#
+mostRecentDir = monitorLoc + locationToday
 if not os.path.isdir(mostRecentDir):
     os.makedirs(mostRecentDir)
+#
+# Link to get back to the most recent summary reports.
+#
+linkToday = relativeLink + locationToday
 
+#
+# Maximum number of days back that the download graphs are updated in normal operations.
+#
 dateBackMax = str( (datetime.datetime.utcnow() + datetime.timedelta(days=daysBackMax-1)).date() )
 
 #
@@ -221,11 +243,17 @@ while True:
         date = str( (datetime.datetime.utcnow() - datetime.timedelta(days=daysBack)).date() )
         dayStart = date + ' 00:00:00.000'
         dayEnd   = date + ' 23:59:59.999'
-        dayNicknames = hvDBUniqueNicknames(dbloc,dbName,dayStart, dayEnd)
+        dayNicknames = hvDBUniqueNicknames(dbloc,dbName,dayStart,dayEnd)
         n = len(dayNicknames)
 
-        previousDate = str( (datetime.datetime.utcnow() - datetime.timedelta(days=daysBack-1)).date() )
-        previousDay = .replace('-','/') + '/'
+        datePrevious, linkPrevious = hvDateDaysBackFromNow(daysBack + 1,relativeLink = relativeLink)
+        dateOneWeekEarlier, linkOneWeekEarlier = hvDateDaysBackFromNow(daysBack + 7,relativeLink = relativeLink)
+        dateFourWeeksEarlier, linkFourWeeksEarlier = hvDateDaysBackFromNow(daysBack + 28,relativeLink = relativeLink)
+ 
+        dateNext, linkNext = hvDateDaysBackFromNow(-(daysBack + 1),relativeLink = relativeLink)
+        dateOneWeekLater, linkOneWeekLater = hvDateDaysBackFromNow(-(daysBack + 7),relativeLink = relativeLink)
+        dateFourWeeksLater, linkFourWeeksLater = hvDateDaysBackFromNow(-(daysBack + 28),relativeLink = relativeLink)
+        
         #
         # Make the Storage directory
         #
@@ -243,24 +271,28 @@ while True:
         currentFile.write('<head>\n')
         currentFile.write('<title>JP2 download summary for '+dayStart+' to '+dayEnd +'</title>\n')
         currentFile.write('</head>\n')
-        currentFile.write('<H1>JP2 download summary for '+dayStart+' to '+dayEnd +'.</H1>\n')
-        currentFile.write('<P><H3>Updated approximately every '+str(sleep)+' seconds until the end of '+dateBackMax+'</H3></P>\n')
         currentFile.write('<body>\n')
+        currentFile.write('<H1>JP2 download summary for '+dayStart+' to '+dayEnd +'.</H1>\n')
+        currentFile.write('<P><H3>Updated approximately every '+str(sleep)+' seconds until the end of '+dateBackMax+'.</H3></P>\n')
+        currentFile.write('<P><A HREF='+linkToday+'>Today (now).</A></P>\n')
+        currentFile.write('<P><A HREF='+linkPrevious+'>(<i>'+datePrevious+'</i>) < One day earlier.</A></P>\n')
+        currentFile.write('<P><A HREF='+linkOneWeekEarlier+'>(<i>'+dateOneWeekEarlier+'</i>) << One week earlier.</A></P>\n')
+        currentFile.write('<P><A HREF='+linkFourWeeksEarlier+'>(<i>'+dateFourWeeksEarlier+'</i>) <<< Four weeks earlier.</A></P>\n')
+        currentFile.write('<P><A HREF='+linkNext+'>One day later. > (<i>'+dateNext+'</i>)</A></P>\n')
+        currentFile.write('<P><A HREF='+linkOneWeekLater+'>One week later. >> (<i>'+dateOneWeekLater+'</i>)</A></P>\n')
+        currentFile.write('<P><A HREF='+linkFourWeeksLater+'>Four weeks later. >>> (<i>'+dateFourWeeksLater+'</i>)</A></P>\n')
+        
+        fnameTime = ['_bad_' +dayStart+ '_' +dayEnd+'.png','_good_' +dayStart+ '_' +dayEnd+'.png']
+        titleTime = ['(bad) '+dayStart+' - '+dayEnd+' UT','(good) '+dayStart+' - '+dayEnd+' UT']
 
         #
         # Generate information on both the good and bad files
         #
         for goodbad in range(1,-1,-1):
             if goodbad == 0:
-                fileType = 'bad'
                 color = 'red'
             else:
-                fileType = 'good'
                 color = 'b'
-
-            titleTime = '('+fileType+') '+dayStart+' - '+dayEnd+' UT'
-            fnameTime = '_'+fileType+'_' +dayStart+ '_' +dayEnd+'.png'
-
             #
             # All Files
             #
@@ -272,7 +304,8 @@ while True:
             title = 'All files '+titleTime
             fname = 'all_files' +fnameTime
             hvPlotHistogram(data[:],title,summaryDir + fname, color = color)
-            currentFile.write("<P><IMG src='"+fname+"'></P>\n")
+            if goodbad:
+                currentFile.write("<P><IMG src='"+fname[1]+"'><IMG src='"+fname[0]+"'></P>\n")
             #
             # Summary plot per nickname
             #
@@ -287,7 +320,8 @@ while True:
                 title = nickname + ' (all) '+titleTime
                 fname = nickname + '_all'   +fnameTime
                 hvPlotHistogram(data[:],title,summaryDir + fname, color = color)
-                currentFile.write("<P><IMG src='"+fname+"'></P>\n")
+                if goodbad:
+                    currentFile.write("<P><IMG src='"+fname[1]+"'><IMG src='"+fname[0]+"'></P>\n")
                 #
                 # Summary plot per nickname and measurement
                 #
@@ -304,7 +338,8 @@ while True:
                     title = nickname + ' '+measurement + titleTime
                     fname = nickname + '.'+measurement + fnameTime
                     hvPlotHistogram(data[k,:],title,summaryDir + fname, color = color)
-                    currentFile.write("<P><IMG src='"+fname+"'></P>\n")
+                    if goodbad:
+                        currentFile.write("<P><IMG src='"+fname[1]+"'><IMG src='"+fname[0]+"'></P>\n")
 
         currentFile.write('</body>\n')
         currentFile.write('</html>\n')
