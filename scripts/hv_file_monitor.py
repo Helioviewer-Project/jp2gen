@@ -289,7 +289,7 @@ while True:
         currentFile.write('<title>Daily JP2 download summary for '+dayStart+' to '+dayEnd +'</title>\n')
         currentFile.write('</head>\n')
         currentFile.write('<body>\n')
-        currentFile.write('<H1>JP2 download summary for '+dayStart+' to '+dayEnd +'.</H1>\n')
+        currentFile.write('<H1>Daily JP2 download summary for '+dayStart+' to '+dayEnd +'.</H1>\n')
         currentFile.write('<P><H3><CENTER>Updated approximately every '+str(sleep)+' seconds until the end of '+dateBackMax+'.</CENTER></H3></P>\n')
         currentFile.write('<P><CENTER><A HREF='+linkToday+'>Today (now)</A>.</CENTER></P>\n')
         currentFile.write('<CENTER>\n')
@@ -334,6 +334,7 @@ while True:
             hvPlotHistogram(data[:],title[goodbad],summaryDir + fname[goodbad], color = color)
             if goodbad:
                 #currentFile.write("<P><IMG src='"+fname[1]+"' width="+imgWidth+"><IMG src='"+fname[0]+"' width="+imgWidth+"></P>\n")
+                currentFile.write("<TR><TD><H2>All</H2></TD><TD> </TD></TR>\n")
                 currentFile.write("<TR><TD><IMG src='"+fname[1]+"' width="+imgWidth+"></TD>\n")
                 currentFile.write("<TD><IMG src='"+fname[0]+"' width="+imgWidth+"></TD></TR>\n")
             #
@@ -353,6 +354,7 @@ while True:
 
                 if goodbad:
                     #currentFile.write("<P><IMG src='"+fname[1]+"' width="+imgWidth+"><IMG src='"+fname[0]+"' width="+imgWidth+"></P>\n")
+                    currentFile.write("<TR><TD><H2>"+nickname+"</H2></TD><TD> </TD></TR>\n")
                     currentFile.write("<TR><TD><IMG src='"+fname[1]+"' width="+imgWidth+"></TD>\n")
                     currentFile.write("<TD><IMG src='"+fname[0]+"' width="+imgWidth+"></TD></TR>\n")
                 #
