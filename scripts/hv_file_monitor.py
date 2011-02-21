@@ -256,7 +256,6 @@ dateBackMax = str( (datetime.datetime.utcnow() + datetime.timedelta(days=daysBac
 while True:
     for daysBack in range(daysBackMin, daysBackMax):
         DT = (datetime.datetime.utcnow() - datetime.timedelta(days=daysBack)).date()
-        DT = datetime.date(2010,12,1)
         date = str( DT )
         dayStart = date + ' 00:00:00.000'
         dayEnd   = date + ' 23:59:59.999'
