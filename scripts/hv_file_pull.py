@@ -336,6 +336,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 			jprint('Querying file location = '+fileLocation)
 			inLocation, fileLocationExtension = hvGetFilesAtLocation(fileLocation)
 			newFiles, newFilesCount, newList = hvCheckForNewFiles(inLocation,jp2list_good)
+			print newFiles
 			if newFiles:
 				newFileListName = timeStamp + '.' + hvDateFilename(yyyy, mm, dd, nickname, measurement) + fileLocationExtension
 				newFileListFullPath = logSubdir + newFileListName
@@ -359,7 +360,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 					except Exception,error:
 						jprint('Exception caught at executing wget command; error: '+str(error))
 				else:
-					files_found = os.listdir(remote_location)
+					files_found = os.listdir(fileLocation)
+					print files_found
 
 				# When the download time ends
 				downloadTimeEnd = datetime.datetime.utcnow()

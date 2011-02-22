@@ -341,6 +341,7 @@ while True:
             #
             for j in range(0,n):
                 nickname = dayNicknames[j][0]
+                print date,nickname
 
                 data = np.zeros((24))
                 for hr in range(0,24):
