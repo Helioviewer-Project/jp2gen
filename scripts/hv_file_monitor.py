@@ -207,6 +207,149 @@ def hvPlotHistogram(p,title,fname,color = 'blue'):
     plt.savefig(fname,format = 'png')
     plt.clf()
 
+def hvDailyFileAquisitionReport(dbloc,dbName,DT,monitorLoc,daysBackMax,locationToday = 'yyyy/mm/dd/', relativeLink = '../../../', htmlFileName = 'download_stats.html', imgWidth = '600px'):
+    """Make a directory containing an HTML file and plots regarding the number of files and their type 
+    (according to instrument nickname and measurement) that were downloaded, and if those files were classed as 'good' or 'bad'.
+    """
+    # Maximum number of days back in normal operations
+    dateBackMax = str( (datetime.datetime.utcnow() + datetime.timedelta(days=daysBackMax-1)).date() ) ):
+
+    # Location on the local system where the most recent summary reports are stored
+    mostRecentDir = monitorLoc + locationToday
+    if not os.path.isdir(mostRecentDir):
+        os.makedirs(mostRecentDir)
+        
+    # Link to get back to the most recent summary reports.
+    linkToday = relativeLink + locationToday + htmlFileName
+
+    # Date
+    date = str( DT )
+    dayStart = date + ' 00:00:00.000'
+    dayEnd   = date + ' 23:59:59.999'
+
+    # Nicknames of instruments found on the passed date DT
+    dayNicknames = hvDBUniqueNicknames(dbloc,dbName,dayStart,dayEnd)
+    n = len(dayNicknames)
+
+    # Dates and links relative to the passed date DT
+    datePrevious, linkPrevious = hvDateDaysBackFromNow(DT,1,relativeLink = relativeLink, html = htmlFileName)
+    dateOneWeekEarlier, linkOneWeekEarlier = hvDateDaysBackFromNow(DT,7,relativeLink = relativeLink, html = htmlFileName)
+    dateFourWeeksEarlier, linkFourWeeksEarlier = hvDateDaysBackFromNow(DT,28,relativeLink = relativeLink, html = htmlFileName)
+ 
+    dateNext, linkNext = hvDateDaysBackFromNow(DT,-1,relativeLink = relativeLink, html = htmlFileName)
+    dateOneWeekLater, linkOneWeekLater = hvDateDaysBackFromNow(DT,-7,relativeLink = relativeLink, html = htmlFileName)
+    dateFourWeeksLater, linkFourWeeksLater = hvDateDaysBackFromNow(DT,-28,relativeLink = relativeLink, html = htmlFileName)
+        
+    # Make the Storage directory
+    summaryDir = monitorLoc + date.replace('-','/') + '/'
+    if not os.path.isdir(summaryDir):
+        try:
+            os.makedirs(summaryDir)
+        except Exception, error:
+            print('Error creating directory; error: '+str(error))
+
+    # Open the download summary file
+    currentFile = open(summaryDir + htmlFileName,'w')
+    currentFile.write('<html>\n')
+    currentFile.write('<head>\n')
+    currentFile.write('<title>Daily JP2 download summary for '+dayStart+' to '+dayEnd +'</title>\n')
+    currentFile.write('</head>\n')
+    currentFile.write('<body>\n')
+    currentFile.write('<H1>Daily JP2 download summary for '+dayStart+' to '+dayEnd +'.</H1>\n')
+    currentFile.write('<P><H3><CENTER>Updated approximately every '+str(sleep)+' seconds until the end of '+dateBackMax+'.</CENTER></H3></P>\n')
+    currentFile.write('<P><CENTER><A HREF='+linkToday+'>Today (now)</A>.</CENTER></P>\n')
+    currentFile.write('<CENTER>\n')
+    currentFile.write('<TABLE width = 1000px>\n')
+    currentFile.write('<TR><TH align=center><<< Four weeks</TH><TH align=center><< One week</TH><TH align=center>< One day</TH><TH>-</TH><TH align=center>One day ></TH><TH align=center>One week >></TH><TH align=center>Four weeks >>></TH></TR>\n')
+    currentFile.write('<TR><TD align=center><A HREF='+linkFourWeeksEarlier+'><i>'+dateFourWeeksEarlier+'</i></A></TD>\n')
+    currentFile.write('<TD align=center><A HREF='+linkOneWeekEarlier+'><i>'+dateOneWeekEarlier+'</i></A></TD>\n')
+    currentFile.write('<TD align=center><A HREF='+linkPrevious+'><i>'+datePrevious+'</i></A></TD>\n')
+    currentFile.write('<TD align=center>'+date+'</A></TD>\n')
+    currentFile.write('<TD align=center><A HREF='+linkNext+'><i>'+dateNext+'</i></A></TD>\n')
+    currentFile.write('<TD align=center><A HREF='+linkOneWeekLater+'><i>'+dateOneWeekLater+'</i></A></TD>\n')
+    currentFile.write('<TD align=center><A HREF='+linkFourWeeksLater+'><i>'+dateFourWeeksLater+'</i></A></TD></TR>\n')
+    currentFile.write('</TABLE>\n')
+    currentFile.write('</CENTER>\n')
+    currentFile.write('<BR><BR>\n')    
+    currentFile.write('<P><TABLE>\n')
+    currentFile.write('<TR><TH align=center width='+imgWidth+'>Good Files</TH><TH align=center width ='+imgWidth+'>Bad Files</TH></TR>\n')
+        
+    fnameTime = ['_bad_' +dayStart+ '_' +dayEnd+'.png','_good_' +dayStart+ '_' +dayEnd+'.png']
+    titleTime = ['(bad) '+dayStart+' - '+dayEnd+' UT','(good) '+dayStart+' - '+dayEnd+' UT']
+
+    #
+    # Generate information on both the good and bad files
+    #
+    for goodbad in range(1,-1,-1):
+        if goodbad == 0:
+            color = 'red'
+        else:
+            color = 'blue'
+        #
+        # (1) All Files
+        #
+        data = np.zeros((24))
+        for hr in range(0,24):
+            timeStart, timeEnd = hvHourTimesForDate(date,hr)
+            data[hr] = hvDBNumberFilesAll(dbloc, dbName, timeStart, timeEnd, goodbad)
+
+        title = ['All files '+titleTime[0],'All files '+titleTime[1]]
+        fname = ['all_files' +fnameTime[0],'all_files' +fnameTime[1]]
+        hvPlotHistogram(data[:],title[goodbad],summaryDir + fname[goodbad], color = color)
+        if goodbad:
+            #currentFile.write("<P><IMG src='"+fname[1]+"' width="+imgWidth+"><IMG src='"+fname[0]+"' width="+imgWidth+"></P>\n")
+            currentFile.write("<TR><TD><H2>All</H2></TD><TD> </TD></TR>\n")
+            currentFile.write("<TR><TD><IMG src='"+fname[1]+"' width="+imgWidth+"></TD>\n")
+            currentFile.write("<TD><IMG src='"+fname[0]+"' width="+imgWidth+"></TD></TR>\n")
+        #
+        # (2) Summary per nickname
+        #
+        for j in range(0,n):
+            nickname = dayNicknames[j][0]
+            data = np.zeros((24))
+            for hr in range(0,24):
+                timeStart, timeEnd = hvHourTimesForDate(date,hr)
+                data[hr] = hvDBNumberFilesByNickname(dbloc, dbName, timeStart, timeEnd, goodbad, nickname)
+
+            title = [nickname + ' (all) '+titleTime[0],nickname + ' (all) '+titleTime[1]]
+            fname = [nickname + '_all'   +fnameTime[0],nickname + '_all'   +fnameTime[1]]
+            hvPlotHistogram(data[:],title[goodbad],summaryDir + fname[goodbad], color = color)
+            if goodbad:
+                #currentFile.write("<P><IMG src='"+fname[1]+"' width="+imgWidth+"><IMG src='"+fname[0]+"' width="+imgWidth+"></P>\n")
+                currentFile.write("<TR><TD><H2>"+nickname+"</H2></TD><TD> </TD></TR>\n")
+                currentFile.write("<TR><TD><IMG src='"+fname[1]+"' width="+imgWidth+"></TD>\n")
+                currentFile.write("<TD><IMG src='"+fname[0]+"' width="+imgWidth+"></TD></TR>\n")
+            #
+            # (3) Summary per nickname and measurement
+            #
+            measurements = hvDBGetMeasurementsPerNickname(dbloc, dbName, dayStart, dayEnd, -1, nickname)
+            nm = len(measurements)
+            data = np.zeros((nm,24))
+
+            for k in range(0,nm):
+                measurement = measurements[k][0]
+                for hr in range(0,24):
+                    timeStart, timeEnd = hvHourTimesForDate(date,hr)
+                    data[k,hr] = hvDBNumberFilesByNicknameAndMeasurement(dbloc, dbName, timeStart, timeEnd, goodbad, nickname, measurement)
+
+                title = [nickname + ' '+measurement + titleTime[0],nickname + ' '+measurement + titleTime[1]]
+                fname = [nickname + '.'+measurement + fnameTime[0],nickname + '.'+measurement + fnameTime[1]]
+                hvPlotHistogram(data[k,:],title[goodbad],summaryDir + fname[goodbad], color = color)
+                if goodbad:
+                    #currentFile.write("<P><IMG src='"+fname[1]+"' width="+imgWidth+"><IMG src='"+fname[0]+"' width="+imgWidth+"></P>\n")
+                    currentFile.write("<TR><TD><IMG src='"+fname[1]+"' width="+imgWidth+"></TD>\n")
+                    currentFile.write("<TD><IMG src='"+fname[0]+"' width="+imgWidth+"></TD></TR>\n")
+
+    # All summaries are complete
+    currentFile.write('</TABLE>')
+    currentFile.write('<P><I>Last updated '+str(datetime.datetime.utcnow())+' UT.</I></P>')
+    currentFile.write('</body>\n')
+    currentFile.write('</html>\n')
+    currentFile.close()
+
+    return mostRecentDir,summaryDir
+
+
 ###### Main program
 
 options = hvReadOptionsFile(sys.argv)
@@ -216,188 +359,38 @@ daysBackMin = options["daysBackMin"]
 daysBackMax = options["daysBackMax"]
 sleep = options["sleep"]
 monitorLoc = options["monitorLoc"]
-
-#
-# Where we keep the report from today
-#
-locationToday = 'yyyy/mm/dd/'
-#
-# Expresses the depth at which all the summary reports are stored
-#
-relativeLink = '../../../'
-#
-# Main file name
-#
-htmlFileName = 'download_stats.html'
-#
-#
-#
-imgWidth = '600px'
-#
-# Location on the local system where the most recent summary reports are stored
-#
-mostRecentDir = monitorLoc + locationToday
-if not os.path.isdir(mostRecentDir):
-    os.makedirs(mostRecentDir)
-#
-# Link to get back to the most recent summary reports.
-#
-linkToday = relativeLink + locationToday + htmlFileName
-
-#
-# Maximum number of days back that the download graphs are updated in normal operations.
-#
-dateBackMax = str( (datetime.datetime.utcnow() + datetime.timedelta(days=daysBackMax-1)).date() )
-
 #
 # Do the summary plots broken down by all files, nickname, then nickname/measurement
 #
+if ( '-1' in  (options["startDate"]).split('/') ) or ('-1' in  (options["endDate"]).split('/')):
+    while True:
+        for daysBack in range(daysBackMin, daysBackMax):
+            DT = (datetime.datetime.utcnow() - datetime.timedelta(days=daysBack)).date()
+            mostRecentDir,summaryDir = hvDailyFileAquisitionReport(dbloc,dbName,DT,monitorLoc,daysBackMax)
 
-while True:
-    for daysBack in range(daysBackMin, daysBackMax):
-        DT = (datetime.datetime.utcnow() - datetime.timedelta(days=daysBack)).date()
-        date = str( DT )
-        dayStart = date + ' 00:00:00.000'
-        dayEnd   = date + ' 23:59:59.999'
-        dayNicknames = hvDBUniqueNicknames(dbloc,dbName,dayStart,dayEnd)
-        n = len(dayNicknames)
+            # Copy the contents of the current directory to the most recent
+            if daysBack == 0:
 
-        datePrevious, linkPrevious = hvDateDaysBackFromNow(DT,1,relativeLink = relativeLink, html = htmlFileName)
-        dateOneWeekEarlier, linkOneWeekEarlier = hvDateDaysBackFromNow(DT,7,relativeLink = relativeLink, html = htmlFileName)
-        dateFourWeeksEarlier, linkFourWeeksEarlier = hvDateDaysBackFromNow(DT,28,relativeLink = relativeLink, html = htmlFileName)
- 
-        dateNext, linkNext = hvDateDaysBackFromNow(DT,-1,relativeLink = relativeLink, html = htmlFileName)
-        dateOneWeekLater, linkOneWeekLater = hvDateDaysBackFromNow(DT,-7,relativeLink = relativeLink, html = htmlFileName)
-        dateFourWeeksLater, linkFourWeeksLater = hvDateDaysBackFromNow(DT,-28,relativeLink = relativeLink, html = htmlFileName)
-        
-        #
-        # Make the Storage directory
-        #
-        summaryDir = monitorLoc + date.replace('-','/') + '/'
-        if not os.path.isdir(summaryDir):
-            try:
-                os.makedirs(summaryDir)
-            except Exception, error:
-                print('Error creating directory; error: '+str(error))
-        #
-        # Open the download summary file
-        #
-        currentFile = open(summaryDir + htmlFileName,'w')
-        currentFile.write('<html>\n')
-        currentFile.write('<head>\n')
-        currentFile.write('<title>Daily JP2 download summary for '+dayStart+' to '+dayEnd +'</title>\n')
-        currentFile.write('</head>\n')
-        currentFile.write('<body>\n')
-        currentFile.write('<H1>Daily JP2 download summary for '+dayStart+' to '+dayEnd +'.</H1>\n')
-        currentFile.write('<P><H3><CENTER>Updated approximately every '+str(sleep)+' seconds until the end of '+dateBackMax+'.</CENTER></H3></P>\n')
-        currentFile.write('<P><CENTER><A HREF='+linkToday+'>Today (now)</A>.</CENTER></P>\n')
-        currentFile.write('<CENTER>\n')
-        currentFile.write('<TABLE width = 1000px>\n')
-        currentFile.write('<TR><TH align=center><<< Four weeks</TH><TH align=center><< One week</TH><TH align=center>< One day</TH><TH>-</TH><TH align=center>One day ></TH><TH align=center>One week >></TH><TH align=center>Four weeks >>></TH></TR>\n')
-        currentFile.write('<TR><TD align=center><A HREF='+linkFourWeeksEarlier+'><i>'+dateFourWeeksEarlier+'</i></A></TD>\n')
-        currentFile.write('<TD align=center><A HREF='+linkOneWeekEarlier+'><i>'+dateOneWeekEarlier+'</i></A></TD>\n')
-        currentFile.write('<TD align=center><A HREF='+linkPrevious+'><i>'+datePrevious+'</i></A></TD>\n')
-        currentFile.write('<TD align=center>'+date+'</A></TD>\n')
-        currentFile.write('<TD align=center><A HREF='+linkNext+'><i>'+dateNext+'</i></A></TD>\n')
-        currentFile.write('<TD align=center><A HREF='+linkOneWeekLater+'><i>'+dateOneWeekLater+'</i></A></TD>\n')
-        currentFile.write('<TD align=center><A HREF='+linkFourWeeksLater+'><i>'+dateFourWeeksLater+'</i></A></TD></TR>\n')
-        currentFile.write('</TABLE>\n')
-        currentFile.write('</CENTER>\n')
-        currentFile.write('<BR><BR>\n')
+                # empty the most recent directory
+                contents = os.listdir(mostRecentDir)
+                for f in contents:
+                    os.remove(mostRecentDir + f)
 
-        
-        currentFile.write('<P><TABLE>\n')
-        currentFile.write('<TR><TH align=center width='+imgWidth+'>Good Files</TH><TH align=center width ='+imgWidth+'>Bad Files</TH></TR>\n')
-        
-        fnameTime = ['_bad_' +dayStart+ '_' +dayEnd+'.png','_good_' +dayStart+ '_' +dayEnd+'.png']
-        titleTime = ['(bad) '+dayStart+' - '+dayEnd+' UT','(good) '+dayStart+' - '+dayEnd+' UT']
+                # fill the directory with the contents of the summary directory when daysBack == 0
+                contents = os.listdir(summaryDir)
+                for f in contents:
+                    shutil.copy2(summaryDir + f, mostRecentDir + f)
 
-        #
-        # Generate information on both the good and bad files
-        #
-        for goodbad in range(1,-1,-1):
-            if goodbad == 0:
-                color = 'red'
-            else:
-                color = 'b'
-            #
-            # All Files
-            #
-            data = np.zeros((24))
-            for hr in range(0,24):
-                timeStart, timeEnd = hvHourTimesForDate(date,hr)
-                data[hr] = hvDBNumberFilesAll(dbloc, dbName, timeStart, timeEnd, goodbad)
+        # Sleep for a bit until some more files have been downloaded
+        time.sleep(sleep)
 
-            title = ['All files '+titleTime[0],'All files '+titleTime[1]]
-            fname = ['all_files' +fnameTime[0],'all_files' +fnameTime[1]]
-            hvPlotHistogram(data[:],title[goodbad],summaryDir + fname[goodbad], color = color)
-            if goodbad:
-                #currentFile.write("<P><IMG src='"+fname[1]+"' width="+imgWidth+"><IMG src='"+fname[0]+"' width="+imgWidth+"></P>\n")
-                currentFile.write("<TR><TD><H2>All</H2></TD><TD> </TD></TR>\n")
-                currentFile.write("<TR><TD><IMG src='"+fname[1]+"' width="+imgWidth+"></TD>\n")
-                currentFile.write("<TD><IMG src='"+fname[0]+"' width="+imgWidth+"></TD></TR>\n")
-            #
-            # Summary plot per nickname
-            #
-            for j in range(0,n):
-                nickname = dayNicknames[j][0]
-                print date,nickname
+else:
+    # passed a specific range of dates.  Go through them.
+    startDate = datetime.strptime(options["startDate"],'%Y/%m/%d')
+    endDate = datetime.strptime(options["endDate"],'%Y/%m/%d')
+    ndays = 1 + (endDate-startDate).days
+    for days in range(0,ndays):
+        DT = (startDate + datetime.timedelta(days=days)).date()
+        dummy1, dummy2 = hvDailyFileAquisitionReport(dbloc,dbName,DT,monitorLoc,daysBackMax)
 
-                data = np.zeros((24))
-                for hr in range(0,24):
-                    timeStart, timeEnd = hvHourTimesForDate(date,hr)
-                    data[hr] = hvDBNumberFilesByNickname(dbloc, dbName, timeStart, timeEnd, goodbad, nickname)
-
-                title = [nickname + ' (all) '+titleTime[0],nickname + ' (all) '+titleTime[1]]
-                fname = [nickname + '_all'   +fnameTime[0],nickname + '_all'   +fnameTime[1]]
-                hvPlotHistogram(data[:],title[goodbad],summaryDir + fname[goodbad], color = color)
-
-                if goodbad:
-                    #currentFile.write("<P><IMG src='"+fname[1]+"' width="+imgWidth+"><IMG src='"+fname[0]+"' width="+imgWidth+"></P>\n")
-                    currentFile.write("<TR><TD><H2>"+nickname+"</H2></TD><TD> </TD></TR>\n")
-                    currentFile.write("<TR><TD><IMG src='"+fname[1]+"' width="+imgWidth+"></TD>\n")
-                    currentFile.write("<TD><IMG src='"+fname[0]+"' width="+imgWidth+"></TD></TR>\n")
-                #
-                # Summary plot per nickname and measurement
-                #
-                measurements = hvDBGetMeasurementsPerNickname(dbloc, dbName, dayStart, dayEnd, -1, nickname)
-                nm = len(measurements)
-                data = np.zeros((nm,24))
-
-                for k in range(0,nm):
-                    measurement = measurements[k][0]
-                    for hr in range(0,24):
-                        timeStart, timeEnd = hvHourTimesForDate(date,hr)
-                        data[k,hr] = hvDBNumberFilesByNicknameAndMeasurement(dbloc, dbName, timeStart, timeEnd, goodbad, nickname, measurement)
-
-                    title = [nickname + ' '+measurement + titleTime[0],nickname + ' '+measurement + titleTime[1]]
-                    fname = [nickname + '.'+measurement + fnameTime[0],nickname + '.'+measurement + fnameTime[1]]
-                    hvPlotHistogram(data[k,:],title[goodbad],summaryDir + fname[goodbad], color = color)
-                    if goodbad:
-                        #currentFile.write("<P><IMG src='"+fname[1]+"' width="+imgWidth+"><IMG src='"+fname[0]+"' width="+imgWidth+"></P>\n")
-                        currentFile.write("<TR><TD><IMG src='"+fname[1]+"' width="+imgWidth+"></TD>\n")
-                        currentFile.write("<TD><IMG src='"+fname[0]+"' width="+imgWidth+"></TD></TR>\n")
-
-        currentFile.write('</TABLE>')
-        currentFile.write('<P><I>Last updated '+str(datetime.datetime.utcnow())+' UT.</I></P>')
-        currentFile.write('</body>\n')
-        currentFile.write('</html>\n')
-        currentFile.close()
-        #
-        # Copy the contents of the current directory to the most recent
-        #
-        if daysBack == 0:
-            # empty the most recent directory
-            contents = os.listdir(mostRecentDir)
-            for f in contents:
-                os.remove(mostRecentDir + f)
-            # fill the directory with the contents of the summary directory when daysBack == 0
-            contents = os.listdir(summaryDir)
-            for f in contents:
-                shutil.copy2(summaryDir + f, mostRecentDir + f)
-    #
-    # Sleep
-    #
-    #print 'Sleeping for '+str(sleep)+ ' seconds.'
-    time.sleep(sleep)
 
