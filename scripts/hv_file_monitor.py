@@ -207,12 +207,12 @@ def hvPlotHistogram(p,title,fname,color = 'blue'):
     plt.savefig(fname,format = 'png')
     plt.clf()
 
-def hvDailyFileAquisitionReport(dbloc,dbName,DT,monitorLoc,daysBackMax,locationToday = 'yyyy/mm/dd/', relativeLink = '../../../', htmlFileName = 'download_stats.html', imgWidth = '600px'):
+def hvDailyFileAquisitionReport(dbloc,dbName,DT,monitorLoc,daysBackMax,DTmax,locationToday = 'yyyy/mm/dd/', relativeLink = '../../../', htmlFileName = 'download_stats.html', imgWidth = '600px'):
     """Make a directory containing an HTML file and plots regarding the number of files and their type 
     (according to instrument nickname and measurement) that were downloaded, and if those files were classed as 'good' or 'bad'.
     """
     # Maximum number of days back in normal operations
-    dateBackMax = str( (datetime.datetime.utcnow() + datetime.timedelta(days=daysBackMax-1)).date() ) ):
+    dateBackMax = str( (DTmax + datetime.timedelta(days=daysBackMax-1)).date() ) ):
 
     # Location on the local system where the most recent summary reports are stored
     mostRecentDir = monitorLoc + locationToday
@@ -366,7 +366,8 @@ if ( '-1' in  (options["startDate"]).split('/') ) or ('-1' in  (options["endDate
     while True:
         for daysBack in range(daysBackMin, daysBackMax):
             DT = (datetime.datetime.utcnow() - datetime.timedelta(days=daysBack)).date()
-            mostRecentDir,summaryDir = hvDailyFileAquisitionReport(dbloc,dbName,DT,monitorLoc,daysBackMax)
+            DTmax = (datetime.datetime.utcnow()).date()
+            mostRecentDir,summaryDir = hvDailyFileAquisitionReport(dbloc,dbName,DT,monitorLoc,daysBackMax,DTmax)
 
             # Copy the contents of the current directory to the most recent
             if daysBack == 0:
@@ -391,6 +392,6 @@ else:
     ndays = 1 + (endDate-startDate).days
     for days in range(0,ndays):
         DT = (startDate + datetime.timedelta(days=days)).date()
-        dummy1, dummy2 = hvDailyFileAquisitionReport(dbloc,dbName,DT,monitorLoc,daysBackMax)
+        dummy1, dummy2 = hvDailyFileAquisitionReport(dbloc,dbName,DT,monitorLoc,daysBackMax,DT)
 
 
