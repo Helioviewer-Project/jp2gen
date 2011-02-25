@@ -1,0 +1,15 @@
+~/soho_incoming/jp2/
+~/incoming/staging/v0.8/
+~/incoming/v0.8/
+-1/-1/-1
+-1/-1/-1
+171,195,284,304
+EIT
+~/JP2Gen_downloadtest/pretendweb/
+1000
+False
+900
+0
+2
+ireland
+dbTest2.sqlite

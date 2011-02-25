@@ -150,16 +150,33 @@ def hvDateDaysBackFromNow(DT, daysBack, relativeLink = '', html = ''):
     linkPrevious = relativeLink + datePrevious.replace('-','/') + '/' + html
     return datePrevious, linkPrevious
 
-def hvReadOptionsFile(optionsFile):
-    if len(optionsFile) <= 1:
-        print 'No options file given.  Ending.'
+def hvReadOptionsFile(optionsFiles):
+    if len(optionsFiles) <= 2 :
+        print 'Not enough options files given.  Ending.'
     else:
-        f = open(optionsFile[1],'r')
-        options = f.readlines()
+        # Options local and general for all data being ingested
+        f = open(optionsFiles[1],'r')
+        localOptions = f.readlines()
+        f.close()
+        options = {"stagingRoot":os.path.expanduser(localOptions[0][:-1]), "ingestRoot":os.path.expanduser(localOptions[1][:-1]), "monitorLoc":os.path.expanduser(localOptions[2][:-1]), "dbName": localOptions[3][:-1]}
+
+        # Options specific to the data being ingested
+        f = open(optionsFiles[2],'r')
+        remoteOptions = f.readlines()
         f.close()
 
-        return {"remoteRoot":options[0][:-1], "stagingRoot":options[1][:-1], "ingestRoot":options[2][:-1], "startDate":(options[3][:-1]).split('/'), "endDate":(options[4][:-1]).split('/'), "measurements":options[5][:-1].split(','), "nickname":options[6][:-1], "monitorLoc":options[7][:-1], "minJP2SizeInBytes": int(options[8][:-1]), "redirectTF": options[9][:-1], "sleep": int(options[10][:-1]), "daysBackMin": int(options[11][:-1]), "daysBackMax": int(options[12][:-1]), "localUser": options[13][:-1], "dbName": options[14][:-1]}
+        dummy = options.setdefault("remoteRoot"       , remoteOptions[0][:-1])
+        dummy = options.setdefault("startDate"        , remoteOptions[1][:-1].split('/'))
+        dummy = options.setdefault("endDate"          , remoteOptions[2][:-1].split('/'))
+        dummy = options.setdefault("nickname"         , remoteOptions[3][:-1])
+        dummy = options.setdefault("measurements"     , remoteOptions[4][:-1].split(','))
+        dummy = options.setdefault("minJP2SizeInBytes", int(remoteOptions[5][:-1]))
+        dummy = options.setdefault("redirectTF"       , remoteOptions[6][:-1])
+        dummy = options.setdefault("sleep"            , int(remoteOptions[7][:-1]))
+        dummy = options.setdefault("daysBackMin"      , int(remoteOptions[8][:-1]))
+        dummy = options.setdefault("daysBackMax"      , int(remoteOptions[9][:-1]))
 
+        return options
 
 def hvHourTimesForDate(date,hr):
     if hr <= 9:
@@ -212,7 +229,7 @@ def hvDailyFileAquisitionReport(dbloc,dbName,DT,monitorLoc,daysBackMax,DTmax,loc
     (according to instrument nickname and measurement) that were downloaded, and if those files were classed as 'good' or 'bad'.
     """
     # Maximum number of days back in normal operations
-    dateBackMax = str( (DTmax + datetime.timedelta(days=daysBackMax-1)).date() ) ):
+    dateBackMax = str( (DTmax + datetime.timedelta(days=daysBackMax-1)) )
 
     # Location on the local system where the most recent summary reports are stored
     mostRecentDir = monitorLoc + locationToday
@@ -260,7 +277,7 @@ def hvDailyFileAquisitionReport(dbloc,dbName,DT,monitorLoc,daysBackMax,DTmax,loc
     currentFile.write('<P><CENTER><A HREF='+linkToday+'>Today (now)</A>.</CENTER></P>\n')
     currentFile.write('<CENTER>\n')
     currentFile.write('<TABLE width = 1000px>\n')
-    currentFile.write('<TR><TH align=center><<< Four weeks</TH><TH align=center><< One week</TH><TH align=center>< One day</TH><TH>-</TH><TH align=center>One day ></TH><TH align=center>One week >></TH><TH align=center>Four weeks >>></TH></TR>\n')
+    currentFile.write('<TR><TH align=center><<< -28 days</TH><TH align=center><< - 7 days</TH><TH align=center>< -1 day</TH><TH>-</TH><TH align=center>+1 day ></TH><TH align=center>+7 days >></TH><TH align=center>+28 days >>></TH></TR>\n')
     currentFile.write('<TR><TD align=center><A HREF='+linkFourWeeksEarlier+'><i>'+dateFourWeeksEarlier+'</i></A></TD>\n')
     currentFile.write('<TD align=center><A HREF='+linkOneWeekEarlier+'><i>'+dateOneWeekEarlier+'</i></A></TD>\n')
     currentFile.write('<TD align=center><A HREF='+linkPrevious+'><i>'+datePrevious+'</i></A></TD>\n')
@@ -362,7 +379,7 @@ monitorLoc = options["monitorLoc"]
 #
 # Do the summary plots broken down by all files, nickname, then nickname/measurement
 #
-if ( '-1' in  (options["startDate"]).split('/') ) or ('-1' in  (options["endDate"]).split('/')):
+if ( '-1' in  options["startDate"]) or ('-1' in  options["endDate"]):
     while True:
         for daysBack in range(daysBackMin, daysBackMax):
             DT = (datetime.datetime.utcnow() - datetime.timedelta(days=daysBack)).date()
