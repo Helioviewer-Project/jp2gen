@@ -79,41 +79,39 @@ def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
 	""" Tests to see if a file meets the minimum requirements to be ingested into the database.
 	An entry of -1 means that the test was not performed, 0 means failure, 1 means pass.
 	"""
-	answer = {"fileExists":-1,"minimumFileSize":-1,"isFileGoodDB":-1,"fileProblem":-1}
+	tests = {"fileExists":-1,"minimumFileSize":-1,"endsWith":-1}
+	isFileGoodDB = 1
+	fileProblem = 0
 
 	# Does the file exist?
 	if os.path.isfile(fullPathAndFilename):
-		answer["fileExists"] = 1
+		tests["fileExists"] = 1
 		# test for file size
 		s = os.stat(fullPathAndFilename)
 		if s.st_size > minimumFileSize:
-			answer["minimumFileSize"] = 1
+			tests["minimumFileSize"] = 1
 		else:
-			answer["fileProblem"] = answer["fileProblem"] + 2
-			answer["minimumFileSize"] = 0
+			fileProblem = fileProblem + 2
+			tests["minimumFileSize"] = 0
 		
 		# test that the file has the right extension
 		if endsWith != '':
 			if fullPathAndFilename.endswith(endsWith):
-				answer["endsWith"] = 1
+				tests["endsWith"] = 1
 			else:
-				answer["fileProblem"] = answer["fileProblem"] + 4
-				answer["endsWith"] = 0
+				fileProblem = fileProblem + 4
+				tests["endsWith"] = 0
 	else:
-		answer["fileProblem"] = answer["fileProblem"] + 1
-		answer["fileExists"] = 0
+		fileProblem = fileProblem + 1
+		tests["fileExists"] = 0
 
 	# Has the file passed all the tests?
-	isFileGood = True
 	isFileGoodDB = 1
-	for i in answer.itervalues():
+	for i in tests.itervalues():
 		if i == 0:
-			isFileGood = False
 			isFileGoodDB = 0
-	answer["isFileGood"] = isFileGood
-	answer["isFileGoodDB"] = isFileGoodDB
 
-	return {"isFileGood":isFileGood,"fileExists":answer["fileExists"],"minimumFileSize":answer["minimumFileSize"],"isFileGoodDB":answer["isFileGoodDB"],"fileProblem":answer["fileProblem"]}
+	return isFileGoodDB, fileProblem
 
 
 # createTimeStamp
@@ -128,26 +126,28 @@ def jprint(z):
         print createTimeStamp() + ' : ' + z
 
 # change2hv
-def change2hv(z,localUser):
+def change2hv(z):
 	""" Changes the file permissions, and ownership from a local user to the helioviewer identity """
         os.system('chmod -R 775 ' + z)
-	if localUser != '':
-		os.system('chown -R '+localUser+':helioviewer ' + z)
+	#if localUser != '':
+	#	os.system('chown -R '+localUser+':helioviewer ' + z)
 
 # hvCreateSubdir
-def hvCreateSubdir(x, localUser='' ,out=True, verbose=False):
+def hvCreateSubdir(x,out=True, verbose=False):
 	"""Create a helioviewer project compliant subdirectory."""
 	if not os.path.isdir(x):
 		try:
 			os.makedirs(x)
-			change2hv(x,localUser)
+			change2hv(x)
 			if verbose:
-				jprint('Created '+x)
+				time.sleep(0)
+				#jprint('Created '+x)
 		except Exception, error:
 			if verbose:
 				jprint('Error found in hvCreateSubdir; error: '+str(error))
 	else:
-		jprint('Directory already exists = '+x)
+		time.sleep(0)
+		#jprint('Directory already exists = '+x)
 	return x
 
 # hvSubdir
@@ -224,7 +224,7 @@ def hvCheckForNewFiles(urls,List):
 	return newFiles,newFilesCount,newList
 			
 # GetMeasurement
-def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,localUser,dbName):
+def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,dbName):
 	""" Download JP2s from a remote website for a given device and measurement.
 	nickname = device nickname
 	yyyy = 4 digit year string
@@ -237,7 +237,6 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	monitorLoc = the local website where monitoring information on the transfer process is stored
 	timeStamp = the timeStamp associated with this particular query for data
 	minJP2SizeInBytes = the minimum size of an acceptable JP2 file.  Anything smaller and the file is assumed to be bad, and the file is quarantined
-	localUser = the name of the user who initiates the download.  This user must be in the helioviewer group.
 	"""
 
 	# Information for the user
@@ -260,8 +259,8 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	dbloc = hvCreateSubdir(staging_root + 'db/',verbose = True)
 
         # Ingestion: JP2s are moved to these directories and have their permissions changed.  The local user must be changed to helioviewer to allow access by the ingestion process.
-        ingest_dir = hvCreateSubdir(ingest_root + 'jp2/',localUser = localUser, verbose = True)
-        ingest_storage = hvCreateSubdir(ingest_dir + nickname + '/',localUser = localUser, verbose = True)
+        ingest_dir = hvCreateSubdir(ingest_root + 'jp2/', verbose = True)
+        ingest_storage = hvCreateSubdir(ingest_dir + nickname + '/', verbose = True)
 
 	# Database: Connect to the database
 	try:
@@ -299,7 +298,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 
 	# Ingestion: create the ingestSubdir directory.  The local user must be changed to helioviewer to allow access by the ingestion process.
 	for directory in hvss:
-		ingestSubdir = hvCreateSubdir(ingest_storage + directory,localUser = localUser, verbose = True)
+		ingestSubdir = hvCreateSubdir(ingest_storage + directory, verbose = True)
 
         # Calculate the remote directory
         remote_location = remote_root + nickname + '/' + hvss[-1]
@@ -361,7 +360,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 					except Exception,error:
 						jprint('Exception caught at executing wget command; error: '+str(error))
 				else:
-					files_found = os.listdir(remote_location)
+					files_found = os.listdir(fileLocation)
 
 				# When the download time ends
 				downloadTimeEnd = datetime.datetime.utcnow()
@@ -380,14 +379,13 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 					ingested = ingestSubdir + downloaded
 					
 					# return the analysis on each file
-					analyzeFile = isFileGood(staged,  minJP2SizeInBytes, endsWith = '.jp2')
+					isFileGoodDB, fileProblem = isFileGood(staged,  minJP2SizeInBytes, endsWith = '.jp2')
 					
 					# Observation time stamp
 					observationTimeStamp = hvJP2FilenameToTimeStamp(downloaded)
-					print observationTimeStamp
 
 					# Is the staged file good?
-					if not analyzeFile['isFileGood']:
+					if not isFileGoodDB:
 						# Quarantine the staged file and update the database
 						info = hvDoQuarantine(quarantine,hvss[-1],downloaded,staged)
 						if (downloaded,) in jp2list_bad:
@@ -399,16 +397,16 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 						else:
 							# New bad file: enter it into the DB
 							jprint('Quarantined file: creating database entry for file = ' + downloaded)
-							ttt = (downloaded,nickname,measurement,observationTimeStamp,downloadTimeStart,downloadTimeEnd,newFileListName,0,analyzeFile['fileProblem'])
+							ttt = (downloaded,nickname,measurement,observationTimeStamp,downloadTimeStart,downloadTimeEnd,newFileListName,0,fileProblem)
 							c.execute('INSERT INTO TableTest VALUES (?,?,?,?,?,?,?,?,?)',ttt)
 							conn.commit()
 					else:
 						# file is good - move it to the ingestion directory
-						change2hv(staged,localUser)
+						change2hv(staged)
 						shutil.move(staged,ingested)
-						analyzeFile = isFileGood(ingested,  minJP2SizeInBytes, endsWith = '.jp2')
+						isFileGoodDB, fileProblem = isFileGood(ingested,  minJP2SizeInBytes, endsWith = '.jp2')
 						# Is the ingested file good?
-						if not analyzeFile['isFileGood']:
+						if not isFileGoodDB:
 							# Quarantine the ingested file and update the database
 							info = hvDoQuarantine(quarantine,hvss[-1],downloaded,ingested)
 							if (downloaded,) in jp2list_bad:
@@ -420,7 +418,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 							else:
 							# New bad file: enter it into the DB
 								jprint('Quarantined file: creating database entry for file = ' + downloaded)
-								ttt = (downloaded,nickname,measurement,observationTimeStamp,downloadTimeStart,downloadTimeEnd,newFileListName,0,analyzeFile['fileProblem'])
+								ttt = (downloaded,nickname,measurement,observationTimeStamp,downloadTimeStart,downloadTimeEnd,newFileListName,0,fileProblem)
 								c.execute('INSERT INTO TableTest VALUES (?,?,?,?,?,?,?,?,?)',ttt)
 								conn.commit()
 						else:
@@ -439,11 +437,15 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 									conn.commit()
 								else:
 									jprint('Ingested: creating a database entry for file = '+ downloaded)
-									ttt = (downloaded,nickname,measurement,observationTimeStamp,downloadTimeStart,downloadTimeEnd,newFileListName,0,analyzeFile['fileProblem'])
+									ttt = (downloaded,nickname,measurement,observationTimeStamp,downloadTimeStart,downloadTimeEnd,newFileListName,1,fileProblem)
 									c.execute('INSERT INTO TableTest VALUES (?,?,?,?,?,?,?,?,?)',ttt)
 									conn.commit()
 							except Exception,error:
 						       		jprint('Exception caught updating the new database; error: ' + str(error))
+								# Test to see if the filename was entered in to the database correctly and print the results to screen
+								ttt = (downloaded)
+								c.execute('SELECT filename FROM TableTest where filename=?',ttt)
+								print 'Exception updating database with a new file ',downloaded, c.fetchall(), len(c.fetchall())
 			else:
 				jprint('No new files found at ' + fileLocation)
 				newFilesCount = 0
@@ -456,7 +458,7 @@ def GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,inge
 	return newFilesCount
 
 # Get the JP2s
-def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,beginTimeStamp, count = 0, redirect = False, daysBack = 0):
+def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,beginTimeStamp, count = 0, redirect = False, daysBack = 0):
 	t1 = time.time()
 	timeStamp = createTimeStamp()
 	# Standard output + error log file names
@@ -496,7 +498,7 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 	jprint('Beginning remote location query number ' + str(count))
 	jprint("Looking for files on this date = " + yyyy + mm + dd)
 	jprint('Using options file '+ options_file)
-	nfc = GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,localUser,dbName)
+	nfc = GetMeasurement(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,timeStamp,minJP2SizeInBytes,dbName)
 	t2 = time.time()
 	jprint('Time taken in seconds =' + str(t2 - t1))
 	if nfc > 0 :
@@ -515,6 +517,33 @@ def GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,
 
 	return nfc
 
+def hvReadOptionsFile(optionsFiles):
+    if len(optionsFiles) <= 2 :
+        print 'Not enough options files given.  Ending.'
+    else:
+        # Options local and general for all data being ingested
+        f = open(optionsFiles[1],'r')
+        localOptions = f.readlines()
+        f.close()
+        options = {"stagingRoot":os.path.expanduser(localOptions[0][:-1]), "ingestRoot":os.path.expanduser(localOptions[1][:-1]), "monitorLoc":os.path.expanduser(localOptions[2][:-1]), "dbName": localOptions[3][:-1]}
+
+        # Options specific to the data being ingested
+        f = open(optionsFiles[2],'r')
+        remoteOptions = f.readlines()
+        f.close()
+
+        dummy = options.setdefault("remote_root"      , remoteOptions[0][:-1])
+        dummy = options.setdefault("startDate"        , remoteOptions[1][:-1].split('/'))
+        dummy = options.setdefault("endDate"          , remoteOptions[2][:-1].split('/'))
+        dummy = options.setdefault("nickname"         , remoteOptions[3][:-1])
+        dummy = options.setdefault("measurements"     , remoteOptions[4][:-1].split(','))
+        dummy = options.setdefault("minJP2SizeInBytes", int(remoteOptions[5][:-1]))
+        dummy = options.setdefault("redirectTF"       , remoteOptions[6][:-1])
+        dummy = options.setdefault("sleep"            , int(remoteOptions[7][:-1]))
+        dummy = options.setdefault("daysBackMin"      , int(remoteOptions[8][:-1]))
+        dummy = options.setdefault("daysBackMax"      , int(remoteOptions[9][:-1]))
+
+        return options
 
 #
 # Script must be called using an options file that defines the root of the
@@ -538,79 +567,70 @@ Parse the options
 [13] = name of the local User who is downloading the files.  This user must be in the "helioviewer" group.
 [14] = name of the SQLite database to connect to
 '''
-if len(sys.argv) <= 1:
-        jprint('No options file given.  Ending.')
+beginTimeStamp = createTimeStamp()
+
+options = hvReadOptionsFile(sys.argv)
+options_file = sys.argv[1] + ' '+ sys.argv[2]
+
+remote_root       = options["remote_root"]
+staging_root      = options["stagingRoot"]
+ingest_root       = options["ingestRoot"]
+startDate         = options["startDate"]
+endDate           = options["endDate"]
+measurements      = options["measurements"]
+nickname          = options["nickname"]
+monitorLoc        = options["monitorLoc"]
+minJP2SizeInBytes = options["minJP2SizeInBytes"]
+redirectTF        = options["redirectTF"]
+sleep             = options["sleep"]
+daysBackMin       = options["daysBackMin"]
+daysBackMax       = options["daysBackMax"]
+dbName            = options["dbName"]
+
+# Re-direct stdout to a logfile?
+if redirectTF == 'True':
+	redirect = True
 else:
-	# Get the time that the script was set running
-	beginTimeStamp = createTimeStamp()
-	# Read the options file
-        options_file = sys.argv[1]
-        try:
-                f = open(options_file,'r')
-                options = f.readlines()
-        finally:
-                f.close()
-
-        remote_root = options[0][:-1]
-        staging_root = options[1][:-1]
-        ingest_root = options[2][:-1]
-	startDate = (options[3][:-1]).split('/')
-	endDate = (options[4][:-1]).split('/')
-	measurements = options[5][:-1].split(',')
-	nickname = options[6][:-1]
-	monitorLoc = options[7][:-1]
-	minJP2SizeInBytes = int(options[8][:-1])
-	redirectTF = options[9][:-1]
-	sleep = int(options[10][:-1])
-	daysBackMin = int(options[11][:-1])
-	daysBackMax = int(options[12][:-1])
-	localUser = options[13][:-1]
-	dbName = options[14][:-1]
-
-	# Re-direct stdout to a logfile?
-	if redirectTF == 'True':
-		redirect = True
-	else:
-		redirect = False
+	redirect = False
 
 
-	# Days back defaults
-	if daysBackMin <= -1:
-		daysBackMin = 0
-	if daysBackMax <= -1:
-		daysBackMax = 2
+# Days back defaults
+if daysBackMin <= -1:
+	daysBackMin = 0
+if daysBackMax <= -1:
+	daysBackMax = 2
 
-	# Main program
-	if ( (startDate[0] =='-1') or (startDate[1]=='-1') or (startDate[2]=='-1') or (endDate[0]=='-1') or (endDate[1]=='-1') or (endDate[2]=='-1') ):
-		# repeat starts here
-		count = 0
-		while 1:
-			count = count + 1
-			gotNewData = False
-			for daysBack in range(daysBackMin,daysBackMax):
+# Main program
+if ( (startDate[0] =='-1') or (startDate[1]=='-1') or (startDate[2]=='-1') or (endDate[0]=='-1') or (endDate[1]=='-1') or (endDate[2]=='-1') ):
+	# repeat starts here
+	count = 0
+	while 1:
+		count = count + 1
+		gotNewData = False
+		for daysBack in range(daysBackMin,daysBackMax):
 
-				# get  date in UT
-				Y = calendar.timegm(time.gmtime()) - daysBack*24*60*60
-				yyyy = time.strftime('%Y',time.gmtime(Y))
-				mm = time.strftime('%m',time.gmtime(Y))
-				dd = time.strftime('%d',time.gmtime(Y))
+			# get  date in UT
+			Y = calendar.timegm(time.gmtime()) - daysBack*24*60*60
+			yyyy = time.strftime('%Y',time.gmtime(Y))
+			mm = time.strftime('%m',time.gmtime(Y))
+			dd = time.strftime('%d',time.gmtime(Y))
 
-				# Go through each measurement
-				for measurement in measurements:
-					nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,beginTimeStamp,count = count,redirect = redirect,daysBack = daysBack)
-					if nfc > 0:
-						gotNewData = True
-			if not gotNewData:
-				jprint('Sleeping for '+str(sleep)+' seconds.')
-				time.sleep(sleep)
-
-	else:
-		getThisDay = time.mktime((int(startDate[0]),int(startDate[1]),int(startDate[2]),0, 0, 0, 0, 0, 0))
-		finalDay = time.mktime((int(endDate[0]),int(endDate[1]),int(endDate[2]),0, 0, 0, 0, 0, 0))
-		while getThisDay <= finalDay:
-			yyyy = time.strftime('%Y',time.gmtime(getThisDay))
-			mm = time.strftime('%m',time.gmtime(getThisDay))
-			dd = time.strftime('%d',time.gmtime(getThisDay))
+			# Go through each measurement
 			for measurement in measurements:
-				nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,localUser,beginTimeStamp,count = 0,redirect = redirect)
-			getThisDay = getThisDay + 24*60*60
+				nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,beginTimeStamp,count = count,redirect = redirect,daysBack = daysBack)
+				if nfc > 0:
+					gotNewData = True
+		if not gotNewData:
+			jprint('Sleeping for '+str(sleep)+' seconds.')
+			time.sleep(sleep)
+
+else:
+	getThisDay = time.mktime((int(startDate[0]),int(startDate[1]),int(startDate[2]),0, 0, 0, 0, 0, 0))
+	finalDay = time.mktime((int(endDate[0]),int(endDate[1]),int(endDate[2]),0, 0, 0, 0, 0, 0))
+	while getThisDay <= finalDay:
+		yyyy = time.strftime('%Y',time.gmtime(getThisDay))
+		mm = time.strftime('%m',time.gmtime(getThisDay))
+		dd = time.strftime('%d',time.gmtime(getThisDay))
+		for measurement in measurements:
+			nfc = GetJP2(nickname,yyyy,mm,dd,measurement,remote_root,staging_root,ingest_root,monitorLoc,minJP2SizeInBytes,beginTimeStamp,count = 0,redirect = redirect)
+		getThisDay = getThisDay + 24*60*60

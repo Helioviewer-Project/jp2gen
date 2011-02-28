@@ -202,7 +202,7 @@ help,m
       ;** draw mask
 
       tmp_img = cimg & tmp_img(*) = 0 & TV,tmp_img
-      TVCIRCLE, r_occ_out*r_sun,sunc.xcen,sunc.ycen, /FILL, COLOR=1
+      HV_TVCIRCLE, r_occ_out*r_sun,sunc.xcen,sunc.ycen, /FILL, COLOR=1
       tmp_img = TVRD()
       ind1 = WHERE(tmp_img NE 1)
       IF (ind1(0) NE -1) THEN cimg(ind1) = fillcol
@@ -214,10 +214,10 @@ help,m
 
       TV, cimg
 
-      TVCIRCLE, r_occ*r_sun, sunc.xcen, sunc.ycen, /FILL, COLOR=fillcol
+      HV_TVCIRCLE, r_occ*r_sun, sunc.xcen, sunc.ycen, /FILL, COLOR=fillcol
 
       ;** draw limb
-      TVCIRCLE, r_sun, sunc.xcen, sunc.ycen, COLOR=255, THICK=4
+      HV_TVCIRCLE, r_sun, sunc.xcen, sunc.ycen, COLOR=255, THICK=4
 
 	IF ( hdr.crota1 eq 180. ) THEN BEGIN	;       jake 030717
 		print, "Rotating image."			;       jake 030717

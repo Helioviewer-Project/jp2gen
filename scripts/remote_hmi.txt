@@ -1,0 +1,11 @@
+http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/
+-1/-1/-1
+-1/-1/-1
+HMI
+magnetogram,continuum
+1000000
+True
+900
+0
+2
+
