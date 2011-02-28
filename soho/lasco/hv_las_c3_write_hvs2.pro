@@ -106,7 +106,6 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
 ;;         pivot_centre = [sunc.xcen,sunc.ycen]
 ;;         print,progname + ': using archived FITS files.'
 ;;      endelse
-
      if using_quicklook then begin
         crotaExist = tag_exist(hd,'CROTA')
 
