@@ -27,20 +27,35 @@ else:
         while 1:
             flag = False
             dirList = os.listdir(monitorLoc)
+	    dirList.sort()
             file = open(monitorLoc + 'monitor.html','w')
             file.write('<H1>Simple monitor file</H1><BR><BR>\n\n')
             file.write('<H2>This file created '+time.ctime()+'.</H2><BR><BR>\n\n')
             file.write('<H2>This file updated every '+str(sleep)+' seconds.</H2><BR><BR>\n\n')
 	    file.write('<P>')
-	    file.write('<H3>Log files</H3></BR>')
-            for testfile in dirList:
-			if testfile.endswith('.log'):
-                            file.write('<a href = '+testfile+'>' + testfile +'</a><BR>\n\n')
-                            flag = True
+	    file.write('<H2>Log files</H2></BR>')
+	    file.write('<H2>Current active acquisition processes.</H2></BR>')
+	    for testfile in dirList:
+		    if 'current' in testfile:
+			    file.write('<a href = '+testfile+'>' + testfile +'</a><BR>\n\n')
+			    dirList.remove(testfile)
 	    file.write('</P>')
+	    file.write('<P>')
+	    file.write("<H2>Stdout logs from acquisition process for JP2 files observed on today's UT date.</H2></BR>")
+	    for testfile in dirList:
+		    if '0__' in testfile:
+			    file.write('<a href = '+testfile+'>' + testfile +'</a><BR>\n\n')
+			    dirList.remove(testfile)
+	    file.write('</P>')
+	    file.write('<P>')
+	    file.write("<H2>Stdout logs from acquisition process for JP2 files observed on yesterday's UT date.</H2></BR>")
+	    for testfile in dirList:
+		    if '1__' in testfile:
+			    file.write('<a href = '+testfile+'>' + testfile +'</a><BR>\n\n')
+			    dirList.remove(testfile)
 
 	    file.write('<P>')
-	    file.write('<H3>JPEG2000 files</H3></BR>')
+	    file.write('<H2>Most recently downloaded JPEG2000 files.</H2></BR>')
             for testfile in dirList:
 			if testfile.endswith('.jp2'):
                             file.write('<a href = '+testfile+'>' + testfile +'</a><BR>\n\n')
