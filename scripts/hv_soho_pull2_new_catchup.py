@@ -387,9 +387,11 @@ def GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLo
 #remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
 
 # SOHO instruments
-instruments = ['EIT','MDI','LASCO-C2','LASCO-C3']
+#instruments = ['EIT','MDI','LASCO-C2','LASCO-C3']
+instruments = ['MDI']
 
-measurements = {'EIT':['171','195','304','284'],'MDI':['continuum','magnetogram'],'LASCO-C2':['white-light'],'LASCO-C3':['white-light']}
+#measurements = {'EIT':['171','195','304','284'],'MDI':['continuum','magnetogram'],'LASCO-C2':['white-light'],'LASCO-C3':['white-light']}
+measurements = {'MDI':['continuum']}
 
 
 #
@@ -474,18 +476,21 @@ else:
 					time.sleep(sleep)
 
 	else:
-		getThisDay = time.mktime((int(startDate[0]),int(startDate[1]),int(startDate[2]),0, 0, 0, 0, 0, 0))
-		finalDay = time.mktime((int(endDate[0]),int(endDate[1]),int(endDate[2]),0, 0, 0, 0, 0, 0))
-		while getThisDay <= finalDay:
-			yyyy = time.strftime('%Y',time.gmtime(getThisDay))
-			mm = time.strftime('%m',time.gmtime(getThisDay))
-			dd = time.strftime('%d',time.gmtime(getThisDay))
-			if waveI == '-1':
-				# Go through each instrument and measurement
-				for nickname in instruments:
-					wavelength = measurements[nickname]
-					for wave in wavelength:
-						nfc = GetJP2(nickname,yyyy,mm,dd,wave,remote_root+nickname+'/',local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
-			else:
-				nfc = GetJP2(nickname,yyyy,mm,dd,waveI,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
-			getThisDay = getThisDay + 24*60*60
+		while 1:
+			getThisDay = time.mktime((int(startDate[0]),int(startDate[1]),int(startDate[2]),0, 0, 0, 0, 0, 0))
+			finalDay = time.mktime((int(endDate[0]),int(endDate[1]),int(endDate[2]),0, 0, 0, 0, 0, 0))
+			while getThisDay <= finalDay:
+				yyyy = time.strftime('%Y',time.gmtime(getThisDay))
+				mm = time.strftime('%m',time.gmtime(getThisDay))
+				dd = time.strftime('%d',time.gmtime(getThisDay))
+				if waveI == '-1':
+					# Go through each instrument and measurement
+					for nickname in instruments:
+						wavelength = measurements[nickname]
+						for wave in wavelength:
+							nfc = GetJP2(nickname,yyyy,mm,dd,wave,remote_root+nickname+'/',local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
+				else:
+					nfc = GetJP2(nickname,yyyy,mm,dd,waveI,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
+				getThisDay = getThisDay + 24*60*60
+			jprint('Pausing for this number of seconds: '+str(sleep))
+			time.sleep(sleep)

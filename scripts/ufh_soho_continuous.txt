@@ -1,0 +1,14 @@
+/home/ireland/soho_incoming/v0.8/jp2/
+/home/ireland/incoming/staging/v0.8/
+/home/ireland/incoming/v0.8/
+-1/-1/-1
+-1/-1/-1
+-1
+SOHO
+/home/ireland/www/soho.
+1000
+True
+900
+0
+2
+
