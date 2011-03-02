@@ -32,8 +32,8 @@ else:
             file.write('<H1>Simple JP2 Acquisition Monitor</H1><BR><BR>\n\n')
             file.write('<H2>This page provides information on the current status of the JP2 acquisition processes.</H2>')
             file.write('<H2>This file updated every '+str(sleep)+' seconds.\n\n')
-            file.write('<H2>Current local time: '+time.ctime()+'.</H2>\n\n')
-            file.write('<H2>Current UT time: '+str(datetime.datetime.utcnow()) + ' UT.\n\n</H2>')
+            file.write('<H2>Local time when this file was written: '+time.ctime()+'.</H2>\n\n')
+            file.write('<H2>UT when this file was written: '+str(datetime.datetime.utcnow()) + ' UT.\n\n</H2>')
 	    file.write('<P><BR><BR>')
 	    file.write('<H2>Current active acquisition processes.</H2></BR>')
 	    for testfile in dirList:
