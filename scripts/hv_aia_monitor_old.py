@@ -3,7 +3,7 @@
 # files in a particular directory
 #
 #
-import os,time,sys
+import os,time,sys,datetime
 
 #
 # Script must be called using an options file that defines the root of the
@@ -29,33 +29,32 @@ else:
             dirList = os.listdir(monitorLoc)
 	    dirList.sort()
             file = open(monitorLoc + 'monitor.html','w')
-            file.write('<H1>Simple monitor file</H1><BR><BR>\n\n')
-            file.write('<H2>This file created '+time.ctime()+'.</H2><BR><BR>\n\n')
-            file.write('<H2>This file updated every '+str(sleep)+' seconds.</H2><BR><BR>\n\n')
-	    file.write('<P>')
-	    file.write('<H2>Log files</H2></BR>')
+            file.write('<H1>Simple JP2 Acquisition Monitor</H1><BR><BR>\n\n')
+            file.write('<H2>This page provides information on the current status of the JP2 acquisition processes.</H2>')
+            file.write('<H2>This file updated every '+str(sleep)+' seconds.\n\n')
+            file.write('<H2>Current local time: '+time.ctime()+'.</H2>\n\n')
+            file.write('<H2>Current UT time: '+str(datetime.datetime.utcnow()) + ' UT.\n\n</H2>')
+	    file.write('<P><BR><BR>')
 	    file.write('<H2>Current active acquisition processes.</H2></BR>')
 	    for testfile in dirList:
 		    if 'current' in testfile:
 			    file.write('<a href = '+testfile+'>' + testfile +'</a><BR>\n\n')
-			    dirList.remove(testfile)
 	    file.write('</P>')
 	    file.write('<P>')
-	    file.write("<H2>Stdout logs from acquisition process for JP2 files observed on today's UT date.</H2></BR>")
+	    file.write("<H2>Stdout logs from the most recent attempt to look for and download JP2 files observed on today's UT date.</H2></BR>")
 	    for testfile in dirList:
-		    if '0__' in testfile:
+		    if '.0__' in testfile:
 			    file.write('<a href = '+testfile+'>' + testfile +'</a><BR>\n\n')
-			    dirList.remove(testfile)
 	    file.write('</P>')
 	    file.write('<P>')
-	    file.write("<H2>Stdout logs from acquisition process for JP2 files observed on yesterday's UT date.</H2></BR>")
+	    file.write("<H2>Stdout logs from the most recent attempt to look for and download JP2 files observed on yesterday's UT date.</H2></BR>")
 	    for testfile in dirList:
-		    if '1__' in testfile:
+		    if '.1__' in testfile:
 			    file.write('<a href = '+testfile+'>' + testfile +'</a><BR>\n\n')
-			    dirList.remove(testfile)
 
 	    file.write('<P>')
 	    file.write('<H2>Most recently downloaded JPEG2000 files.</H2></BR>')
+            file.write("<H3>Note: the most recently downloaded JP2 file may have been observed at yesterday's UT date.</H3>")
             for testfile in dirList:
 			if testfile.endswith('.jp2'):
                             file.write('<a href = '+testfile+'>' + testfile +'</a><BR>\n\n')
