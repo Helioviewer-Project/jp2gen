@@ -37,7 +37,7 @@ FUNCTION HV_WRITTENBY;,name = name
                                incoming:'/home/ireland/incoming/',$
                                group:'helioviewer'}},$
              webpage:'/service/www/',$
-             manual_revision_number:'84 [2011/01/10, https://launchpad.net/jp2gen]'}
+             manual_revision_number:'96 [2011/03/25, https://launchpad.net/jp2gen]'}
 
 ;;   if name eq 'default' then begin
 ;;      answer = default
