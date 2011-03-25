@@ -63,6 +63,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
   date1 = anytim2utc(t1)
   date2 = anytim2utc(t2)
   image_list = [g.MinusOneString]
+
   FOR mjd=date1.mjd,date2.mjd DO BEGIN
      newday = {mjd:mjd,time:0.0}
      nds = utc2str(newday,/date_only)
@@ -100,7 +101,21 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
            endif else begin
               file=strsplit(words[0],'.',/extract)
               newfile = sdir + words[0]
-              good = (words[9] EQ filter) and (words[10] EQ 'Clear') and (words[11] EQ 'Normal') and (file_exist(newfile)) and (words[5] eq '1024') and (words[6] eq '1024') 
+;
+; On 2011/03/09 and onwards, LASCO changed one of the 'words' in their
+; list which caused JP2Gen not to pick up the availability of
+; files. 2011/03/09 = 55629 in Modified Julian Days
+;
+              if words[11] EQ 'Normal' and (mjd lt 55629) then begin
+                 words11GoodBad = 1
+              endif else begin
+                 if words[11] EQ 'Seq' and  (mjd ge 55629) then begin
+                    words11GoodBad = 1
+                 endif else begin
+                    words11GoodBad = 0
+                 endelse
+              endelse
+              good = (words[9] EQ filter) and (words[10] EQ 'Clear') and ( words11Goodbad ) and (file_exist(newfile)) and (words[5] eq '1024') and (words[6] eq '1024') 
               IF  good THEN image_list=[image_list, newfile]
            endelse
         endfor
