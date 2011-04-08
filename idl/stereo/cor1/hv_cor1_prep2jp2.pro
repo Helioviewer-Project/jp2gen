@@ -48,6 +48,14 @@
 ; Prev. Hist. :	None.
 ;
 ; History     :	Version 1, 22-Dec-2010, William Thompson, GSFC
+;               08-Apr-2011, Jack Ireland, GSFC - commented out
+;                                                 Bill's code
+;                                                 to ensure CRVAL* are
+;                                                 all zero due to
+;                                                 changes in the
+;                                                 plotting code in the
+;                                                 Helioviewer Project
+;                                                 clients.
 ;
 ; Contact     :	WTHOMPSON
 ;-
@@ -66,13 +74,13 @@ secchi_prep, filename, header, image, /calimg_off, /calfac_off, /rotate_on, $
 image = bytscl(sqrt(sigrange(image,fraction=.995)), min=0)
 ;
 ;  Recalculate CRPIX* so that the CRVAL* values are zero.
-;
-wcs = fitshead2wcs(header)
-center = wcs_get_pixel(wcs, [0,0])
-header.crpix1 = center[0]
-header.crpix2 = center[1]
-header.crval1 = 0
-header.crval2 = 0
+; 08-Apr-2011
+;; wcs = fitshead2wcs(header)
+;; center = wcs_get_pixel(wcs, [0,0])
+;; header.crpix1 = center[0]
+;; header.crpix2 = center[1]
+;; header.crval1 = 0
+;; header.crval2 = 0
 ;
 ;  Determine the spacecraft, and get the details structure.
 ;

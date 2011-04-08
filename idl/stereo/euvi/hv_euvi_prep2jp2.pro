@@ -43,6 +43,14 @@
 ; Prev. Hist. :	None.
 ;
 ; History     :	Version 1, 22-Dec-2010, William Thompson, GSFC
+;               08-Apr-2011, Jack Ireland, GSFC - commented out
+;                                                 Bill's code
+;                                                 to ensure CRVAL* are
+;                                                 all zero due to
+;                                                 changes in the
+;                                                 plotting code in the
+;                                                 Helioviewer Project
+;                                                 clients.
 ;
 ; Contact     :	WTHOMPSON
 ;-
@@ -64,15 +72,15 @@ secchi_colors, 'euvi', header.wavelnth, red, green, blue
 image = round(0.3*red[image] + 0.59*green[image] + 0.11*blue[image]) 
 ;
 ;  Make sure that the CRVAL* values are zero.
-;
-if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
-    wcs = fitshead2wcs(header)
-    center = wcs_get_pixel(wcs, [0,0])
-    header.crpix1 = center[0]
-    header.crpix2 = center[1]
-    header.crval1 = 0
-    header.crval2 = 0
-endif
+; 08-Apr-2011 JI
+;; if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
+;;     wcs = fitshead2wcs(header)
+;;     center = wcs_get_pixel(wcs, [0,0])
+;;     header.crpix1 = center[0]
+;;     header.crpix2 = center[1]
+;;     header.crval1 = 0
+;;     header.crval2 = 0
+;; endif
 ;
 ;  Determine the spacecraft, and get the details structure.
 ;

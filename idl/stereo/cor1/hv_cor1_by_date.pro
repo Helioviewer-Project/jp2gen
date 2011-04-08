@@ -58,41 +58,55 @@
 ; Prev. Hist. :	None.
 ;
 ; History     :	Version 1, 22-Dec-2010, William Thompson, GSFC
+;               08-Apr-2011, Jack Ireland, GSFC, added a prepped data
+;               return function
 ;
 ; Contact     :	WTHOMPSON
 ;-
 ;
-pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite
-on_error, 2
+pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, prepped = prepped
+  on_error, 2
+;
+; General variables
+;
+  g = HVS_GEN()
+;
+; Prepped data - default is no prepped data
+;
+  prepped = [g.MinusOneString]
 ;
 ;  Check that the date is valid.
 ;
-if (n_elements(date) eq 0) or (n_elements(date) gt 2) then message, $
-  'DATE must have 1 or 2 elements'
-message = ''
-utc = anytim2utc(date, errmsg=message)
-if message ne '' then message, message
+  if (n_elements(date) eq 0) or (n_elements(date) gt 2) then message, $
+     'DATE must have 1 or 2 elements'
+  message = ''
+  utc = anytim2utc(date, errmsg=message)
+  if message ne '' then message, message
 ;
 ;  Determine which buffer to process.
 ;
-if keyword_set(only_synoptic) then ssr=1 else ssr=3     ;(3 = both 1 and 2)
+  if keyword_set(only_synoptic) then ssr=1 else ssr=3 ;(3 = both 1 and 2)
 ;
 ;  Step through the STEREO spacecraft
 ;
-sc = ['ahead', 'behind']
-for isc=0,1 do begin
+  sc = ['ahead', 'behind']
+  for isc=0,1 do begin
 ;
 ;  Get the catalog of COR1 polarization sequence files.
 ;
-    cat = cor1_pbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
+     cat = cor1_pbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
 ;
 ;  Process the sequences one-by-one.
 ;
-    if count gt 0 then for ifile = 0,count-1 do $
-      hv_cor1_prep2jp2, cat[*,ifile].filename, overwrite=overwrite
+     if count gt 0 then begin
+        for ifile = 0,count-1 do begin
+           hv_cor1_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename
+           prepped = [prepped,jp2_filename]
+        endfor
+     endif
 ;
 ;  Code for processing total-brightness-only images would go here.
 ;
-endfor
+  endfor
 ;
 end

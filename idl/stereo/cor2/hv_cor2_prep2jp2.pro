@@ -48,6 +48,14 @@
 ; Prev. Hist. :	None.
 ;
 ; History     :	Version 1, 22-Dec-2010, William Thompson, GSFC
+;               08-Apr-2011, Jack Ireland, GSFC - commented out
+;                                                 Bill's code
+;                                                 to ensure CRVAL* are
+;                                                 all zero due to
+;                                                 changes in the
+;                                                 plotting code in the
+;                                                 Helioviewer Project
+;                                                 clients.
 ;
 ; Contact     :	WTHOMPSON
 ;-
@@ -109,13 +117,13 @@ scc_roll_image, header, image
 image = bytscl(image, min=amin, max=amax, /nan)
 ;
 ;  Recalculate CRPIX* so that the CRVAL* values are zero.
-;
-wcs = fitshead2wcs(header)
-center = wcs_get_pixel(wcs, [0,0])
-header.crpix1 = center[0]
-header.crpix2 = center[1]
-header.crval1 = 0
-header.crval2 = 0
+; 08-Apr-2011 JI
+;; wcs = fitshead2wcs(header)
+;; center = wcs_get_pixel(wcs, [0,0])
+;; header.crpix1 = center[0]
+;; header.crpix2 = center[1]
+;; header.crval1 = 0
+;; header.crval2 = 0
 ;
 ;  Create the HVS structure.  For polarization sequences, the filename used is
 ;  the first in the series.
