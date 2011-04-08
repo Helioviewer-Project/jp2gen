@@ -26,9 +26,9 @@ else:
 
         while 1:
             flag = False
-            dirList = os.listdir(monitorLoc)
+            dirList = os.listdir('/home/ireland/www')
 	    dirList.sort()
-            file = open(monitorLoc + 'monitor.html','w')
+            file = open('/home/ireland/www/monitor.html','w')
             file.write('<H1>Simple JP2 Acquisition Monitor</H1><BR><BR>\n\n')
             file.write('<H2>This page provides information on the current status of the JP2 acquisition processes.</H2>')
             file.write('<H2>This file updated every '+str(sleep)+' seconds.\n\n')

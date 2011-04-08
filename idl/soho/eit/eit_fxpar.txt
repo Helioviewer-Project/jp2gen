@@ -1,0 +1,243 @@
+;+
+; Project     : SOHO - EIT
+;
+; Name        : 
+;	EIT_FXPAR
+; Purpose     : 
+;	Obtain the value of a parameter in a FITS header.
+; Explanation : This is a shell around the IDLASTRO routine FXPAR.
+;               The procedure can parse for keywords embedded into
+;               comments. Usageis identical to FXPAR.
+; Use         : 
+;	Result = EIT_FXPAR( HDR, NAME  [, ABORT ] [,IMAGE_NO=IMAGE_NO] )
+;
+;             e.g. IDL> hdr=headfits('efr19960715.123746')
+;                  IDL> print,eit_fxpar(hdr,'EXPTIME')
+;                       7.000
+;                  IDL> print,eit_fxpar(hdr,'N_MISSING_BLOCKS')
+;                       4
+;                  IDL> hdr=headfits('efz19960623.132832')
+;                  IDL> print,eit_fxpar(hdr,'FLTR',image_no=23)
+;                       Al + 1
+;
+; Inputs      : 
+;	HDR	= FITS header string array (e.g. as returned by FXREAD).  Each
+;		  element should have a length of 80 characters
+;                 Optionaly, this can be an IDL structure CREATED from a 
+;                 FITs header as by read_eit
+;	NAME	= String name of the parameter to return.  If NAME is of the
+;		  form 'keyword*' then an array is returned containing values
+;		  of keywordN where N is an integer.  The value of keywordN
+;		  will be placed in RESULT(N-1).  The data type of RESULT will
+;		  be the type of the first valid match of keywordN found.
+;                 If keyword is in COMMENT field will return keyval.
+; Opt. Inputs : 
+;      ABORT    = String to output if can not return value
+;      IMAGE_NO = Image number for files containing multiple subimages,
+;                  set to 'ALL' to return values for all subimages
+;
+; Outputs     : 
+;	The returned value of the function is the value(s) associated with the
+;	requested keyword in the header array.
+;
+; Keywords    : 
+;	COUNT	= Optional keyword to return a value equal to the number of
+;	  	  parameters found by FXPAR.
+;	COMMENTS= Array of comments associated with the returned values.
+;       INITIALIZE = Used by read_eit only, parse comments for 3D index
+;                    structures, else pull out of tag value
+;       CAT_WAVES = return all wavelngths in catalog structure, else
+;                     returns first wavelength
+; Calls       : 
+; Common      : 
+;	None.
+; Restrictions: 
+;	None.
+; Side effects: 
+; Category    : 
+;	Data Handling, I/O, FITS, Generic.
+; Written     : 1996 July 15, J. Newmark
+; Modified    : 1996 Aug 23 J. Newmark allow input if IDL structure (or 
+;                 array of structures) created from FITS headers.
+;               1996 Oct 18. J. Newmark - allow use of Single image keywords
+;                 for multiple image LZ files, return scalar for 3D keywords
+;                 if 1 element array.
+;             ; 1996 Nov 5, S.L. Freeland - force 'have_sub' to scalar value
+;               1996 Dec 27 J. Newmark - fixed index structure input.
+; Version     : 1.2
+;               1997 Jan 14 J. Newmark - added capability to handle
+;                 raw catalog structure input, add /initialize keyword
+;                 cat_waves keyword
+; Version     : 2.0
+;               1997 Jan 24 J. Newmark - changed many if-thens to CASE
+;               1997 Mar 20 J. Newmark - add in sci_obj field for catalog
+;               1997 Apr 14 J. Newmark - add support for second ASCII table
+;               1997 Aug 12 J. Newmark - return INT/FLT where expected, 3D
+;               1998 Mar 26 J. Newmark - add corrected date_obs field
+;               1998 Oct 23 J. Newmark - add n_repeat field for raw catalog
+;-
+;------------------------------------------------------------------------------
+;
+;
+FUNCTION EIT_FXPAR, HDR, NAME, ABORT, COUNT=COUNT, COMMENT=COMMENTS,$
+   IMAGE_NO=IMAGE_NO,CAT_WAVES=CAT_WAVES, INITIALIZE=INITIALIZE
+
+name=STRUPCASE(name)
+IF datatype(hdr) EQ 'STC' THEN is_stc=1 ELSE is_stc=0
+
+; work on EIT catalog raw structures, i.e. not a FITS structure
+if is_stc then if not tag_exist(hdr,'simple') then begin
+   CASE name of
+     'WAVELNTH': BEGIN
+          result = fix(hdr.wave(0)) + 170
+          cat_waves = fix(hdr.wave)
+          keep = where(cat_waves ne 0, nwaves)
+          if nwaves gt 0 then cat_waves(keep) = cat_waves(keep) + 170      
+          END
+     'FILTER': BEGIN
+          filt_str = ['AL+1', 'BLK EST',  'CLEAR', 'BLK WST', 'AL+2' ]
+          result = filt_str(hdr.filter)
+          END
+     'OBJECT': BEGIN
+          obj_str = ['PARTIAL FOV','FULL FOV','DARK', 'CAL LAMP']
+          result = obj_str(hdr.object)
+          END
+     'NAXIS': BEGIN
+          result = hdr.n_repeat
+          result = result > 2
+          END 
+     'NAXIS1': result = hdr.nx * 32
+     'NAXIS2': result = hdr.ny * 32
+     'XBIN': result = hdr.nx_sum
+     'YBIN': result = hdr.ny_sum
+     'EXPTIME': result = hdr.exp_time
+     'DATE_OBS': BEGIN
+          times = {mjd:hdr.obs_time.mjd+49718, time:hdr.obs_time.sec*1000L}
+          result = anytim2utc(utc2tai(times),/ccsds)
+          END
+     'P1_X': result = hdr.low_x
+     'P2_X': result = hdr.high_x
+     'P1_Y': result = hdr.low_y
+     'P2_Y': result = hdr.high_y
+     'CFTEMP': result = hdr.temp(0)
+     'CCDTEMP': result = hdr.temp(1)
+     'FILENAME': result = string(hdr.file_name)
+     'SCI_OBJ': result = string(hdr.sci_obj)
+     'N_REPEAT': result = string(hdr.n_repeat)
+      ELSE: result = 0
+   ENDCASE
+   IF N_ELEMENTS(result) EQ 1 THEN result=result(0)
+   return,result
+endif
+
+subimage_desc=['START_TIME','EXP_TIME','WAV','FLTR','N_MB','IMAGE',$
+     '3D_PROG','3D_DATE','CF_TEMP','CCD_TEMP','CORR START_TIME']
+sub_sep = [0,24,32,36,42,50,54,70,24,33,42,65]
+;
+; 1996 Oct 18 -JSN - add checks if 3-D LZ file allow for alternate names
+;
+if not is_stc then begin
+   have_sub = fxpar(hdr,'NAXIS') 
+   use_com = 1
+endif else begin
+   have_sub = hdr.naxis
+   use_com = keyword_set(initialize)
+endelse
+atable = 0
+if have_sub(0) eq 3 and use_com then begin
+   hist = fxpar(hdr,'history')
+   version = float(strmid(hist(0),8,3))
+   CASE name of
+     'WAVELNTH': name = 'WAV'
+     'FILTER':   name = 'FLTR'
+     'EXPTIME':  name = 'EXP_TIME'
+     'DATE_OBS': name = '3D_DATE'
+     'OBS_PROG': name = '3D_PROG'
+     'N_MISSING_BLOCKS': name = 'N_MB'
+;
+     'CFTEMP': if version ge 2 then begin
+                  name = 'CF_TEMP'
+                  atable = 1
+                  end
+     'CCDTEMP': if version ge 2 then begin
+                  name = 'CCD_TEMP'
+                  atable = 1
+                  end
+     'CF_TEMP':  atable = 1
+     'CCD_TEMP': atable = 1
+     'CORRECTED DATE_OBS': if version ge 2 then begin
+                  name = 'CORR START_TIME'
+                  atable = 1
+                  end
+     'CORR START_TIME': atable = 1
+     ELSE: 
+   ENDCASE
+endif
+;
+yes_sub=where(strpos(subimage_desc,name) ne -1)
+IF yes_sub(0) ne -1 THEN BEGIN
+   if have_sub(0) ne 3 then begin
+      print,'File does not contain subfield images, i.e. NAXIS=2'
+      return,0
+   endif else if not is_stc then num_images=fxpar(hdr,'NAXIS3') else begin
+       if tag_exist(hdr,'NAXIS3') then num_images=hdr(0).naxis3 else $
+       num_images=0
+   endelse
+   if n_elements(image_no) eq 0 then begin
+      print,'Information requested for image number (0 - ',$
+        strtrim(num_images-1,2),')?'
+      read,prompt='Enter image number:',image_no
+   endif
+   if not is_stc then comms=fxpar(hdr,'COMMENT') else comms=hdr(0).comment
+   start=where(strpos(comms,'START_TIME') ne -1)
+   if strlowcase(image_no) eq 'all' then subinfo=comms(start(atable)+1:$
+             start(atable)+num_images) else $
+             subinfo=comms(start(atable)+1+image_no)
+
+   CASE name OF
+     '3D_DATE': begin
+        yes_sub(0) = 0
+        d_flag = 1
+        end
+     'CORR START_TIME': d_flag = 1
+     ELSE: d_flag = 0
+   ENDCASE
+   sub=sub_sep(yes_sub(0))
+   result=strmid(subinfo,sub,sub_sep(yes_sub(0)+1)-sub)
+   if d_flag then result = anytim2utc(result,/ccsds)
+;
+; jsn 12-aug-1996
+   if name eq 'WAV' or name eq 'N_MB' then result = fix(result)
+   if name eq 'EXP_TIME' or name eq 'CF_TEMP' then result = float(result)
+
+   IF N_ELEMENTS(result) EQ 1 THEN result=result(0)
+   return,result
+ENDIF
+IF NOT is_stc THEN BEGIN
+  IF N_ELEMENTS(abort) EQ 0 THEN $
+     result=fxpar(hdr,name,count=count,comment=comments) ELSE $
+    result=fxpar(hdr,name,abort,count=count,comment=comments)
+ENDIF ELSE BEGIN
+   result = gt_tagval(hdr,name,found=count)
+   if count eq -1 then count = 0
+ENDELSE
+IF count EQ 0 THEN BEGIN
+  IF NOT is_stc THEN result2=fxpar(hdr,'COMMENT') ELSE result2=hdr.comment
+  line=WHERE(STRPOS(result2,name) EQ 0,count)
+  IF count EQ 0 THEN RETURN,result
+  out=result2(line)
+  result=STRMID(out,STRPOS(out(0),'=')+1,80) 
+  sg=STRPOS(result(0),"'")
+  Case 1 of
+   name EQ 'CORRECTED DATE_OBS': if sg eq 1 then result = $
+            strmid(result,2,strlen(result(0))-3) else result = strtrim(result,2)
+   name EQ 'SHUTTER CLOSE TIME':      result = float(result)
+   name EQ 'COMMANDED EXPOSURE TIME': result = float(result)
+   sg eq -1:                          result = fix(result)
+   sg eq 1 :                       result = strmid(result,2,strlen(result(0))-3)
+  ENDCASE
+  IF N_ELEMENTS(result) EQ 1 THEN result=result(0)
+ENDIF
+
+RETURN,result
+END
