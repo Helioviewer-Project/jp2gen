@@ -7,7 +7,7 @@ http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/HMI
 HMI
 /home/ireland/www/hmi.
 1000000
-True
+False
 900
 0
 2

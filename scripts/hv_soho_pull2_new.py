@@ -19,6 +19,7 @@ import urllib
 from sgmllib import SGMLParser
 import os, time, sys
 import calendar
+import doJPIPencoding
 
 class URLLister(SGMLParser):
         def reset(self):
@@ -314,6 +315,7 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                        newFile = name[:-1]
 	                        if newFile.endswith('.jp2'):
 	                                shutil.copy2(local_keep + newFile,moveTo + newFile)
+					doJPIPencoding.doJPIPencoding(moveTo + newFile,'SOHO')
 					change2hv(moveTo + newFile)
 					#if os.path.exists(os.path.expanduser(local_keep + newFile)):
 					#	os.remove(local_keep + newFile)
