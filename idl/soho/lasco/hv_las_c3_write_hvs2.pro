@@ -129,8 +129,8 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
            ;pivotCenter = [sunc.xcen,sunc.ycen]
            pivotCenter = [hd.crpix1,hd.crpix2]
            if not(orientation eq 0) then begin
-              image_new = rot(image_new,orientation,1.0,pivotCenter[0],pivotCenter[1],/pivot,/interp,missing = 0.0)
-              pylonima_rotated = rot(pylonimaCopy,orientation,1.0,pivotCenter[0],pivotCenter[1],/pivot,/interp)
+              image_new = rot(image_new,-orientation,1.0,pivotCenter[0],pivotCenter[1],/pivot,/interp,missing = 0.0)
+              pylonima_rotated = rot(pylonimaCopy,-orientation,1.0,pivotCenter[0],pivotCenter[1],/pivot,/interp)
            endif
 ;
 ;          block out the inner and outer occulting disk
