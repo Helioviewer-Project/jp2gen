@@ -1,4 +1,4 @@
-import ConfigParser,datetime
+import ConfigParser,datetime,os
 
 def ConfigSectionMap(Config,section):
     dict1 = {}
@@ -25,14 +25,14 @@ def Config2Dictionary(Config):
 
 def ReadConfig(file1,file2):
 
-    data = ConfigParser.ConfigParser()
-    data.optionxform = str
-    data.read(file1)
+    repository = ConfigParser.ConfigParser()
+    repository.optionxform = str
+    repository.read(file1)
 
-    dataDict = Config2Dictionary(data)
+    repositoryDict = Config2Dictionary(repository)
 
-    dataDict['Observations']['measurements'] = eval(dataDict['Observations']['measurements'])
-    dataDict['Observations']['minimumFileSize'] = eval(dataDict['Observations']['minimumFileSize'])
+    repositoryDict['Observations']['measurements'] = eval(repositoryDict['Observations']['measurements'])
+    repositoryDict['Observations']['minimumFileSize'] = eval(repositoryDict['Observations']['minimumFileSize'])
 
     local = ConfigParser.ConfigParser()
     local.optionxform = str
@@ -44,10 +44,55 @@ def ReadConfig(file1,file2):
     localDict['Operation']['daysBackMin'] = eval(localDict['Operation']['daysBackMin'])
     localDict['Operation']['daysBackMax'] = eval(localDict['Operation']['daysBackMax'])
 
-    if localDict['DatesTimes']['start'] != '-1':
-        localDict['DatesTimes']['start'] = datetime.datetime.strptime(localDict['DatesTimes']['start'], "%Y/%m/%d %H:%M:%S")
-    if localDict['DatesTimes']['end'] != '-1':
-        localDict['DatesTimes']['end'] = datetime.datetime.strptime(localDict['DatesTimes']['end'], "%Y/%m/%d %H:%M:%S")
+    return repositoryDict, localDict
 
+def Directories(repository,local,rootDate):
+    dirs = []
+    for daysBack in range(local['Operation']['daysBackMin'],local['Operation']['daysBackMax']):
+        dt = rootDate - datetime.timedelta(days=daysBack)
+        dirs.append( DirectoriesForAllMeasurements(repository,dt) )
+    return dirs
 
-    return dataDict, localDict
+def DirectoriesForAllMeasurements(repository,dt):
+    dirs = []
+    for measurement in repository['Observations']['measurements']:
+        dirs.append(Directory(repository,dt,measurement))
+    return dirs
+    
+def Directory(repository,dt,measurement):
+    instrument = repository['Observations']['instrument'] + os.sep
+    date = DateStructure(dt)
+    return instrument + date + os.sep + measurement
+
+def DateStructure(dt):
+    if os.name == 'posix':
+        return dt.strftime('%Y/%m/%d')
+    if os.name == 'nt':
+        return dt.strftime('%Y\%m\%d')
+
+def Get(repository,local,directories):
+    # flatten the directories
+    flatDirectories = [item for sublist in directories for item in sublist]
+    # acquire data from the repository
+    for d in flatDirectories:
+        CreateLocalSubdirectories(d,local)
+        AcquireDataFromRepository(d,repository)
+
+def CreateLocalSubdirectories(d,local):
+    stagingRoot = os.path.expanduser(local['Operation']['staging'])
+    staging = stagingRoot + os.sep + d
+    if not os.path.exists(staging):
+        os.makedirs(staging)
+
+    ingestionRoot = os.path.expanduser(local['Operation']['ingestion'])
+    ingestion = ingestionRoot + os.sep + d
+    if not os.path.exists(ingestion):
+        os.makedirs(ingestion)
+
+    log = 
+
+def CreateLocalPath(d):
+    pass
+
+def AcquireDataFromRepository(d,repository):
+    pass
