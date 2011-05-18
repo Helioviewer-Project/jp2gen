@@ -62,8 +62,15 @@
 ; Contact     :	WTHOMPSON
 ;-
 ;
-pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite
+pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
+                     copy2outgoing = copy2outgoing
 on_error, 2
+progname = 'hv_cor2_by_date'
+;
+; First time that a non-zero file is found
+;
+firsttimeflag = 1
+prepped = -1
 ;
 ;  Check that the date is valid.
 ;
@@ -88,8 +95,22 @@ for isc=0,1 do begin
 ;
 ;  Process the sequences one-by-one.
 ;
-    if count gt 0 then for ifile = 0,count-1 do $
-      hv_cor2_prep2jp2, cat[*,ifile].filename, overwrite=overwrite
+    if count gt 0 then begin
+       for ifile = 0,count-1 do begin
+          already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cat[*,ifile].filename)
+          if not(already_written) then begin
+             hv_cor2_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename
+             if firsttimeflag then begin
+                prepped = [jp2_filename]
+                firsttimeflag = 0
+             endif else begin
+                prepped = [prepped,jp2_filename]
+             endelse
+          endif else begin
+             print,progname + ': file already written, skipping.'
+          endelse
+       endfor
+    endif
 ;
 ;  Get the catalog of COR2 double exposure files.
 ;
@@ -131,10 +152,26 @@ for isc=0,1 do begin
             cat = cat[w]
             for ifile = 0,count-1 do begin
                 filename = sccfindfits(cat[ifile].filename)
-                if filename ne '' then $
-                  hv_cor2_prep2jp2, filename, overwrite=overwrite else $
-                  print, 'File ' + cat[ifile].filename + ' not (yet) found'
+                if filename ne '' then begin
+                   already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
+                   if not(already_written) then begin
+                      hv_cor2_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
+                      if firsttimeflag then begin
+                         prepped = [jp2_filename]
+                         firsttimeflag = 0
+                      endif else begin
+                         prepped = [prepped,jp2_filename]
+                      endelse
+                   endif else begin
+                      print, 'File ' + cat[ifile].filename + ' not (yet) found'
+                   endelse
+                endif else begin
+                   print,progname + ': file already written, skipping.'
+                endelse
             endfor
+            if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin
+               HV_COPY2OUTGOING,prepped
+            endif
         endif
     endif                       ;CAT is structure
 endfor                          ;isc

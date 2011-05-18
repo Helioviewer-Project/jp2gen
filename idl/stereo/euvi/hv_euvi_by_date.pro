@@ -61,48 +61,68 @@
 ; Contact     :	WTHOMPSON
 ;-
 ;
-pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite
-on_error, 2
+pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
+                     copy2outgoing = copy2outgoing
+  on_error, 2
 ;
 ;  Check that the date is valid.
 ;
-if (n_elements(date) eq 0) or (n_elements(date) gt 2) then message, $
-  'DATE must have 1 or 2 elements'
-message = ''
-utc = anytim2utc(date, errmsg=message)
-if message ne '' then message, message
+  if (n_elements(date) eq 0) or (n_elements(date) gt 2) then message, $
+     'DATE must have 1 or 2 elements'
+  message = ''
+  utc = anytim2utc(date, errmsg=message)
+  if message ne '' then message, message
 ;
 ;  Step through the STEREO spacecraft
 ;
-sc = ['ahead', 'behind']
-for isc=0,1 do begin
+  sc = ['ahead', 'behind']
+;
+; First time that a non-zero file is found
+;
+  firsttimeflag = 1
+  prepped = -1
+;
+;
+;
+  for isc=0,1 do begin
 ;
 ;  Get the catalog of EUVI image files.
 ;
-    cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='euvi', $
-                           source='lz', type='img', /check)
-    if datatype(cat,1) eq 'Structure' then begin
+     cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='euvi', $
+                            source='lz', type='img', /check)
+     if datatype(cat,1) eq 'Structure' then begin
 ;
 ;  Filter out beacon images, and optionally special event images.
 ;
         if keyword_set(only_synoptic) then $
-          w = where(cat.dest eq 'SSR1', count) else $
-          w = where(cat.dest ne 'SW', count)
+           w = where(cat.dest eq 'SSR1', count) else $
+              w = where(cat.dest ne 'SW', count)
 ;
 ;  Process the files one by one.  If the file is not found, then print a
 ;  message.  This sometimes happens if the catalog file arrives before the FITS
 ;  file.
 ;
         if count gt 0 then begin
-            cat = cat[w]
-            for ifile = 0,count-1 do begin
-                filename = sccfindfits(cat[ifile].filename)
-                if filename ne '' then $
-                  hv_euvi_prep2jp2, filename, overwrite=overwrite else $
-                  print, 'File ' + cat[ifile].filename + ' not (yet) found'
-            endfor
+           cat = cat[w]
+           for ifile = 0,count-1 do begin
+              filename = sccfindfits(cat[ifile].filename)
+              if filename ne '' then begin
+                 hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
+                 if firsttimeflag then begin
+                    prepped = [jp2_filename]
+                    firsttimeflag = 0
+                 endif else begin
+                    prepped = [prepped,jp2_filename]
+                 endelse
+              endif else begin
+                 print, 'File ' + cat[ifile].filename + ' not (yet) found'
+              endelse
+           endfor
+           if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin
+              HV_COPY2OUTGOING,prepped
+           endif
         endif
-    endif
-endfor
+     endif
+  endfor
 ;
 end
