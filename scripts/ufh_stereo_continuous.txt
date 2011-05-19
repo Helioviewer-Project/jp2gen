@@ -10,5 +10,5 @@ STEREO
 False
 900
 0
-2
+4
 

@@ -232,42 +232,43 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
         	#parser.feed(usock.read())
         	#usock.close()
         	#parser.close()
-		files_found = os.listdir(remote_location)
+		if os.path.exists(remote_location):
+			files_found = os.listdir(remote_location)
 
-	        # Check which files are new at the remote location
-	        newlist = ['']
-	        newFiles = False
-	        newFilesCount = 0
-	        for url in files_found:
-	                if url.endswith('.jp2'):
-	                        if not url + '\n' in jp2list:
-	                                newFiles = True
-	                                newlist.extend(url + '\n')
-	                                newFilesCount = newFilesCount + 1
-	        if newFilesCount > 0:
-	                jprint('Number of new files found at remote location = ' + str(newFilesCount))
-	        else:
-	                jprint('No new files found at remote location.')
+			# Check which files are new at the remote location
+			newlist = ['']
+			newFiles = False
+			newFilesCount = 0
+			for url in files_found:
+				if url.endswith('.jp2'):
+					if not url + '\n' in jp2list:
+						newFiles = True
+						newlist.extend(url + '\n')
+						newFilesCount = newFilesCount + 1
+						if newFilesCount > 0:
+							jprint('Number of new files found at remote location = ' + str(newFilesCount))
+						else:
+							jprint('No new files found at remote location.')
 
-	        # Write the new filenames to a file
-	        if newFiles:
-	                newFileListName = timeStamp + '.' + todayName + '__'+nickname+'__'+ wave + '.newfiles.txt'
-			newFileListFullPath = logSubdir + '/' + newFileListName
-	                jprint('Writing new file list to ' + newFileListFullPath)
-	                f = open(newFileListFullPath,'w')
-	                f.writelines(newlist)
-	                f.close()
-	                # Download only the new files
-	                jprint('Downloading new files.')
-	                localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
-	                localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
-	                localDir = ' -P'+local_keep + ' '
-	                remoteBaseURL = '-B ' + remote_location + ' '
-	                command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
-	
-	                os.system(command)
+			# Write the new filenames to a file
+			if newFiles:
+				newFileListName = timeStamp + '.' + todayName + '__'+nickname+'__'+ wave + '.newfiles.txt'
+				newFileListFullPath = logSubdir + '/' + newFileListName
+				jprint('Writing new file list to ' + newFileListFullPath)
+				f = open(newFileListFullPath,'w')
+				f.writelines(newlist)
+				f.close()
+				# Download only the new files
+				jprint('Downloading new files.')
+				localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
+				localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
+				localDir = ' -P'+local_keep + ' '
+				remoteBaseURL = '-B ' + remote_location + ' '
+				#command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
+				#print command
+				#os.system(command)
 
-	                # Copy the new files to the ingestion directory
+				# Copy the new files to the ingestion directory
 	                #jprint('Downloading new files.')
 	                #localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
 	                #localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
@@ -276,51 +277,54 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                #command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
 	
 	                #os.system(command)
-			for url in files_found:
-				if url.endswith('.jp2'):
-					if not url + '\n' in jp2list:
-						shutil.copy2(remote_location + url,local_keep + url)
+				for url in files_found:
+					if url.endswith('.jp2'):
+						if not url + '\n' in jp2list:
+							shutil.copy2(remote_location + url,local_keep + url)
 
 	                # Write the new updated database file
-	                jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
-	                f = open(dbSubdir + '/' + dbFileName,'w')
-	                f.writelines(jp2list)
-	                f.writelines(newlist)
-	                f.close()
+				jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
+				f = open(dbSubdir + '/' + dbFileName,'w')
+				f.writelines(jp2list)
+				f.writelines(newlist)
+				f.close()
 	                # Absolutely ensure the correct permissions on all the files
-	                change2hv(local_keep)
+				change2hv(local_keep)
 	
 			#
 			# Moving the files from the download directory to the ingestion directory
 			#
 			# Create the moveTo directory
-			moveTo = ingest_storage + yyyy + '/' + mm + '/' + dd + '/' + wave + '/'
-	                try:
-				hvCreateSubdir(ingest_storage + yyyy)
-				hvCreateSubdir(ingest_storage + yyyy + '/' + mm)
-				hvCreateSubdir(ingest_storage + yyyy + '/' + mm + '/' + dd)
-				hvCreateSubdir(ingest_storage + yyyy + '/' + mm + '/' + dd + '/' + wave)
-	                except:
-	                        jprint('Ingest directory already exists: '+moveTo)
+				moveTo = ingest_storage + yyyy + '/' + mm + '/' + dd + '/' + wave + '/'
+				try:
+					hvCreateSubdir(ingest_storage + yyyy)
+					hvCreateSubdir(ingest_storage + yyyy + '/' + mm)
+					hvCreateSubdir(ingest_storage + yyyy + '/' + mm + '/' + dd)
+					hvCreateSubdir(ingest_storage + yyyy + '/' + mm + '/' + dd + '/' + wave)
+				except:
+					jprint('Ingest directory already exists: '+moveTo)
 	
 			# Read in the new filenames again
-	                f = open(logSubdir + '/' + newFileListName,'r')
-	                newlist = f.readlines()
-	                f.close()
-			jprint('New files ingested are as follows:')
-			for entry in newlist:
-				jprint(entry)
+				f = open(logSubdir + '/' + newFileListName,'r')
+				newlist = f.readlines()
+				f.close()
+				jprint('New files ingested are as follows:')
+				for entry in newlist:
+					jprint(entry)
 	                # Copy the new files to the ingest directory, and then delete it
-	                for name in newlist:
-	                        newFile = name[:-1]
-	                        if newFile.endswith('.jp2'):
-	                                shutil.copy2(local_keep + newFile,moveTo + newFile)
-					doJPIPencoding.doJPIPencoding(moveTo + newFile,'SOHO')
-					change2hv(moveTo + newFile)
+					for name in newlist:
+						newFile = name[:-1]
+						if newFile.endswith('.jp2'):
+							shutil.copy2(local_keep + newFile,moveTo + newFile)
+							doJPIPencoding.doJPIPencoding(moveTo + newFile,'SOHO')
+							change2hv(moveTo + newFile)
 					#if os.path.exists(os.path.expanduser(local_keep + newFile)):
 					#	os.remove(local_keep + newFile)
+			else:
+				jprint('No new files found at ' + remote_location)
 		else:
-                	jprint('No new files found at ' + remote_location)
+			jprint('Directory does not exist: ' + remote_location)
+			newFilesCount = -1
 	except:
 		jprint('Problem opening connection to '+remote_location+'.  Continuing with loop.')
 	        newFilesCount = -1
@@ -473,8 +477,8 @@ else:
 						nfc = GetJP2(nickname,yyyy,mm,dd,wave,remote_root+nickname+'/',local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = count,redirect = redirect,daysBack = daysBack)
 				if nfc > 0:
 					gotNewData = True
-				if not gotNewData:
-					time.sleep(sleep)
+			if not gotNewData:
+		       		time.sleep(sleep)
 
 	else:
 		getThisDay = time.mktime((int(startDate[0]),int(startDate[1]),int(startDate[2]),0, 0, 0, 0, 0, 0))

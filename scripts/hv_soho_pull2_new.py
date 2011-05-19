@@ -264,7 +264,8 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                localDir = ' -P'+local_keep + ' '
 	                remoteBaseURL = '-B ' + remote_location + ' '
 	                command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
-	
+			command = 'mv '
+
 	                os.system(command)
 
 	                # Copy the new files to the ingestion directory
