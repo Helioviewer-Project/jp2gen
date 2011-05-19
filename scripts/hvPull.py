@@ -141,7 +141,7 @@ def StageDataFromRepository(d,local,repository):
     staging = DefineStaging(d,local)
     localDir = ' -P'+staging+ ' '
     command = 'wget'
-    argument = ' -r -l1 -nd -q --no-parent --qtimestamping -A.jp2 -R.html '+localDir+remoteLocation
+    argument = ' -r -l1 -nd -q --no-parent --timestamping -A.jp2 -R.html '+localDir+remoteLocation
 
     timeStampString = CreateTimeStamp()
     attempted = timeStampString + ': attempted command: '+command + argument+'\n'
@@ -211,6 +211,12 @@ def ClassifyNewFiles(candidates,acquired):
 
 def QuarantineAndUpdateDB(badFiles):
     pass
+
+class JP2:
+    def __init__(self,value):
+        self.name = value
+
+    def __
 
 def Get(repository,local,directories):
     # Open the standard error file
