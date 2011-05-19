@@ -461,6 +461,8 @@ else:
 		count = 0
 		while 1:
 			count = count + 1
+			print '********************'
+			print count
 			gotNewData = False
 			for daysBack in range(daysBackMin,daysBackMax):
 
