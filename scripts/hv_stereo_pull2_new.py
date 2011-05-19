@@ -391,7 +391,7 @@ def GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLo
 # SOHO instruments
 instruments = ['COR1-A','COR2-A','EUVI-A','COR1-B','COR2-B','EUVI-B']
 
-measurements = {'EUVI-A':['171','195','304','284'],'COR1-A':['white-light'],'COR2-A':['white-light'],$
+measurements = {'EUVI-A':['171','195','304','284'],'COR1-A':['white-light'],'COR2-A':['white-light'],\
 		'EUVI-B':['171','195','304','284'],'COR1-B':['white-light'],'COR2-B':['white-light']}
 
 
