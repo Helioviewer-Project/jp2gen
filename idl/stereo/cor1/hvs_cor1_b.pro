@@ -50,7 +50,7 @@ details = {measurement: 'white-light', $
 ;
 ;  Define the info structure.
 ;
-info = {observatory: 'STEREO_B', $
+info = {observatory: 'STEREO-B', $
         instrument: 'SECCHI', $
         detector: 'COR1', $
         nickname: 'COR1-B', $

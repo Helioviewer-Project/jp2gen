@@ -64,6 +64,7 @@
 pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
                      copy2outgoing = copy2outgoing
   on_error, 2
+  progname = 'hv_euvi_by_date'
 ;
 ;  Check that the date is valid.
 ;
@@ -107,12 +108,17 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
            for ifile = 0,count-1 do begin
               filename = sccfindfits(cat[ifile].filename)
               if filename ne '' then begin
-                 hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
-                 if firsttimeflag then begin
-                    prepped = [jp2_filename]
-                    firsttimeflag = 0
+                 already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
+                 if not(already_written) then begin
+                    hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
+                    if firsttimeflag then begin
+                       prepped = [jp2_filename]
+                       firsttimeflag = 0
+                    endif else begin
+                       prepped = [prepped,jp2_filename]
+                    endelse
                  endif else begin
-                    prepped = [prepped,jp2_filename]
+                    print,progname + ': file already written. Skipping."
                  endelse
               endif else begin
                  print, 'File ' + cat[ifile].filename + ' not (yet) found'
