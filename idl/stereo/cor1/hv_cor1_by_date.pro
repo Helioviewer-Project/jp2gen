@@ -107,7 +107,7 @@ for isc=0,1 do begin
                 prepped = [prepped,jp2_filename]
              endelse
           endif else begin
-             print,progname + ': file already written, skipping.'
+             print,systime() + ': '+ progname + ': file already written, skipping processing of '+cat[*,ifile].filename
           endelse
        endfor
        if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin

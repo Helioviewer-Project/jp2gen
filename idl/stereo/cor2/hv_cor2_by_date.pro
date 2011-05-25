@@ -64,65 +64,65 @@
 ;
 pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
                      copy2outgoing = copy2outgoing
-on_error, 2
-progname = 'hv_cor2_by_date'
+  on_error, 2
+  progname = 'hv_cor2_by_date'
 ;
 ; First time that a non-zero file is found
 ;
-firsttimeflag = 1
-prepped = -1
+  firsttimeflag = 1
+  prepped = -1
 ;
 ;  Check that the date is valid.
 ;
-if (n_elements(date) eq 0) or (n_elements(date) gt 2) then message, $
-  'DATE must have 1 or 2 elements'
-message = ''
-utc = anytim2utc(date, errmsg=message)
-if message ne '' then message, message
+  if (n_elements(date) eq 0) or (n_elements(date) gt 2) then message, $
+     'DATE must have 1 or 2 elements'
+  message = ''
+  utc = anytim2utc(date, errmsg=message)
+  if message ne '' then message, message
 ;
 ;  Determine which buffer to process.
 ;
-if keyword_set(only_synoptic) then ssr=1 else ssr=3     ;(3 = both 1 and 2)
+  if keyword_set(only_synoptic) then ssr=1 else ssr=3 ;(3 = both 1 and 2)
 ;
 ;  Step through the STEREO spacecraft
 ;
-sc = ['ahead', 'behind']
-for isc=0,1 do begin
+  sc = ['ahead', 'behind']
+  for isc=0,1 do begin
 ;
 ;  Get the catalog of COR2 polarization sequence files.
 ;
-    cat = cor1_pbseries(utc, sc[isc], /cor2, ssr=ssr, /valid, count=count)
+     cat = cor1_pbseries(utc, sc[isc], /cor2, ssr=ssr, /valid, count=count)
 ;
 ;  Process the sequences one-by-one.
 ;
-    if count gt 0 then begin
-       for ifile = 0,count-1 do begin
-          already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cat[*,ifile].filename)
-          if not(already_written) then begin
-             hv_cor2_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename
-             if firsttimeflag then begin
-                prepped = [jp2_filename]
-                firsttimeflag = 0
-             endif else begin
-                prepped = [prepped,jp2_filename]
-             endelse
-          endif else begin
-             print,progname + ': file already written, skipping.'
-          endelse
-       endfor
-    endif
+     if count gt 0 then begin
+        for ifile = 0,count-1 do begin
+           already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cat[*,ifile].filename)
+           if not(already_written) then begin
+              hv_cor2_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename
+              if firsttimeflag then begin
+                 prepped = [jp2_filename]
+                 firsttimeflag = 0
+              endif else begin
+                 prepped = [prepped,jp2_filename]
+              endelse
+           endif else begin
+              print,systime() + ': '+ progname + ': file already written, skipping processing '+cat[*,ifile].filename
+           endelse
+        endfor
+     endif
 ;
 ;  Get the catalog of COR2 double exposure files.
 ;
-    cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='cor2', $
-                           source='lz', type='img', /check)
-    if datatype(cat,1) eq 'Structure' then begin
+     cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='cor2', $
+                            source='lz', type='img', /check)
+     if datatype(cat,1) eq 'Structure' then begin
 ;
 ;  Filter out beacon images, and optionally special event images.
 ;
         if keyword_set(only_synoptic) then $
-          teststr = "(cat.dest eq 'SSR1')" else $
-          teststr = "(cat.dest ne 'SW')"
+           teststr = "(cat.dest eq 'SSR1')" else $
+              teststr = "(cat.dest ne 'SW')"
 ;
 ;  Only process double exposure images.
 ;
@@ -141,7 +141,7 @@ for isc=0,1 do begin
 ;  2009-06-01.  These are "extra" images used for generating CME flags.
 ;
         teststr = teststr + " AND ((cat.date_obs lt '2009-06-01') OR " + $
-          "(cat.exptime ge 5))"
+                  "(cat.exptime ge 5))"
 ;
 ;  Process the files one by one.  If the file is not found, then print a
 ;  message.  This sometimes happens if the catalog file arrives before the FITS
@@ -149,31 +149,31 @@ for isc=0,1 do begin
 ;
         dummy = execute("w = where(" + teststr + ", count)")
         if count gt 0 then begin
-            cat = cat[w]
-            for ifile = 0,count-1 do begin
-                filename = sccfindfits(cat[ifile].filename)
-                if filename ne '' then begin
-                   already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
-                   if not(already_written) then begin
-                      hv_cor2_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
-                      if firsttimeflag then begin
-                         prepped = [jp2_filename]
-                         firsttimeflag = 0
-                      endif else begin
-                         prepped = [prepped,jp2_filename]
-                      endelse
-                   endif else begin
-                      print, 'File ' + cat[ifile].filename + ' not (yet) found'
-                   endelse
-                endif else begin
-                   print,progname + ': file already written, skipping.'
-                endelse
-            endfor
-            if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin
-               HV_COPY2OUTGOING,prepped
-            endif
+           cat = cat[w]
+           for ifile = 0,count-1 do begin
+              filename = sccfindfits(cat[ifile].filename)
+              if filename ne '' then begin
+                 already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
+                 if not(already_written) then begin
+                    hv_cor2_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
+                    if firsttimeflag then begin
+                       prepped = [jp2_filename]
+                       firsttimeflag = 0
+                    endif else begin
+                       prepped = [prepped,jp2_filename]
+                    endelse
+                 endif else begin
+                    print,systime() + ': '+ progname +  ': File ' + cat[ifile].filename + ' not (yet) found.'
+                 endelse
+              endif else begin
+                 print,systime() + ': '+ progname + ': file already written, skipping processing '+filename
+              endelse
+           endfor
+           if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin
+              HV_COPY2OUTGOING,prepped
+           endif
         endif
-    endif                       ;CAT is structure
-endfor                          ;isc
+     endif                      ;CAT is structure
+  endfor                        ;isc
 ;
 end

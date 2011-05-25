@@ -55,67 +55,59 @@
 pro hv_cor1_prep2jp2, filename, jp2_filename=jp2_filename, $
                       already_written=already_written, overwrite=overwrite
 ;
-;  already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
-;
-;
 ;  Call SECCHI_PREP to prepare the image for display.
 ;
-;  if already_written then begin
-;     print,'HV_COR1_PREP2JP2; file already written, skipping.'
-;  endif else begin
-     polariz_on = n_elements(filename) eq 3
+  polariz_on = n_elements(filename) eq 3
 
-
-     secchi_prep, filename, header, image, /calimg_off, /calfac_off, /rotate_on, $
-                  /smask, polariz_on=polariz_on
+  secchi_prep, filename, header, image, /calimg_off, /calfac_off, /rotate_on, $
+               /smask, polariz_on=polariz_on
 ;
 ;  Scale the image.
 ;
-     image = bytscl(sqrt(sigrange(image,fraction=.995)), min=0)
+  image = bytscl(sqrt(sigrange(image,fraction=.995)), min=0)
 ;
 ;  Recalculate CRPIX* so that the CRVAL* values are zero.
 ;
-     wcs = fitshead2wcs(header)
-     center = wcs_get_pixel(wcs, [0,0])
-     header.crpix1 = center[0]
-     header.crpix2 = center[1]
-     header.crval1 = 0
-     header.crval2 = 0
+  wcs = fitshead2wcs(header)
+  center = wcs_get_pixel(wcs, [0,0])
+  header.crpix1 = center[0]
+  header.crpix2 = center[1]
+  header.crval1 = 0
+  header.crval2 = 0
 ;
 ;  Determine the spacecraft, and get the details structure.
 ;
-     case parse_stereo_name(header.obsrvtry, ['a','b']) of
-        'a': details = hvs_cor1_a()
-        'b': details = hvs_cor1_b()
-     endcase
+  case parse_stereo_name(header.obsrvtry, ['a','b']) of
+     'a': details = hvs_cor1_a()
+     'b': details = hvs_cor1_b()
+  endcase
 ;
 ;  Create the HVS structure.  For polarization sequences, the filename used is
 ;  the first in the series.
 ;
-     break_file, filename[0], disk, dir, name, ext
-     dir = disk + dir
-     fitsname = name + ext
-     measurement = 'white-light'
-     ext = anytim2utc(header.date_obs, /ext)
-     hvsi = {dir: dir, $
-             fitsname: fitsname, $
-             header: header, $
-             comment: '', $
-             measurement: measurement, $
-             yy: string(ext.year, format='(I4.4)'), $
-             mm: string(ext.month, format='(I2.2)'), $
-             dd: string(ext.day, format='(I2.2)'), $
-             hh: string(ext.hour, format='(I2.2)'), $
-             mmm: string(ext.minute, format='(I2.2)'), $
-             ss: string(ext.second, format='(I2.2)'), $
-             milli: string(ext.millisecond, format='(I3.3)'), $
-             details: details}
-     hvs = {img: image, hvsi: hvsi}
+  break_file, filename[0], disk, dir, name, ext
+  dir = disk + dir
+  fitsname = name + ext
+  measurement = 'white-light'
+  ext = anytim2utc(header.date_obs, /ext)
+  hvsi = {dir: dir, $
+          fitsname: fitsname, $
+          header: header, $
+          comment: '', $
+          measurement: measurement, $
+          yy: string(ext.year, format='(I4.4)'), $
+          mm: string(ext.month, format='(I2.2)'), $
+          dd: string(ext.day, format='(I2.2)'), $
+          hh: string(ext.hour, format='(I2.2)'), $
+          mmm: string(ext.minute, format='(I2.2)'), $
+          ss: string(ext.second, format='(I2.2)'), $
+          milli: string(ext.millisecond, format='(I3.3)'), $
+          details: details}
+  hvs = {img: image, hvsi: hvsi}
 ;
 ;  Create the JPEG2000 file.
 ;
-     hv_make_jp2, hvs, jp2_filename=jp2_filename, already_written=already_written, $
-                  overwrite=overwrite
+  hv_make_jp2, hvs, jp2_filename=jp2_filename, already_written=already_written, $
+               overwrite=overwrite
 ;
-;  endelse
   end

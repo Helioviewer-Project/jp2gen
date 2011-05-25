@@ -107,9 +107,9 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
            cat = cat[w]
            for ifile = 0,count-1 do begin
               filename = sccfindfits(cat[ifile].filename)
-              if filename ne '' then begin
+              if filename ne '' and file_exist(filename) then begin
                  already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
-                 if not(already_written) then begin
+                 if not(already_written) and file_exist(filename) then begin
                     hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
                     if firsttimeflag then begin
                        prepped = [jp2_filename]
@@ -117,16 +117,19 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
                     endif else begin
                        prepped = [prepped,jp2_filename]
                     endelse
+                    if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin
+                       HV_COPY2OUTGOING,[jp2_filename]
+                    endif
                  endif else begin
-                    print,progname + ': file already written. Skipping."
+                    print,systime() + ': '+ progname + ': file already written. Skipping processing of '+filename+'.'
                  endelse
               endif else begin
-                 print, 'File ' + cat[ifile].filename + ' not (yet) found'
+                 print,systime() + ': '+ progname +  ': File ' + cat[ifile].filename + ' not (yet) found.'
               endelse
            endfor
-           if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin
-              HV_COPY2OUTGOING,prepped
-           endif
+           ;if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin
+           ;   HV_COPY2OUTGOING,prepped
+           ;endif
         endif
      endif
   endfor
