@@ -62,17 +62,24 @@ image = scc_bytscl(image, header)
 ;
 secchi_colors, 'euvi', header.wavelnth, red, green, blue
 image = round(0.3*red[image] + 0.59*green[image] + 0.11*blue[image]) 
+if header.wavelnth eq 171 then begin
+   secchi_prep, filename, header, image, /calimg_off, /rotate_on
+endif
 ;
 ;  Make sure that the CRVAL* values are zero.
 ;
-if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
-    wcs = fitshead2wcs(header)
-    center = wcs_get_pixel(wcs, [0,0])
-    header.crpix1 = center[0]
-    header.crpix2 = center[1]
-    header.crval1 = 0
-    header.crval2 = 0
-endif
+;
+; 2011/05/26 - shouldn't need to do this now with the new
+;              plotting routine of hv.org
+;
+;if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
+;    wcs = fitshead2wcs(header)
+;    center = wcs_get_pixel(wcs, [0,0])
+;    header.crpix1 = center[0]
+;    header.crpix2 = center[1]
+;    header.crval1 = 0
+;    header.crval2 = 0
+;endif
 ;
 ;  Determine the spacecraft, and get the details structure.
 ;

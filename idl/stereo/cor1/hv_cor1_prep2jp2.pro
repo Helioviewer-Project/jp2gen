@@ -68,12 +68,15 @@ pro hv_cor1_prep2jp2, filename, jp2_filename=jp2_filename, $
 ;
 ;  Recalculate CRPIX* so that the CRVAL* values are zero.
 ;
-  wcs = fitshead2wcs(header)
-  center = wcs_get_pixel(wcs, [0,0])
-  header.crpix1 = center[0]
-  header.crpix2 = center[1]
-  header.crval1 = 0
-  header.crval2 = 0
+; 2011/05/26 - shouldn't need to do this now with the new
+;              plotting routine of hv.org
+;
+;  wcs = fitshead2wcs(header)
+;  center = wcs_get_pixel(wcs, [0,0])
+;  header.crpix1 = center[0]
+;  header.crpix2 = center[1]
+;  header.crval1 = 0
+;  header.crval2 = 0
 ;
 ;  Determine the spacecraft, and get the details structure.
 ;
