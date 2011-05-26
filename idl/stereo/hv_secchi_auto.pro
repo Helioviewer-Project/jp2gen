@@ -27,15 +27,18 @@ PRO HV_SECCHI_AUTO,ndaysBack = ndaysBack, $                      ; date to end a
         date = utc2str(this_date,/date_only,/ecs)
 
         print,' '
-        print,progname + ': Processing all files on ' + date
+        print,systime() + ': ' + progname + ': Processing all files on ' + date
 
-        if keyword_set(cor1) then begin
-           HV_COR1_BY_DATE,date, copy2outgoing = copy2outgoing
+        if keyword_set(cor1) then begin 
+           print,systime() + ': ' + progname + ': COR1'
+          HV_COR1_BY_DATE,date, copy2outgoing = copy2outgoing
         endif
         if keyword_set(cor2) then begin
+           print,systime() + ': ' + progname + ': COR2'
            HV_COR2_BY_DATE,date, copy2outgoing = copy2outgoing
         endif
         if keyword_set(euvi) then begin
+           print,systime() + ': ' + progname + ': EUVI'
            HV_EUVI_BY_DATE,date, copy2outgoing = copy2outgoing
         endif
      endfor
@@ -44,7 +47,7 @@ PRO HV_SECCHI_AUTO,ndaysBack = ndaysBack, $                      ; date to end a
 ;
      count = count + 1
      HV_REPEAT_MESSAGE,progname,count,timestart, more = ['examined ' + date + '.',''],/web
-     HV_WAIT,progname,15,/minutes,/web
+     HV_WAIT,progname,120,/minutes,/web
 
   endrep until  1 eq keyword_set(once_only)
 

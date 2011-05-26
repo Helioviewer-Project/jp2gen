@@ -87,6 +87,13 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
   for isc=0,1 do begin
 ;
+;  Reload the STEREO SPICE files.  We do this to make sure we have the
+;  very latest information that is relevant to the data we are looking
+;  at.  This is done once per spacecraft since it may take a long time
+;  to run through all the images from one spacecraft.
+;
+     load_stereo_spice,/reload
+;
 ;  Get the catalog of EUVI image files.
 ;
      cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='euvi', $
@@ -117,7 +124,7 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
                     endif else begin
                        prepped = [prepped,jp2_filename]
                     endelse
-                    if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin
+                    if keyword_set(copy2outgoing) then begin
                        HV_COPY2OUTGOING,[jp2_filename]
                     endif
                  endif else begin

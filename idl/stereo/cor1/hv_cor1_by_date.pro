@@ -89,6 +89,13 @@ if keyword_set(only_synoptic) then ssr=1 else ssr=3     ;(3 = both 1 and 2)
 sc = ['ahead', 'behind']
 for isc=0,1 do begin
 ;
+;  Reload the STEREO SPICE files.  We do this to make sure we have the
+;  very latest information that is relevant to the data we are looking
+;  at.  This is done once per spacecraft since it may take a long time
+;  to run through all the images from one spacecraft.
+;
+     load_stereo_spice,/reload
+;
 ;  Get the catalog of COR1 polarization sequence files.
 ;
     cat = cor1_pbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
@@ -106,13 +113,13 @@ for isc=0,1 do begin
              endif else begin
                 prepped = [prepped,jp2_filename]
              endelse
+             if keyword_set(copy2outgoing) then begin
+                HV_COPY2OUTGOING,[jp2_filename]
+             endif
           endif else begin
              print,systime() + ': '+ progname + ': file already written, skipping processing of '+cat[*,ifile].filename
           endelse
        endfor
-       if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin
-          HV_COPY2OUTGOING,prepped
-       endif
     endif
 ;
 ;  Code for processing total-brightness-only images would go here.
