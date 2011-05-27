@@ -1,4 +1,4 @@
-import ConfigParser,datetime,os,subprocess,sys,hvdb
+import ConfigParser,datetime,os,subprocess,sys
 
 def ConfigSectionMap(Config,section):
     dict1 = {}
@@ -23,28 +23,34 @@ def Config2Dictionary(Config):
     return dict2
 
 
-def ReadConfig(file1,file2):
+class Config:
 
-    repository = ConfigParser.ConfigParser()
-    repository.optionxform = str
-    repository.read(file1)
+    def __init__(self,value):
+        self.filename = value
+        for v in value:
+            r = ConfigParser.ConfigParser()
+            r.optionxform = str
+            r.read(v)
 
-    repositoryDict = Config2Dictionary(repository)
+            rD = Config2Dictionary(r)
 
-    repositoryDict['Observations']['measurements'] = eval(repositoryDict['Observations']['measurements'])
-    repositoryDict['Observations']['minimumFileSize'] = eval(repositoryDict['Observations']['minimumFileSize'])
+            self.type = rD['Type']['this']
 
-    local = ConfigParser.ConfigParser()
-    local.optionxform = str
-    local.read(file2)
+            if self.type == 'from':
+                self.location = rD['Where']['location']
+                del rD['Type']
+                del rD['Where']
+                for key in rD.keys():
+                    rD[key]['minimumFileSize'] = eval(rD[key]['minimumFileSize'])
+                    self.observations = rD
 
-    localDict = Config2Dictionary(local)
-    
-    localDict['Operation']['wait'] = eval(localDict['Operation']['wait'])
-    localDict['Operation']['daysBackMin'] = eval(localDict['Operation']['daysBackMin'])
-    localDict['Operation']['daysBackMax'] = eval(localDict['Operation']['daysBackMax'])
-
-    return repositoryDict, localDict
+            if self.type == 'local':
+                self.staging = rD['Operation']['staging']
+                self.ingestion = rD['Operation']['ingestion']
+                self.wait = rD['Operation']['wait']
+                self.daysBackMin = rD['Operation']['daysBackMin']
+                self.daysBackMax = rD['Operation']['daysBackMax']
+                self.DBfilename = rD['Operation']['DBfilename']
 
 def Directories(repository,local,rootDate):
     dirs = []
@@ -215,8 +221,80 @@ def QuarantineAndUpdateDB(badFiles):
 class JP2:
     def __init__(self,value):
         self.name = value
+        # dictionary of all the nicknames indexed by observatory, instrument, detector
+        nicknameDict = {'SDO':{'AIA':{'AIA':'AIA'},\
+                                   'HMI':{'HMI':'HMI'}},\
+                            'STEREO-A':{'SECCHI':\
+                                            {'EUVI':'EUVI-A','COR1':'COR1-A','COR2':'COR2-A'}},\
+                            'STEREO-B':{'SECCHI':\
+                                            {'EUVI':'EUVI-B','COR1':'COR1-B','COR2':'COR2-B'}},\
+                            'SOHO':{'LASCO':{'C2':'LASCO-C2','C3':'LASCO-C3'},\
+                                        'EIT':{'EIT':'EIT'},\
+                                        'MDI':{'MDI':'MDI'}}}
+        withoutExtension = value[:-4]
+        components = withoutExtension.split('__')
+        allParts = [components.split('_', 1) for v in components if '_' in v]
 
-    def __
+        # date
+        dateParts = allParts[0]
+        self.year = eval(dateParts[0])
+        self.month = eval(dateParts[1])
+        self.day = eval(dateParts[2])
+        # time
+        timeParts = allParts[1]
+        self.hours = eval(timeParts[0])
+        self.minutes = eval(timeParts[1])
+        self.seconds = eval(timeParts[2])
+        self.milliseconds = eval(timeParts[3])
+        # datetime object
+        self.datetime = datetime.datetime(self.year,self.month,self.day,\
+                                              self.hours,self.minutes,self.seconds,\
+                                              1000*self.milliseconds)
+        # observation details
+        obsParts = allParts[2]
+        self.observatory = obsParts[0]
+        self.instrument = obsParts[1]
+        self.detector = obsParts[2]
+        self.measurement = obsParts[3]
+        self.nickname = nickname[self.observatory][self.instrument][self.detector]
+                                            
+
+    def getNickname(self):
+        return self.nickname
+
+    def getYear(self):
+        return self.year
+
+    def getMonth(self):
+        return self.month
+
+    def getDay(self):
+        return self.day
+
+    def getHour(self):
+        return self.hours
+
+    def getMinute(self):
+        return self.minutes
+
+    def getSecond(self):
+        return self.seconds
+
+    def getObservatory(self):
+        return self.observatory
+
+    def getInstrument(self):
+        return self.instrument
+
+    def getDetector(self):
+        return self.detector
+
+    def getMeasurement(self):
+        return self.measurement
+
+    def getDateTime(self):
+        return self.datetime
+
 
 def Get(repository,local,directories):
     # Open the standard error file
@@ -238,7 +316,7 @@ def Get(repository,local,directories):
 
         # at least one file found in the staging directory
         if len(fileList) > 0:
-            alreadyInDB = hvdb.query()
+            #alreadyInDB = hvdb.query()
             goodNewFiles, badNewFiles = ClassifyNewFiles(fileList,alreadyInDB)
 
             # at least one bad file
