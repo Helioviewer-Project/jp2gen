@@ -26,9 +26,9 @@ function hv_scc_bytscl,img,hdr, DISPLAY=display, SILENT=silent, MINMAX=minmax
 ;
 ; Category    : Admistration
 ;               
-; Prev. Hist. : None.
+; Prev. Hist. : Based on scc_bytscl,pro .
 ;
-; Written     : Robin C Colaninno NRL/GMU Jan 2007
+; Written     : J. Ireland / May 2010 Robin C Colaninno NRL/GMU Jan 2007
 ;               
 ; $Log: scc_bytscl.pro,v $
 ; Revision 1.11  2010/12/22 23:47:52  nathan
@@ -64,7 +64,7 @@ tel=hdr.detector
 IF tel EQ 'EUVI' or tel EQ 'EIT' or tel EQ 'AIA' THEN BEGIN
 	zero = where(im LE 0,znum)
 	IF znum NE 0 THEN im[zero]=1
-	im = alog10(im)
+           im = alog10(im)
 	IF hdr.exptime NE 1 and ~keyword_set(SILENT) THEN BEGIN
 	    print,''
 	    message,'CAUTION: min/max optimized for DN/s (EXPTIME='+trim(hdr.exptime)+')',/info
@@ -72,7 +72,7 @@ IF tel EQ 'EUVI' or tel EQ 'EIT' or tel EQ 'AIA' THEN BEGIN
 	ENDIF
 	
 	CASE hdr.WAVELNTH OF
-    	    171: minmax=[-0.2,3.7]  ;0,3.75)
+    	    171: minmax=[0.7,3.7];minmax=[-0.2,3.7]  ;0,3.75) the selection [0.7,3.7] requires the use of the IDL built in blue/white color table, color table 1
     	    195: minmax=[-0.8,3.4]  ;-1,3.9)
     	    284: minmax=[-0.7,2.7]  ;0,2.5)
     	    304: minmax=[-1.0,4.0]  ;-0.5,4)

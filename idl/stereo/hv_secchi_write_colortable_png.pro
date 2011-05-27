@@ -12,7 +12,14 @@ PRO HV_SECCHI_WRITE_COLORTABLE_PNG,dir = dir
      a = findgen(1,256)
      m = gt_tagval(meas,inst[i])
      for j = 0,n_elements(m)-1 do begin
-        secchi_colors,inst[i],m[j],r,g,b
+        if inst eq 'EUVI' and euvi eq 171 then begin
+           loadct,1,rgb=rgb
+           r = reform(rgb[*,0])
+           g = reform(rgb[*,1])
+           b = reform(rgb[*,2])
+        endif else begin
+           secchi_colors,inst[i],m[j],r,g,b
+        endif
         write_png,dir + inst[i]+'_'+trim(m[j])+ '_colortable.png',a,r,g,b
      endfor
   endfor

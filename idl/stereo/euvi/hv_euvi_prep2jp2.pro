@@ -64,6 +64,7 @@ secchi_colors, 'euvi', header.wavelnth, red, green, blue
 image = round(0.3*red[image] + 0.59*green[image] + 0.11*blue[image]) 
 if header.wavelnth eq 171 then begin
    secchi_prep, filename, header, image, /calimg_off, /rotate_on
+   image = hv_scc_bytscl(image, header)
 endif
 ;
 ;  Make sure that the CRVAL* values are zero.
