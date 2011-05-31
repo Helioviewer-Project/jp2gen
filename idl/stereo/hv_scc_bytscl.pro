@@ -72,7 +72,7 @@ IF tel EQ 'EUVI' or tel EQ 'EIT' or tel EQ 'AIA' THEN BEGIN
 	ENDIF
 	
 	CASE hdr.WAVELNTH OF
-    	    171: stop;minmax=[0.7,3.7];minmax=[-0.2,3.7]  ;0,3.75) the selection [0.7,3.7] requires the use of the IDL built in blue/white color table, color table 1
+    	    171: minmax=[0.7,3.7];minmax=[-0.2,3.7]  ;0,3.75) the selection [0.7,3.7] requires the use of the IDL built in blue/white color table, color table 1
     	    195: minmax=[-0.8,3.4]  ;-1,3.9)
     	    284: minmax=[-0.7,2.7]  ;0,2.5)
     	    304: minmax=[-1.0,4.0]  ;-0.5,4)
