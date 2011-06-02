@@ -1,14 +1,14 @@
-/home/ireland/soho_incoming/v0.8/jp2/
+/home/ireland/stereo_incoming/v0.8/jp2/
 /home/ireland/incoming/staging/v0.8/
 /home/ireland/incoming/v0.8/
 -1/-1/-1
 -1/-1/-1
 -1
-SOHO
-/home/ireland/www/soho.
+STEREO
+/home/ireland/www/stereo.
 1000
 False
 900
 0
-2
+4
 

@@ -63,60 +63,69 @@
 pro hv_cor2_prep2jp2, filename, jp2_filename=jp2_filename, $
                       already_written=already_written, overwrite=overwrite
 ;
+;  g = HVS_GEN()
+;
+;  already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
+;
 ;  Call SECCHI_PREP to prepare the image for display.
 ;
-polariz_on = n_elements(filename) eq 3
-secchi_prep, filename, header, image, /calimg_off, /calfac_off, /smask, $
-  polariz_on=polariz_on
+;  if already_written then begin
+;     print,'HV_COR1_PREP2JP2; file already written, skipping.'
+;     jp2_filename = g.MinusOneString
+;  endif else begin
+     polariz_on = n_elements(filename) eq 3
+     secchi_prep, filename, header, image, /calimg_off, /calfac_off, /smask, $
+                  polariz_on=polariz_on
 ;
 ;  Determine the spacecraft, and get the details structure.
 ;
-sc = parse_stereo_name(header.obsrvtry, ['a','b'])
-case sc of
-    'a': details = hvs_cor2_a()
-    'b': details = hvs_cor2_b()
-endcase
+     sc = parse_stereo_name(header.obsrvtry, ['a','b'])
+     case sc of
+        'a': details = hvs_cor2_a()
+        'b': details = hvs_cor2_b()
+     endcase
 ;
 ;  Define the relative min and max values.  These get modified depending on
 ;  the spacecraft and kind of image.
 ;
-amin = 0.95
-amax = 1.15
-if sc eq 'b' then begin
-    amin = 0.975
-    amax = 1.11250
-endif
+     amin = 0.95
+     amax = 1.15
+     if sc eq 'b' then begin
+        amin = 0.975
+        amax = 1.11250
+     endif
 ;
 ;  Correct double exposure images for the non-linearity effect.
 ;
-if ~polariz_on then begin
-    a0 = 1.04418
-    a1 = -0.00645004
-    scl = (a0 + a1*alog(header.exptime)) + a1*alog(image>1)
-    image = image / (scl > 1)
-endif
+     if ~polariz_on then begin
+        a0 = 1.04418
+        a1 = -0.00645004
+        scl = (a0 + a1*alog(header.exptime)) + a1*alog(image>1)
+        image = image / (scl > 1)
+     endif
 ;
 ;  Get the background image and divide it.  For Behind images before March 8,
 ;  2007, do a subtraction instead, and use a different range.
 ;
-bkg = scc_getbkgimg(header, /totalb)
-if n_elements(bkg) le 1 then return                     ;no background
-nmedian = 5
-if (sc eq 'b') and (header.date_obs lt '2007-03-08') then begin
-    image = median(image - bkg, nmedian)
-    amin = -10
-    amax = 100
-end else image = median(image / bkg, nmedian)
+     bkg = scc_getbkgimg(header, /totalb)
+     if n_elements(bkg) le 1 then return ;no background
+     nmedian = 5
+     if (sc eq 'b') and (header.date_obs lt '2007-03-08') then begin
+        image = median(image - bkg, nmedian)
+        amin = -10
+        amax = 100
+     end else image = median(image / bkg, nmedian)
 ;
 ;  Rotate the image.
 ;
-scc_roll_image, header, image
+     scc_roll_image, header, image
 ;
 ;  Scale the image.
 ;
-image = bytscl(image, min=amin, max=amax, /nan)
+     image = bytscl(image, min=amin, max=amax, /nan)
 ;
 ;  Recalculate CRPIX* so that the CRVAL* values are zero.
+<<<<<<< TREE
 ; 08-Apr-2011 JI
 ;; wcs = fitshead2wcs(header)
 ;; center = wcs_get_pixel(wcs, [0,0])
@@ -124,33 +133,47 @@ image = bytscl(image, min=amin, max=amax, /nan)
 ;; header.crpix2 = center[1]
 ;; header.crval1 = 0
 ;; header.crval2 = 0
+=======
+;
+;
+; 2011/05/26 - shouldn't need to do this now with the new
+;              plotting routine of hv.org
+;
+;     wcs = fitshead2wcs(header)
+;     center = wcs_get_pixel(wcs, [0,0])
+;     header.crpix1 = center[0]
+;     header.crpix2 = center[1]
+;     header.crval1 = 0
+;     header.crval2 = 0
+>>>>>>> MERGE-SOURCE
 ;
 ;  Create the HVS structure.  For polarization sequences, the filename used is
 ;  the first in the series.
 ;
-break_file, filename[0], disk, dir, name, ext
-dir = disk + dir
-fitsname = name + ext
-measurement = 'white-light'
-ext = anytim2utc(header.date_obs, /ext)
-hvsi = {dir: dir, $
-        fitsname: fitsname, $
-        header: header, $
-        comment: '', $
-        measurement: measurement, $
-        yy: string(ext.year, format='(I4.4)'), $
-        mm: string(ext.month, format='(I2.2)'), $
-        dd: string(ext.day, format='(I2.2)'), $
-        hh: string(ext.hour, format='(I2.2)'), $
-        mmm: string(ext.minute, format='(I2.2)'), $
-        ss: string(ext.second, format='(I2.2)'), $
-        milli: string(ext.millisecond, format='(I3.3)'), $
-        details: details}
-hvs = {img: image, hvsi: hvsi}
+     break_file, filename[0], disk, dir, name, ext
+     dir = disk + dir
+     fitsname = name + ext
+     measurement = 'white-light'
+     ext = anytim2utc(header.date_obs, /ext)
+     hvsi = {dir: dir, $
+             fitsname: fitsname, $
+             header: header, $
+             comment: '', $
+             measurement: measurement, $
+             yy: string(ext.year, format='(I4.4)'), $
+             mm: string(ext.month, format='(I2.2)'), $
+             dd: string(ext.day, format='(I2.2)'), $
+             hh: string(ext.hour, format='(I2.2)'), $
+             mmm: string(ext.minute, format='(I2.2)'), $
+             ss: string(ext.second, format='(I2.2)'), $
+             milli: string(ext.millisecond, format='(I3.3)'), $
+             details: details}
+     hvs = {img: image, hvsi: hvsi}
 ;
 ;  Create the JPEG2000 file.
 ;
-hv_make_jp2, hvs, jp2_filename=jp2_filename, already_written=already_written, $
-  overwrite=overwrite
+     hv_make_jp2, hvs, jp2_filename=jp2_filename, already_written=already_written, $
+                  overwrite=overwrite
 ;
+;  endelse
 end

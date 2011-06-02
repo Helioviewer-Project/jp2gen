@@ -64,8 +64,14 @@
 ; Contact     :	WTHOMPSON
 ;-
 ;
+<<<<<<< TREE
 pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, prepped = prepped
+=======
+pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
+                     copy2outgoing = copy2outgoing
+>>>>>>> MERGE-SOURCE
   on_error, 2
+<<<<<<< TREE
 ;
 ; General variables
 ;
@@ -74,6 +80,14 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, pre
 ; Prepped data - default is no prepped data
 ;
   prepped = [g.MinusOneString]
+=======
+  progname = 'hv_cor2_by_date'
+;
+; First time that a non-zero file is found
+;
+  firsttimeflag = 1
+  prepped = -1
+>>>>>>> MERGE-SOURCE
 ;
 ;  Check that the date is valid.
 ;
@@ -91,6 +105,16 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, pre
 ;
   sc = ['ahead', 'behind']
   for isc=0,1 do begin
+<<<<<<< TREE
+=======
+;
+;  Reload the STEREO SPICE files.  We do this to make sure we have the
+;  very latest information that is relevant to the data we are looking
+;  at.  This is done once per spacecraft since it may take a long time
+;  to run through all the images from one spacecraft.
+;
+     load_stereo_spice,/reload
+>>>>>>> MERGE-SOURCE
 ;
 ;  Get the catalog of COR2 polarization sequence files.
 ;
@@ -98,8 +122,30 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, pre
 ;
 ;  Process the sequences one-by-one.
 ;
+<<<<<<< TREE
      if count gt 0 then for ifile = 0,count-1 do $
         hv_cor2_prep2jp2, cat[*,ifile].filename, overwrite=overwrite
+=======
+     if count gt 0 then begin
+        for ifile = 0,count-1 do begin
+           already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cat[*,ifile].filename)
+           if not(already_written) then begin
+              hv_cor2_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename
+              if firsttimeflag then begin
+                 prepped = [jp2_filename]
+                 firsttimeflag = 0
+              endif else begin
+                 prepped = [prepped,jp2_filename]
+              endelse
+              if keyword_set(copy2outgoing) then begin
+                 HV_COPY2OUTGOING, [jp2_filename]
+              endif
+           endif else begin
+              print,systime() + ': '+ progname + ': file already written, skipping processing '+cat[*,ifile].filename
+           endelse
+        endfor
+     endif
+>>>>>>> MERGE-SOURCE
 ;
 ;  Get the catalog of COR2 double exposure files.
 ;
@@ -130,7 +176,7 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, pre
 ;  2009-06-01.  These are "extra" images used for generating CME flags.
 ;
         teststr = teststr + " AND ((cat.date_obs lt '2009-06-01') OR " + $
-          "(cat.exptime ge 5))"
+                  "(cat.exptime ge 5))"
 ;
 ;  Process the files one by one.  If the file is not found, then print a
 ;  message.  This sometimes happens if the catalog file arrives before the FITS
@@ -142,15 +188,37 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, pre
            for ifile = 0,count-1 do begin
               filename = sccfindfits(cat[ifile].filename)
               if filename ne '' then begin
+<<<<<<< TREE
                  hv_cor2_prep2jp2, filename, overwrite=overwrite , jp2_filename = jp2_filename
                  prepped = [prepped,jp2_filename]
+=======
+                 already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
+                 if not(already_written) then begin
+                    hv_cor2_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
+                    if firsttimeflag then begin
+                       prepped = [jp2_filename]
+                       firsttimeflag = 0
+                    endif else begin
+                       prepped = [prepped,jp2_filename]
+                    endelse
+                    if keyword_set(copy2outgoing) then begin
+                       HV_COPY2OUTGOING, [jp2_filename]
+                    endif
+                 endif else begin
+                    print,systime() + ': '+ progname +  ': File ' + cat[ifile].filename + ' not (yet) found.'
+                 endelse
+>>>>>>> MERGE-SOURCE
               endif else begin
+<<<<<<< TREE
                  print, 'File ' + cat[ifile].filename + ' not (yet) found'
                  prepped = [prepped,g.MinusOneString]
+=======
+                 print,systime() + ': '+ progname + ': file already written, skipping processing '+filename
+>>>>>>> MERGE-SOURCE
               endelse
            endfor
         endif
-    endif                       ;CAT is structure
-endfor                          ;isc
+     endif                      ;CAT is structure
+  endfor                        ;isc
 ;
 end

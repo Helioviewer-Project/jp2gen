@@ -64,6 +64,7 @@
 ; Contact     :	WTHOMPSON
 ;-
 ;
+<<<<<<< TREE
 pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, prepped = prepped
   on_error, 2
 ;
@@ -74,6 +75,17 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, pre
 ; Prepped data - default is no prepped data
 ;
   prepped = [g.MinusOneString]
+=======
+pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy2outgoing = copy2outgoing
+on_error, 2
+progname = 'hv_cor1_by_date'
+;
+; First time that a non-zero file is found
+;
+firsttimeflag = 1
+prepped = -1
+;
+>>>>>>> MERGE-SOURCE
 ;
 ;  Check that the date is valid.
 ;
@@ -92,18 +104,47 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, pre
   sc = ['ahead', 'behind']
   for isc=0,1 do begin
 ;
+;  Reload the STEREO SPICE files.  We do this to make sure we have the
+;  very latest information that is relevant to the data we are looking
+;  at.  This is done once per spacecraft since it may take a long time
+;  to run through all the images from one spacecraft.
+;
+     load_stereo_spice,/reload
+;
 ;  Get the catalog of COR1 polarization sequence files.
 ;
      cat = cor1_pbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
 ;
 ;  Process the sequences one-by-one.
 ;
+<<<<<<< TREE
      if count gt 0 then begin
         for ifile = 0,count-1 do begin
            hv_cor1_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename
            prepped = [prepped,jp2_filename]
         endfor
      endif
+=======
+    if count gt 0 then begin
+       for ifile = 0,count-1 do begin
+          already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cat[*,ifile].filename)
+          if not(already_written) then begin
+             hv_cor1_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename
+             if firsttimeflag then begin
+                prepped = [jp2_filename]
+                firsttimeflag = 0
+             endif else begin
+                prepped = [prepped,jp2_filename]
+             endelse
+             if keyword_set(copy2outgoing) then begin
+                HV_COPY2OUTGOING,[jp2_filename]
+             endif
+          endif else begin
+             print,systime() + ': '+ progname + ': file already written, skipping processing of '+cat[*,ifile].filename
+          endelse
+       endfor
+    endif
+>>>>>>> MERGE-SOURCE
 ;
 ;  Code for processing total-brightness-only images would go here.
 ;

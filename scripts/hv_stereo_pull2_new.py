@@ -63,7 +63,7 @@ def hvCreateSubdir(x,out=True):
 
 # Directory Structure
 def hvSubdir(measurement,yyyy,mm,dd):
-	return [measurement+'/', measurement+'/'+yyyy+'/', measurement+'/'+yyyy+'/'+mm+'/', measurement+'/'+yyyy+'/'+mm+'/'+dd+'/']
+	return [ yyyy+'/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
 
 # Define the log directory
 def hvLogSubdir(nickname,measurement,yyyy,mm,dd):
@@ -123,21 +123,21 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 
         # get the JP2s for this wavelength
         # create the local JP2 subdirectory required
-        local_keep = local_storage + wave + '/' + todayDir + '/'
+        local_keep = local_storage + todayDir + '/' + wave + '/'
         try:
                 os.makedirs(local_keep)
                 change2hv(local_storage)
-                change2hv(local_storage + wave)
-                change2hv(local_storage + wave + '/' + yyyy)
-                change2hv(local_storage + wave + '/' + yyyy + '/' + mm)
-                change2hv(local_storage + wave + '/' + yyyy + '/' + mm + '/' + dd)
+                change2hv(local_storage + yyyy)
+                change2hv(local_storage + yyyy + '/' + mm)
+                change2hv(local_storage + yyyy + '/' + mm + '/' + dd)
+                change2hv(local_storage + yyyy + '/' + mm + '/' + dd + '/' + wave)
 		jprint('Created '+ local_keep)
         except:
                 jprint('Directory already exists: '+ local_keep)
 
 
         # create the logfile subdirectory for this wavelength
-        logSubdir = logloc + wave + '/' + todayDir
+        logSubdir = logloc + todayDir + '/' + wave + '/'
         try:
                 os.makedirs(logSubdir)
 		jprint('Created log directory: ' + logSubdir)
@@ -223,90 +223,108 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
                 jprint('No latest JP2 file found.')
 
         # Calculate the remote directory
-        #remote_location = remote_root + '/' + wave + '/' + todayDir + '/'
-	remote_location = remote_root + '/' + todayDir + '/' + wave + '/'
+        remote_location = remote_root + '/' + todayDir + '/' + wave + '/'
 
-        # Open the remote location and get the file list
+        # Open the soho location and get the file list
 	try:
-        	usock = urllib.urlopen(remote_location)
-        	parser = URLLister()
-        	parser.feed(usock.read())
-        	usock.close()
-        	parser.close()
+        	#usock = urllib.urlopen(remote_location)
+        	#parser = URLLister()
+        	#parser.feed(usock.read())
+        	#usock.close()
+        	#parser.close()
+		if os.path.exists(remote_location):
+			files_found = os.listdir(remote_location)
 
-	        # Check which files are new at the remote location
-	        newlist = ['']
-	        newFiles = False
-	        newFilesCount = 0
-	        for url in parser.urls:
-	                if url.endswith('.jp2'):
-	                        if not url + '\n' in jp2list:
-	                                newFiles = True
-	                                newlist.extend(url + '\n')
-	                                newFilesCount = newFilesCount + 1
-	        if newFilesCount > 0:
-	                jprint('Number of new files found at remote location = ' + str(newFilesCount))
-	        else:
-	                jprint('No new files found at remote location.')
+			# Check which files are new at the remote location
+			newlist = ['']
+			newFiles = False
+			newFilesCount = 0
+			for url in files_found:
+				if url.endswith('.jp2'):
+					if not url + '\n' in jp2list:
+						newFiles = True
+						newlist.extend(url + '\n')
+						newFilesCount = newFilesCount + 1
+						if newFilesCount > 0:
+							jprint('Number of new files found at remote location = ' + str(newFilesCount))
+						else:
+							jprint('No new files found at remote location.')
 
-	        # Write the new filenames to a file
-	        if newFiles:
-	                newFileListName = timeStamp + '.' + todayName + '__'+nickname+'__'+ wave + '.newfiles.txt'
-			newFileListFullPath = logSubdir + '/' + newFileListName
-	                jprint('Writing new file list to ' + newFileListFullPath)
-	                f = open(newFileListFullPath,'w')
-	                f.writelines(newlist)
-	                f.close()
-	                # Download only the new files
-	                jprint('Downloading new files.')
-	                localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
-	                localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
-	                localDir = ' -P'+local_keep + ' '
-	                remoteBaseURL = '-B ' + remote_location + ' '
-	                command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
+			# Write the new filenames to a file
+			if newFiles:
+				newFileListName = timeStamp + '.' + todayName + '__'+nickname+'__'+ wave + '.newfiles.txt'
+				newFileListFullPath = logSubdir + '/' + newFileListName
+				jprint('Writing new file list to ' + newFileListFullPath)
+				f = open(newFileListFullPath,'w')
+				f.writelines(newlist)
+				f.close()
+				# Download only the new files
+				jprint('Downloading new files.')
+				localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
+				localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
+				localDir = ' -P'+local_keep + ' '
+				remoteBaseURL = '-B ' + remote_location + ' '
+				#command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
+				#print command
+				#os.system(command)
+
+				# Copy the new files to the ingestion directory
+	                #jprint('Downloading new files.')
+	                #localLog = ' -a ' + logSubdir + '/' + logFileName + ' '
+	                #localInputFile = ' -i ' + logSubdir + '/' + newFileListName + ' '
+	                #localDir = ' -P'+local_keep + ' '
+	                #remoteBaseURL = '-B ' + remote_location + ' '
+	                #command = 'wget -r -l1 -nd --no-parent -A.jp2 ' + localLog + localInputFile + localDir + remoteBaseURL
 	
-	                os.system(command)
-	
+	                #os.system(command)
+				for url in files_found:
+					if url.endswith('.jp2'):
+						if not url + '\n' in jp2list:
+							shutil.copy2(remote_location + url,local_keep + url)
+
 	                # Write the new updated database file
-	                jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
-	                f = open(dbSubdir + '/' + dbFileName,'w')
-	                f.writelines(jp2list)
-	                f.writelines(newlist)
-	                f.close()
+				jprint('Writing updated ' + dbSubdir + '/' + dbFileName)
+				f = open(dbSubdir + '/' + dbFileName,'w')
+				f.writelines(jp2list)
+				f.writelines(newlist)
+				f.close()
 	                # Absolutely ensure the correct permissions on all the files
-	                change2hv(local_keep)
+				change2hv(local_keep)
 	
 			#
 			# Moving the files from the download directory to the ingestion directory
 			#
 			# Create the moveTo directory
-			moveTo = ingest_storage + wave + '/' + yyyy + '/' + mm + '/' + dd + '/'
-	                try:
-				hvCreateSubdir(ingest_storage)
-				hvCreateSubdir(ingest_storage + wave)
-				hvCreateSubdir(ingest_storage + wave + '/' + yyyy)
-				hvCreateSubdir(ingest_storage + wave + '/' + yyyy + '/' + mm)
-				hvCreateSubdir(ingest_storage + wave + '/' + yyyy + '/' + mm + '/' + dd)
-	                except:
-	                        jprint('Ingest directory already exists: '+moveTo)
+				moveTo = ingest_storage + yyyy + '/' + mm + '/' + dd + '/' + wave + '/'
+				try:
+					hvCreateSubdir(ingest_storage + yyyy)
+					hvCreateSubdir(ingest_storage + yyyy + '/' + mm)
+					hvCreateSubdir(ingest_storage + yyyy + '/' + mm + '/' + dd)
+					hvCreateSubdir(ingest_storage + yyyy + '/' + mm + '/' + dd + '/' + wave)
+				except:
+					jprint('Ingest directory already exists: '+moveTo)
 	
 			# Read in the new filenames again
-	                f = open(logSubdir + '/' + newFileListName,'r')
-	                newlist = f.readlines()
-	                f.close()
-			jprint('New files ingested are as follows:')
-			for entry in newlist:
-				jprint(entry)
-	                # Move the new files to the ingest directory
-	                for name in newlist:
-	                        newFile = name[:-1]
-	                        if newFile.endswith('.jp2'):
-	                                shutil.copy2(local_keep + newFile,moveTo + newFile)
-					print moveTo, newFile
-					doJPIPencoding.doJPIPencoding(moveTo + newFile,nickname)
-					change2hv(moveTo + newFile)
+				f = open(logSubdir + '/' + newFileListName,'r')
+				newlist = f.readlines()
+				f.close()
+				jprint('New files ingested are as follows:')
+				for entry in newlist:
+					jprint(entry)
+	                # Copy the new files to the ingest directory, and then delete it
+					for name in newlist:
+						newFile = name[:-1]
+						if newFile.endswith('.jp2'):
+							shutil.copy2(local_keep + newFile,moveTo + newFile)
+							doJPIPencoding.doJPIPencoding(moveTo + newFile,'SOHO')
+							change2hv(moveTo + newFile)
+					#if os.path.exists(os.path.expanduser(local_keep + newFile)):
+					#	os.remove(local_keep + newFile)
+			else:
+				jprint('No new files found at ' + remote_location)
 		else:
-                	jprint('No new files found at ' + remote_location)
+			jprint('Directory does not exist: ' + remote_location)
+			newFilesCount = -1
 	except:
 		jprint('Problem opening connection to '+remote_location+'.  Continuing with loop.')
 	        newFilesCount = -1
@@ -339,6 +357,9 @@ def GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLo
 		saveout = sys.stdout
 		fsock = open(logSubdir + stdoutFileName, 'w')
 		sys.stdout = fsock
+		saveerr = sys.stderr
+		ferr = open(logSubdir + stderrFileName, 'w')
+		sys.stderr = ferr
 
 	# Get the data
 	jprint(' ')
@@ -357,6 +378,8 @@ def GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLo
 	if redirect:
 		sys.stdout = saveout
 		fsock.close()
+		sys.stderr = saveerr
+		ferr.close()
 
 	# Copy the most recent stdout file to some webspace.
 		shutil.copy(logSubdir + stdoutFileName, monitorLoc + stdoutLatestFileName)
@@ -369,8 +392,11 @@ def GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLo
 # root of where the data is
 #remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
 
-# HMI wavelength array - constant
-wavelength = ['magnetogram','continuum']
+# SOHO instruments
+instruments = ['COR1-A','COR2-A','EUVI-A','COR1-B','COR2-B','EUVI-B']
+
+measurements = {'EUVI-A':['171','195','304','284'],'COR1-A':['white-light'],'COR2-A':['white-light'],\
+		'EUVI-B':['171','195','304','284'],'COR1-B':['white-light'],'COR2-B':['white-light']}
 
 
 #
@@ -435,6 +461,8 @@ else:
 		count = 0
 		while 1:
 			count = count + 1
+			print '********************'
+			print count
 			gotNewData = False
 			for daysBack in range(daysBackMin,daysBackMax):
 
@@ -444,25 +472,29 @@ else:
 				mm = time.strftime('%m',time.gmtime(Y))
 				dd = time.strftime('%d',time.gmtime(Y))
 
-				# Go through each measurement
-				for wave in wavelength:
-					nfc = GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = count,redirect = redirect,daysBack = daysBack)
-					if nfc > 0:
-						gotNewData = True
+				# Go through each instrument and measurement
+				for nickname in instruments:
+					wavelength = measurements[nickname]
+					for wave in wavelength:
+						nfc = GetJP2(nickname,yyyy,mm,dd,wave,remote_root+nickname+'/',local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = count,redirect = redirect,daysBack = daysBack)
+				if nfc > 0:
+					gotNewData = True
 			if not gotNewData:
-				time.sleep(sleep)
+		       		time.sleep(sleep)
 
 	else:
-		while 1:
-			getThisDay = time.mktime((int(startDate[0]),int(startDate[1]),int(startDate[2]),0, 0, 0, 0, 0, 0))
-			finalDay = time.mktime((int(endDate[0]),int(endDate[1]),int(endDate[2]),0, 0, 0, 0, 0, 0))
-			while getThisDay <= finalDay:
-				yyyy = time.strftime('%Y',time.gmtime(getThisDay))
-				mm = time.strftime('%m',time.gmtime(getThisDay))
-				dd = time.strftime('%d',time.gmtime(getThisDay))
-				if waveI == '-1':
+		getThisDay = time.mktime((int(startDate[0]),int(startDate[1]),int(startDate[2]),0, 0, 0, 0, 0, 0))
+		finalDay = time.mktime((int(endDate[0]),int(endDate[1]),int(endDate[2]),0, 0, 0, 0, 0, 0))
+		while getThisDay <= finalDay:
+			yyyy = time.strftime('%Y',time.gmtime(getThisDay))
+			mm = time.strftime('%m',time.gmtime(getThisDay))
+			dd = time.strftime('%d',time.gmtime(getThisDay))
+			if waveI == '-1':
+				# Go through each instrument and measurement
+				for nickname in instruments:
+					wavelength = measurements[nickname]
 					for wave in wavelength:
-						nfc = GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
-				else:
-					nfc = GetJP2(nickname,yyyy,mm,dd,waveI,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
-				getThisDay = getThisDay + 24*60*60
+						nfc = GetJP2(nickname,yyyy,mm,dd,wave,remote_root+nickname+'/',local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
+			else:
+				nfc = GetJP2(nickname,yyyy,mm,dd,waveI,remote_root,local_root,ingest_root,monitorLoc,minJP2SizeInBytes,count = 0,redirect = redirect)
+			getThisDay = getThisDay + 24*60*60

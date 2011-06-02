@@ -164,6 +164,10 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
               b[i] + ' ' + $
               transfer_details, result,error, exit_status = exit_status
         transfer_results = [transfer_results,' ','-- start --',filenumber + ' out of ' + filetotal,b[i],systime(0),result,error,'exit_status='+trim(exit_status)]
+        print, tcmd + $
+              ' -Ravxz --exclude "*.DS_Store" ' + $
+              b[i] + ' ' + $
+              transfer_details
 ;
 ; Remove files ONLY if there has been an error-free transfer
 ;
