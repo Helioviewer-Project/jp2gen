@@ -1,0 +1,149 @@
+;+
+; Project     :	STEREO - SSC
+;
+; Name        :	SSC_BEACON_SECCHI
+;
+; Purpose     :	Process SECCHI beacon images for the web
+;
+; Category    :	SECCHI, Quicklook
+;
+; Explanation :	This procedure scans once a minute for new SECCHI beacon
+;               FITS files.  If any are found, then they are processed into
+;               JPEG images, and a new beacon web page is generated.
+;
+; Syntax      :	SSC_BEACON_SECCHI
+;
+; Examples    :	SSC_BEACON_SECCHI, /CONTINUOUS
+;
+; Inputs      :	None
+;
+; Opt. Inputs :	None.
+;
+; Outputs     :	None.
+;
+; Opt. Outputs:	None.
+;
+; Keywords    :	NDAYS      = Number of days to look back for new SECCHI beacon
+;                            files.  The default is 1.
+;
+;               CONTINUOUS = If set, the program will wait 60 seconds and then
+;                            restart itself.  This is the normal mode of
+;                            operation.
+;
+;               WAIT_TIME  = The number of seconds to wait before restarting in
+;                            continuous operations.  The default is 60 seconds.
+;
+; Env. Vars.  :	STEREO_BEACON_DATA = Top directory of beacon data
+;
+;               STEREO_BROWSE      = Top directory of browse pages
+;
+;               STEREO_BEACON_HTML = Location of beacon web pages
+;
+; Calls       :	DELVARX, CONCAT_DIR, BREAK_FILE, IS_FITS, 
+;               SSC_BEACON_SECCHI_HTML, SSC_BROWSE_SECCHI_JPEG
+;
+; Common      :	None.
+;
+; Restrictions:	See SSC_BEACON_SECCHI_JPEG for a list of images handled.
+;
+; Side effects:	The graphics device is set to the Z buffer
+;
+; Prev. Hist. :	Partially based on EUVI_PRETTY by Jean-Pierre Wuelser
+;
+; History     :	Version 1, 08-Feb-2007, William Thompson, GSFC
+;               Version 2, 12-Feb-2007, WTT, rotate the image
+;               Version 3, 20-Feb-2007, WTT, added call to SCC_SECCHI_DIR_HTML
+;               Version 4, 21-Mar-2007, WTT, call SSC_BROWSE_SECCHI_JPEG
+;               Version 5, 01-Apr-2008, WTT, Sped up finding of files
+;
+; Contact     :	WTHOMPSON
+;-
+;
+pro ssc_beacon_secchi, ndays=ndays, continuous=continuous, $
+                       wait_time=wait_time, _extra=_extra
+;
+forward_function is_fits
+on_error, 2
+;
+;  Define default values for keyword parameters.
+;
+if n_elements(ndays) eq 0 then ndays = 1
+if n_elements(wait_time) eq 0 then wait_time = 60.
+;
+;  Get the environment variables used by this program.
+;
+beacon_data   = getenv('STEREO_BEACON_DATA')
+stereo_browse = getenv('STEREO_BROWSE')
+;
+;  Iteration start point.  The program returns here 60 seconds after the end of
+;  each proceeding iteration.
+;
+start:
+delvarx, processed_dates
+;
+;  Step through each spacecraft.
+;
+sc = ['ahead','behind']
+type = ['cal','img','seq']
+tel = ['cor1','cor2','euvi','hi_1','hi_2']
+for isc = 0,1 do begin
+;
+;  Find all FITS files created within the last day.
+;
+    path = concat_dir(beacon_data, sc[isc])
+    path = concat_dir(path, 'secchi')
+    files = ''
+    for itype = 0,n_elements(type)-1 do begin
+        typepath = concat_dir(path, type[itype])
+        if file_exist(typepath) then for itel = 0,n_elements(tel)-1 do begin
+            telpath = concat_dir(typepath, tel[itel])
+            if file_exist(telpath) then begin
+                spawn, 'find ' + telpath + ' -name 2\* -maxdepth 1 -mtime -' +$
+                  ntrim(ndays), daypath
+                if daypath[0] ne '' then $
+                  for idate = 0,n_elements(daypath)-1 do begin
+                    spawn, 'find ' + daypath[idate] + ' -name \*.fts -mtime -' + $
+                      ntrim(ndays), dfiles
+                    if dfiles[0] ne '' then if files[0] eq '' then $
+                      files = dfiles else files = [files, dfiles]
+                endfor
+            endif
+        endfor
+    endfor
+    if files[0] ne '' then begin
+        break_file, files, disk, dir, names
+;
+;  Step through the files.
+;
+        for ifile = 0,n_elements(files)-1 do $
+          if is_fits(files[ifile]) then begin
+            ssc_browse_secchi_jpeg, files[ifile], names[ifile], sc[isc], $
+              stereo_browse, sdate, /beacon
+;
+;  Collect a list of all dates that were processed.
+;
+            if sdate ne '' then begin
+                if n_elements(processed_dates) eq 0 then $
+                  processed_dates = sdate else begin
+                    w = where(processed_dates eq sdate, count)
+                    if count eq 0 then processed_dates = $
+                      [processed_dates, sdate]
+                endelse
+            endif
+        endif                   ;File is valid FITS, with data
+    endif                       ;New files were found
+endfor                          ;isc
+;
+;  Make a page containing the latest images.
+;
+if n_elements(processed_dates) gt 0 then ssc_beacon_secchi_html, _extra=_extra
+;
+;  If the /CONTINUOUS flag was set, then wait 60 seconds and go back to the
+;  start.
+;
+if keyword_set(continuous) then begin
+    wait, wait_time
+    goto, start
+endif
+;
+end

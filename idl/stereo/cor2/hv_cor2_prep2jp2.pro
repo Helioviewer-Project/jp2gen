@@ -48,12 +48,21 @@
 ; Prev. Hist. :	None.
 ;
 ; History     :	Version 1, 22-Dec-2010, William Thompson, GSFC
+;               08-Apr-2011, Jack Ireland, GSFC - commented out
+;                                                 Bill's code
+;                                                 to ensure CRVAL* are
+;                                                 all zero due to
+;                                                 changes in the
+;                                                 plotting code in the
+;                                                 Helioviewer Project
+;                                                 clients.
 ;
 ; Contact     :	WTHOMPSON
 ;-
 ;
 pro hv_cor2_prep2jp2, filename, jp2_filename=jp2_filename, $
-                      already_written=already_written, overwrite=overwrite
+                      already_written=already_written, overwrite=overwrite,$
+                      recalculate_crpix = recalculate_crpix
 ;
 ;  g = HVS_GEN()
 ;
@@ -117,17 +126,19 @@ pro hv_cor2_prep2jp2, filename, jp2_filename=jp2_filename, $
      image = bytscl(image, min=amin, max=amax, /nan)
 ;
 ;  Recalculate CRPIX* so that the CRVAL* values are zero.
+;  This is a temporary fix so that STEREO images work with the current
+;  image positioning algorithms of hv.org and JHV.
 ;
-;
-; 2011/05/26 - shouldn't need to do this now with the new
-;              plotting routine of hv.org
-;
-;     wcs = fitshead2wcs(header)
-;     center = wcs_get_pixel(wcs, [0,0])
-;     header.crpix1 = center[0]
-;     header.crpix2 = center[1]
-;     header.crval1 = 0
-;     header.crval2 = 0
+  if keyword_set(recalculate_crpix) then begin
+     if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
+        wcs = fitshead2wcs(header)
+        center = wcs_get_pixel(wcs, [0,0])
+        header.crpix1 = center[0]
+        header.crpix2 = center[1]
+        header.crval1 = 0
+        header.crval2 = 0
+     endif
+  endif
 ;
 ;  Create the HVS structure.  For polarization sequences, the filename used is
 ;  the first in the series.

@@ -47,6 +47,8 @@ details = {measurement: 'white-light', $
            n_layers: 8, $
            idl_bitdepth: 8, $
            bit_rate: [0.5, 0.01]}
+details = replicate(details,2)
+details.measurement = ['white-light','beacon-white-light']
 ;
 ;  Define the info structure.
 ;

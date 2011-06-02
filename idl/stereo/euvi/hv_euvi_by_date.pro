@@ -57,13 +57,23 @@
 ; Prev. Hist. :	None.
 ;
 ; History     :	Version 1, 22-Dec-2010, William Thompson, GSFC
+;               08-Apr-2011, Jack Ireland, GSFC, added a prepped data
+;               return function
 ;
 ; Contact     :	WTHOMPSON
 ;-
 ;
 pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
-                     copy2outgoing = copy2outgoing
+                     copy2outgoing = copy2outgoing,recalculate_crpix = recalculate_crpix
   on_error, 2
+;
+; General variables
+;
+  g = HVS_GEN()
+;
+; Prepped data - default is no prepped data
+;
+  prepped = [g.MinusOneString]
   progname = 'hv_euvi_by_date'
 ;
 ;  Check that the date is valid.
@@ -97,7 +107,7 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;  Get the catalog of EUVI image files.
 ;
      cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='euvi', $
-                            source='lz', type='img', /check)
+                           source='lz', type='img', /check)
      if datatype(cat,1) eq 'Structure' then begin
 ;
 ;  Filter out beacon images, and optionally special event images.
@@ -117,7 +127,7 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
               if filename ne '' and file_exist(filename) then begin
                  already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
                  if not(already_written) and file_exist(filename) then begin
-                    hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
+                    hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
                     if firsttimeflag then begin
                        prepped = [jp2_filename]
                        firsttimeflag = 0
