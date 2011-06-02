@@ -67,7 +67,6 @@ pro hv_cor1_prep2jp2, filename, jp2_filename=jp2_filename, $
   image = bytscl(sqrt(sigrange(image,fraction=.995)), min=0)
 ;
 ;  Recalculate CRPIX* so that the CRVAL* values are zero.
-;
 ; 2011/05/26 - shouldn't need to do this now with the new
 ;              plotting routine of hv.org
 ;
