@@ -80,6 +80,7 @@ endif
 ;  This is a temporary fix so that STEREO images work with the current
 ;  image positioning algorithms of hv.org and JHV.
 ;
+print,header.crval1,header.crval2
   if keyword_set(recalculate_crpix) then begin
      if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
         wcs = fitshead2wcs(header)

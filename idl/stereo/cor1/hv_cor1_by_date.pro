@@ -74,7 +74,8 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;
 ; Prepped data - default is no prepped data
 ;
-  prepped = [g.MinusOneString]
+;  prepped = [g.MinusOneString]
+;  first
 ;
 ;  Check that the date is valid.
 ;
@@ -111,12 +112,12 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
           already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cat[*,ifile].filename)
           if not(already_written) then begin
              hv_cor1_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
-             if firsttimeflag then begin
-                prepped = [jp2_filename]
-                firsttimeflag = 0
-             endif else begin
-                prepped = [prepped,jp2_filename]
-             endelse
+             ;if firsttimeflag then begin
+             ;   prepped = [jp2_filename]
+             ;   firsttimeflag = 0
+             ;endif else begin
+             ;   prepped = [prepped,jp2_filename]
+             ;endelse
              if keyword_set(copy2outgoing) then begin
                 HV_COPY2OUTGOING,[jp2_filename]
              endif
