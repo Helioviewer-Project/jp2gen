@@ -65,7 +65,7 @@
 ;-
 ;
 pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
-                     copy2outgoing = copy2outgoing
+                     copy2outgoing = copy2outgoing,recalculate_crpix = recalculate_crpix
   on_error, 2
 ;
 ; General variables
@@ -116,7 +116,7 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
         for ifile = 0,count-1 do begin
            already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cat[*,ifile].filename)
            if not(already_written) then begin
-              hv_cor2_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename
+              hv_cor2_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
               if firsttimeflag then begin
                  prepped = [jp2_filename]
                  firsttimeflag = 0
@@ -175,7 +175,7 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
               if filename ne '' then begin
                  already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
                  if not(already_written) then begin
-                    hv_cor2_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
+                    hv_cor2_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
                     if firsttimeflag then begin
                        prepped = [jp2_filename]
                        firsttimeflag = 0

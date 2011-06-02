@@ -64,7 +64,7 @@
 ;-
 ;
 pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
-                     copy2outgoing = copy2outgoing
+                     copy2outgoing = copy2outgoing,recalculate_crpix = recalculate_crpix
   on_error, 2
 ;
 ; General variables
@@ -127,7 +127,7 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
               if filename ne '' and file_exist(filename) then begin
                  already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
                  if not(already_written) and file_exist(filename) then begin
-                    hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
+                    hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
                     if firsttimeflag then begin
                        prepped = [jp2_filename]
                        firsttimeflag = 0

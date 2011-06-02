@@ -31,15 +31,15 @@ PRO HV_SECCHI_AUTO,ndaysBack = ndaysBack, $                      ; date to end a
 
         if keyword_set(cor1) then begin 
            print,systime() + ': ' + progname + ': COR1'
-          HV_COR1_BY_DATE,date, copy2outgoing = copy2outgoing
+          HV_COR1_BY_DATE,date, copy2outgoing = copy2outgoing,/recalculate_crpix
         endif
         if keyword_set(cor2) then begin
            print,systime() + ': ' + progname + ': COR2'
-           HV_COR2_BY_DATE,date, copy2outgoing = copy2outgoing
+           HV_COR2_BY_DATE,date, copy2outgoing = copy2outgoing,/recalculate_crpix
         endif
         if keyword_set(euvi) then begin
            print,systime() + ': ' + progname + ': EUVI'
-           HV_EUVI_BY_DATE,date, copy2outgoing = copy2outgoing
+           HV_EUVI_BY_DATE,date, copy2outgoing = copy2outgoing,/recalculate_crpix
         endif
      endfor
 ;

@@ -56,7 +56,8 @@
 ;-
 ;
 pro hv_euvi_prep2jp2, filename, jp2_filename=jp2_filename, $
-                      already_written=already_written, overwrite=overwrite
+                      already_written=already_written, overwrite=overwrite,$
+                      recalculate_crpix = recalculate_crpix
 ;
 ;  Call SECCHI_PREP to prepare the image for display.
 ;
@@ -75,17 +76,20 @@ if header.wavelnth eq 171 then begin
    image = hv_scc_bytscl(image, header)
 endif
 ;
-; 2011/05/26 - shouldn't need to do this now with the new
-;              plotting routine of hv.org
+;  Recalculate CRPIX* so that the CRVAL* values are zero.
+;  This is a temporary fix so that STEREO images work with the current
+;  image positioning algorithms of hv.org and JHV.
 ;
-;if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
-;    wcs = fitshead2wcs(header)
-;    center = wcs_get_pixel(wcs, [0,0])
-;    header.crpix1 = center[0]
-;    header.crpix2 = center[1]
-;    header.crval1 = 0
-;    header.crval2 = 0
-;endif
+  if keyword_set(recalculate_crpix) then begin
+     if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
+        wcs = fitshead2wcs(header)
+        center = wcs_get_pixel(wcs, [0,0])
+        header.crpix1 = center[0]
+        header.crpix2 = center[1]
+        header.crval1 = 0
+        header.crval2 = 0
+     endif
+  endif
 ;
 ;  Determine the spacecraft, and get the details structure.
 ;
