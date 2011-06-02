@@ -64,14 +64,9 @@
 ; Contact     :	WTHOMPSON
 ;-
 ;
-<<<<<<< TREE
-pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, prepped = prepped
-=======
 pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
                      copy2outgoing = copy2outgoing
->>>>>>> MERGE-SOURCE
   on_error, 2
-<<<<<<< TREE
 ;
 ; General variables
 ;
@@ -80,14 +75,12 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ; Prepped data - default is no prepped data
 ;
   prepped = [g.MinusOneString]
-=======
   progname = 'hv_cor2_by_date'
 ;
 ; First time that a non-zero file is found
 ;
   firsttimeflag = 1
   prepped = -1
->>>>>>> MERGE-SOURCE
 ;
 ;  Check that the date is valid.
 ;
@@ -105,8 +98,6 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
   sc = ['ahead', 'behind']
   for isc=0,1 do begin
-<<<<<<< TREE
-=======
 ;
 ;  Reload the STEREO SPICE files.  We do this to make sure we have the
 ;  very latest information that is relevant to the data we are looking
@@ -114,7 +105,6 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;  to run through all the images from one spacecraft.
 ;
      load_stereo_spice,/reload
->>>>>>> MERGE-SOURCE
 ;
 ;  Get the catalog of COR2 polarization sequence files.
 ;
@@ -122,10 +112,6 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
 ;  Process the sequences one-by-one.
 ;
-<<<<<<< TREE
-     if count gt 0 then for ifile = 0,count-1 do $
-        hv_cor2_prep2jp2, cat[*,ifile].filename, overwrite=overwrite
-=======
      if count gt 0 then begin
         for ifile = 0,count-1 do begin
            already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cat[*,ifile].filename)
@@ -145,7 +131,6 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
            endelse
         endfor
      endif
->>>>>>> MERGE-SOURCE
 ;
 ;  Get the catalog of COR2 double exposure files.
 ;
@@ -188,10 +173,6 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
            for ifile = 0,count-1 do begin
               filename = sccfindfits(cat[ifile].filename)
               if filename ne '' then begin
-<<<<<<< TREE
-                 hv_cor2_prep2jp2, filename, overwrite=overwrite , jp2_filename = jp2_filename
-                 prepped = [prepped,jp2_filename]
-=======
                  already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
                  if not(already_written) then begin
                     hv_cor2_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
@@ -207,14 +188,8 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
                  endif else begin
                     print,systime() + ': '+ progname +  ': File ' + cat[ifile].filename + ' not (yet) found.'
                  endelse
->>>>>>> MERGE-SOURCE
               endif else begin
-<<<<<<< TREE
-                 print, 'File ' + cat[ifile].filename + ' not (yet) found'
-                 prepped = [prepped,g.MinusOneString]
-=======
                  print,systime() + ': '+ progname + ': file already written, skipping processing '+filename
->>>>>>> MERGE-SOURCE
               endelse
            endfor
         endif

@@ -64,9 +64,9 @@
 ; Contact     :	WTHOMPSON
 ;-
 ;
-<<<<<<< TREE
-pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, prepped = prepped
+pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy2outgoing = copy2outgoing
   on_error, 2
+  progname = 'hv_cor1_by_date'
 ;
 ; General variables
 ;
@@ -75,17 +75,6 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, pre
 ; Prepped data - default is no prepped data
 ;
   prepped = [g.MinusOneString]
-=======
-pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy2outgoing = copy2outgoing
-on_error, 2
-progname = 'hv_cor1_by_date'
-;
-; First time that a non-zero file is found
-;
-firsttimeflag = 1
-prepped = -1
-;
->>>>>>> MERGE-SOURCE
 ;
 ;  Check that the date is valid.
 ;
@@ -117,14 +106,6 @@ prepped = -1
 ;
 ;  Process the sequences one-by-one.
 ;
-<<<<<<< TREE
-     if count gt 0 then begin
-        for ifile = 0,count-1 do begin
-           hv_cor1_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename
-           prepped = [prepped,jp2_filename]
-        endfor
-     endif
-=======
     if count gt 0 then begin
        for ifile = 0,count-1 do begin
           already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cat[*,ifile].filename)
@@ -144,7 +125,6 @@ prepped = -1
           endelse
        endfor
     endif
->>>>>>> MERGE-SOURCE
 ;
 ;  Code for processing total-brightness-only images would go here.
 ;

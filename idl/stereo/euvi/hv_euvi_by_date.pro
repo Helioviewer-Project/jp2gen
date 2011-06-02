@@ -63,14 +63,9 @@
 ; Contact     :	WTHOMPSON
 ;-
 ;
-<<<<<<< TREE
-pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite, prepped = prepped
-=======
 pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
                      copy2outgoing = copy2outgoing
->>>>>>> MERGE-SOURCE
   on_error, 2
-<<<<<<< TREE
 ;
 ; General variables
 ;
@@ -79,9 +74,7 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ; Prepped data - default is no prepped data
 ;
   prepped = [g.MinusOneString]
-=======
   progname = 'hv_euvi_by_date'
->>>>>>> MERGE-SOURCE
 ;
 ;  Check that the date is valid.
 ;
@@ -94,8 +87,6 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;  Step through the STEREO spacecraft
 ;
   sc = ['ahead', 'behind']
-<<<<<<< TREE
-=======
 ;
 ; First time that a non-zero file is found
 ;
@@ -104,10 +95,7 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
 ;
 ;
->>>>>>> MERGE-SOURCE
   for isc=0,1 do begin
-<<<<<<< TREE
-=======
 ;
 ;  Reload the STEREO SPICE files.  We do this to make sure we have the
 ;  very latest information that is relevant to the data we are looking
@@ -115,16 +103,11 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;  to run through all the images from one spacecraft.
 ;
      load_stereo_spice,/reload
->>>>>>> MERGE-SOURCE
 ;
 ;  Get the catalog of EUVI image files.
 ;
      cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='euvi', $
-<<<<<<< TREE
                            source='lz', type='img', /check)
-=======
-                            source='lz', type='img', /check)
->>>>>>> MERGE-SOURCE
      if datatype(cat,1) eq 'Structure' then begin
 ;
 ;  Filter out beacon images, and optionally special event images.
@@ -141,10 +124,6 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
            cat = cat[w]
            for ifile = 0,count-1 do begin
               filename = sccfindfits(cat[ifile].filename)
-<<<<<<< TREE
-              if filename ne '' then begin
-                 hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename 
-=======
               if filename ne '' and file_exist(filename) then begin
                  already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
                  if not(already_written) and file_exist(filename) then begin
@@ -161,26 +140,13 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
                  endif else begin
                     print,systime() + ': '+ progname + ': file already written. Skipping processing of '+filename+'.'
                  endelse
->>>>>>> MERGE-SOURCE
               endif else begin
-<<<<<<< TREE
-                 print, 'File ' + cat[ifile].filename + ' not (yet) found'
-                 jp2_filename = g.MinusOneString
-=======
                  print,systime() + ': '+ progname +  ': File ' + cat[ifile].filename + ' not (yet) found.'
->>>>>>> MERGE-SOURCE
               endelse
-<<<<<<< TREE
-              prepped = [prepped,jp2_filename]
-=======
->>>>>>> MERGE-SOURCE
            endfor
-<<<<<<< TREE
-=======
            ;if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin
            ;   HV_COPY2OUTGOING,prepped
            ;endif
->>>>>>> MERGE-SOURCE
         endif
      endif
   endfor
