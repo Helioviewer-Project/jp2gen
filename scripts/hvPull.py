@@ -24,7 +24,9 @@ def Config2Dictionary(Config):
 
 
 class Config:
-
+    """Create a configuration object that stores all the information
+    we need to locate and store the data from the repository.
+    """
     def __init__(self,value):
         self.filename = value
         for v in value:
@@ -42,66 +44,70 @@ class Config:
                 del rD['Where']
                 for key in rD.keys():
                     rD[key]['minimumFileSize'] = eval(rD[key]['minimumFileSize'])
+                    rD[key]['measurements'] = eval(rD[key]['measurements'])
                     self.observations = rD
 
             if self.type == 'local':
-                self.staging = rD['Operation']['staging']
-                self.ingestion = rD['Operation']['ingestion']
-                self.wait = rD['Operation']['wait']
-                self.daysBackMin = rD['Operation']['daysBackMin']
-                self.daysBackMax = rD['Operation']['daysBackMax']
-                self.DBfilename = rD['Operation']['DBfilename']
+                self.staging = os.path.expanduser(rD['Operation']['staging']) + os.sep
+                self.ingestion = os.path.expanduser(rD['Operation']['ingestion']) + os.sep
+                self.wait = eval(rD['Operation']['wait'])
+                self.daysBackMin = eval(rD['Operation']['daysBackMin'])
+                self.daysBackMax = eval(rD['Operation']['daysBackMax'])
+                self.DBfilename = rD['Operation']['DBfilename']	
+                self.log = self.staging + os.sep + \
+                    'log' + os.sep + \
+                    DateStructure(datetime.datetime.now()) + os.sep
+                self.db  = self.staging + os.sep + 'db'  + os.sep
 
-def Directories(repository,local,rootDate):
+def Directories(info,rootDate):
+    """Go through all the nicknames and dates and create subdirectories"""
     dirs = []
-    for daysBack in range(local['Operation']['daysBackMin'],local['Operation']['daysBackMax']):
+    for daysBack in range(info.daysBackMin,info.daysBackMax):
         dt = rootDate - datetime.timedelta(days=daysBack)
-        dirs.append( DirectoriesForAllMeasurements(repository,dt) )
+        dirs.append( DirectoriesForAllNicknames(info,dt) )
     return dirs
 
-def DirectoriesForAllMeasurements(repository,dt):
+def DirectoriesForAllNicknames(info,dt):
+    """Go through all the nicknames and create subdirectories"""
     dirs = []
-    for measurement in repository['Observations']['measurements']:
-        dirs.append(Directory(repository,dt,measurement))
+    nicknames = info.observations.keys()
+    print(nicknames)
+    for nickname in nicknames:
+        dirs.append(DirectoriesForAllMeasurements(nickname,info,dt))
+    return dirs
+
+def DirectoriesForAllMeasurements(nickname,info,dt):
+    """go through all the measurements for a nickname and create a subdirectory"""
+    dirs = []
+    print info.observations[nickname]
+    for measurement in info.observations[nickname]['measurements']:
+        dirs.append(Directory(measurement,nickname,dt))
     return dirs
     
-def Directory(repository,dt,measurement):
-    instrument = repository['Observations']['instrument'] + os.sep
+def Directory(measurement,nickname,dt):
+    """creates the storage directory structure"""
     date = DateStructure(dt)
-    return instrument + date + os.sep + measurement
+    return nickname + os.sep + date + os.sep + measurement
 
 def DateStructure(dt):
+    """ formats the date as a directory structure"""
     if os.name == 'posix':
         return dt.strftime('%Y/%m/%d')
     if os.name == 'nt':
         return dt.strftime('%Y\%m\%d')
 
 # createTimeStamp
-def CreateTimeStamp(string=True):
-	""" Creates a time-stamp to be used by all log files. """
-	now = datetime.datetime.now()
-        timestamp = now.strftime('%Y%m%d_%H%M%S')
-        nowDirectory = DateStructure(now)
-        if string:
-            return timestamp
-        else:
-            return timestamp, nowDirectory, now
+def CreateTimeStamp():
+    """ Creates a time-stamp to be used by all log files. """
+    return now.strftime('%Y%m%d_%H%M%S')
 
-def DefineStaging(d,local):
-    stagingRoot = os.path.expanduser(local['Operation']['staging'])
-    staging = stagingRoot + 'jp2' + os.sep + d
+def DefineStaging(d,info):
+    staging = info.staging + 'jp2' + os.sep + d + os.sep
     return staging
 
-def DefineIngestion(d,local):
-    ingestionRoot = os.path.expanduser(local['Operation']['ingestion'])
-    ingestion = ingestionRoot + 'jp2' + os.sep + d
+def DefineIngestion(d,info):
+    ingestion = info.ingestion + 'jp2' + os.sep + d + os.sep
     return ingestion
-
-def DefineLog(local):
-    stagingRoot = os.path.expanduser(local['Operation']['staging'])
-    timestamp, nowDirectory, now = CreateTimeStamp(string=False)
-    log = stagingRoot + 'log' + os.sep + nowDirectory + os.sep
-    return log
 
 def DefineQuarantine(d,local):
     stagingRoot = os.path.expanduser(local['Operation']['staging'])
@@ -114,33 +120,30 @@ def DefineRemote(d,repository):
     location = locationRoot + d
     return location
 
-def CreateLocalSubdirectories(d,local):
-    staging = DefineStaging(d,local)
+def CreateLocalSubdirectories(d,info):
+    staging = DefineStaging(d,info)
     if not os.path.exists(staging):
         os.makedirs(staging)
 
-    ingestion = DefineIngestion(d,local)
+    ingestion = DefineIngestion(d,info)
     if not os.path.exists(ingestion):
         os.makedirs(ingestion)
 
-    log = DefineLog(local)
-    if not os.path.exists(log):
-        os.makedirs(log)
+    if not os.path.exists(info.log):
+        os.makedirs(info.log)
     return staging,ingestion
 
-def DefineStderr(local,timeStampString):
-    log = DefineLog(local)
-    if not os.path.exists(log):
-        os.makedirs(log)
+def DefineStderr(info,timeStampString):
+    if not os.path.exists(info.log):
+        os.makedirs(info.log)
     errFilename = timeStampString + '.stderr.log'
-    return log,errFilename
+    return errFilename
 
-def DefineStdout(local,timeStampString):
-    log = DefineLog(local)
-    if not os.path.exists(log):
-        os.makedirs(log)
+def DefineStdout(info,timeStampString):
+    if not os.path.exists(info.log):
+        os.makedirs(info.log)
     stdFilename = timeStampString + '.stdout.log'
-    return log,stdFilename
+    return stdFilename
     
 def StageDataFromRepository(d,local,repository):
     remoteLocation =  DefineRemote(d,repository)
@@ -296,15 +299,15 @@ class JP2:
         return self.datetime
 
 
-def Get(repository,local,directories):
+def Get(info,directories):
     # Open the standard error file
     timeStampString = CreateTimeStamp()
-    err,errFilename = DefineStderr(local,timeStampString)
-    out,outFilename = DefineStdout(local,timeStampString)
+    errFilename = DefineStderr(info,timeStampString)
+    outFilename = DefineStdout(info,timeStampString)
 
     global stderr,stdout
-    stderr = open(err + errFilename,'a')
-    stdout = open(out + outFilename,'a')
+    stderr = open(info.log + errFilename,'a')
+    stdout = open(info.log + outFilename,'a')
 
     # flatten the directories
     flatDirectories = [item for sublist in directories for item in sublist]
