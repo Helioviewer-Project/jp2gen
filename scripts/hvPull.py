@@ -1,4 +1,4 @@
-import ConfigParser,datetime,os,subprocess,sys
+import ConfigParser,datetime,os,subprocess,sys,itertools
 
 def ConfigSectionMap(Config,section):
     dict1 = {}
@@ -48,16 +48,17 @@ class Config:
                     self.observations = rD
 
             if self.type == 'local':
-                self.staging = os.path.expanduser(rD['Operation']['staging']) + os.sep
-                self.ingestion = os.path.expanduser(rD['Operation']['ingestion']) + os.sep
+                self.staging = os.path.expanduser(rD['Operation']['staging'])
+                self.ingestion = os.path.expanduser(rD['Operation']['ingestion'])
                 self.wait = eval(rD['Operation']['wait'])
                 self.daysBackMin = eval(rD['Operation']['daysBackMin'])
                 self.daysBackMax = eval(rD['Operation']['daysBackMax'])
                 self.DBfilename = rD['Operation']['DBfilename']	
-                self.log = self.staging + os.sep + \
+                self.log = self.staging + \
                     'log' + os.sep + \
                     DateStructure(datetime.datetime.now()) + os.sep
                 self.db  = self.staging + os.sep + 'db'  + os.sep
+                self.quarantine  = self.staging + os.sep + 'quarantine'  + os.sep
 
 def Directories(info,rootDate):
     """Go through all the nicknames and dates and create subdirectories"""
@@ -71,7 +72,6 @@ def DirectoriesForAllNicknames(info,dt):
     """Go through all the nicknames and create subdirectories"""
     dirs = []
     nicknames = info.observations.keys()
-    print(nicknames)
     for nickname in nicknames:
         dirs.append(DirectoriesForAllMeasurements(nickname,info,dt))
     return dirs
@@ -79,7 +79,6 @@ def DirectoriesForAllNicknames(info,dt):
 def DirectoriesForAllMeasurements(nickname,info,dt):
     """go through all the measurements for a nickname and create a subdirectory"""
     dirs = []
-    print info.observations[nickname]
     for measurement in info.observations[nickname]['measurements']:
         dirs.append(Directory(measurement,nickname,dt))
     return dirs
@@ -99,33 +98,26 @@ def DateStructure(dt):
 # createTimeStamp
 def CreateTimeStamp():
     """ Creates a time-stamp to be used by all log files. """
-    return now.strftime('%Y%m%d_%H%M%S')
+    return datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
 
-def DefineStaging(d,info):
-    staging = info.staging + 'jp2' + os.sep + d + os.sep
-    return staging
+def DefineStaging(directory,info):
+    return info.staging + 'jp2' + os.sep + directory + os.sep
 
-def DefineIngestion(d,info):
-    ingestion = info.ingestion + 'jp2' + os.sep + d + os.sep
-    return ingestion
+def DefineIngestion(directory,info):
+    return info.ingestion + 'jp2' + os.sep + directory + os.sep
 
-def DefineQuarantine(d,local):
-    stagingRoot = os.path.expanduser(local['Operation']['staging'])
-    timestamp, nowDirectory, now = CreateTimeStamp(string=False)
-    quarantine = stagingRoot + 'quarantine' + os.sep + nowDirectory + os.sep
-    return quarantine
+def DefineQuarantine(directory,info):
+    return info.quarantine + directory + os.sep
 
-def DefineRemote(d,repository):
-    locationRoot = repository['Remote']['location']
-    location = locationRoot + d
-    return location
+def DefineRemote(directory,info):
+    return info.location + directory  + os.sep
 
-def CreateLocalSubdirectories(d,info):
-    staging = DefineStaging(d,info)
+def CreateLocalSubdirectories(directory,info):
+    staging = DefineStaging(directory,info)
     if not os.path.exists(staging):
         os.makedirs(staging)
 
-    ingestion = DefineIngestion(d,info)
+    ingestion = DefineIngestion(directory,info)
     if not os.path.exists(ingestion):
         os.makedirs(ingestion)
 
@@ -145,12 +137,13 @@ def DefineStdout(info,timeStampString):
     stdFilename = timeStampString + '.stdout.log'
     return stdFilename
     
-def StageDataFromRepository(d,local,repository):
-    remoteLocation =  DefineRemote(d,repository)
-    staging = DefineStaging(d,local)
+def StageDataFromRepository(directory,info):
+    remoteLocation =  DefineRemote(directory,info)
+    staging = DefineStaging(directory,info)
+
     localDir = ' -P'+staging+ ' '
     command = 'wget'
-    argument = ' -r -l1 -nd -q --no-parent --timestamping -A.jp2 -R.html '+localDir+remoteLocation
+    argument = ' -v -r -l1 -nd --no-parent --timestamping -A.jp2 -R.html '+localDir+remoteLocation
 
     timeStampString = CreateTimeStamp()
     attempted = timeStampString + ': attempted command: '+command + argument+'\n'
@@ -215,11 +208,26 @@ def isFileGood(fullPathAndFilename,minimumFileSize,endsWith='.jp2'):
 def MoveFilesFromStagingIntoIngestionAndUpdateDB(newFilesList):
     pass
 
-def ClassifyNewFiles(candidates,acquired):
-    pass
+class JP2transport:
+    def __init__(self,value1,value2,value3):
+        self.begin = value1
+        self.end = value2
+        self.fileProblem = value3
+
+def ClassifyNewFiles(candidates,info):
+    good = []
+    bad =  []
+    for candidate in candidates:
+        isFileGoodDB, fileProblem = isFileGood(candidate,info.minimumFileSize)
+        JP2 = JP2(candidate)
+        if JP2.isFileGoodDB:
+            transport = JP2transport(candidate,info.ingestion + JP2.subdirectory,fileProblem)
+            good.append(transport)
+        else:
+            transport = JP2transport(candidate,info.quarantine + JP2.subdirectory,fileProblem)
+            bad.append(transport)
 
 def QuarantineAndUpdateDB(badFiles):
-    pass
 
 class JP2:
     def __init__(self,value):
@@ -260,7 +268,9 @@ class JP2:
         self.detector = obsParts[2]
         self.measurement = obsParts[3]
         self.nickname = nickname[self.observatory][self.instrument][self.detector]
-                                            
+
+        # where the file gets stored
+        self.subdirectory = Directory(self.measurement,self.nickname,self.datetime.date())
 
     def getNickname(self):
         return self.nickname
@@ -298,7 +308,6 @@ class JP2:
     def getDateTime(self):
         return self.datetime
 
-
 def Get(info,directories):
     # Open the standard error file
     timeStampString = CreateTimeStamp()
@@ -309,35 +318,35 @@ def Get(info,directories):
     stderr = open(info.log + errFilename,'a')
     stdout = open(info.log + outFilename,'a')
 
+    # Create a database if need be
+
     # flatten the directories
-    flatDirectories = [item for sublist in directories for item in sublist]
+    # flatDirectories = [item for sublist in directories for item in sublist]
+    # from http://stackoverflow.com/questions/406121/flattening-a-shallow-list-in-python
+    flatDirectories = list(itertools.chain(*list(itertools.chain(*directories))))
     # acquire data from the repository
-    for d in flatDirectories:
-        staging, ingestion = CreateLocalSubdirectories(d,local)
-        remoteLocation = StageDataFromRepository(d,local,repository)
+    for directory in flatDirectories:
+        # create the staging and ingestion directories
+        staging, ingestion = CreateLocalSubdirectories(directory,info)
+
+        # stage new data from the repository
+        StageDataFromRepository(directory,info)
+
+        # get a list of files in the staging directory
         fileList = ListFilesInStagingDirectory(staging)
 
         # at least one file found in the staging directory
         if len(fileList) > 0:
-            #alreadyInDB = hvdb.query()
-            goodNewFiles, badNewFiles = ClassifyNewFiles(fileList,alreadyInDB)
+            good, bad = ClassifyNewFiles(fileList,info)
 
             # at least one bad file
-            if len(badNewFiles) > 0:
-                # quarantine the bad files
-                QuarantineAndUpdateDB(badNewFiles)
-                # write information about quarantined files to stdout
-                for filename in badNewFiles:
-                    stdout.write(CreateTimeStamp() + ': quarantined '+ filename)
+            if len(bad) > 0:
+                # quarantine the bad files and update the database
+                MoveBadFilesToQuarantineAndUpdateDB(bad)
 
             # at least one goodfile
-            if len(goodFiles) > 0:
-                # move the good files, make sure the directory and file
-                # permissions are set correctly, and update database
-                MoveNewFilesFromStagingIntoIngestionAndUpdateDB(goodNewFiles)
-                # write information about good new files to stdout
-                for filename in goodNewFiles:
-                    stdout.write(CreateTimeStamp() + ': moved to ingestion '+ filename)
+            if len(good) > 0:
+                CopyNewFilesFromStagingIntoIngestionAndUpdateDB(good)
             else:
                 stdout.write(CreateTimeStamp() + ': no new files comparing database entries to '+remoteLocation)
         else:
