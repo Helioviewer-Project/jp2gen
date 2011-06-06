@@ -61,7 +61,7 @@ pro hv_euvi_prep2jp2, filename, jp2_filename=jp2_filename, $
 ;
 ;  Call SECCHI_PREP to prepare the image for display.
 ;
-secchi_prep, filename, header, image, /calimg_off, /rotate_on
+secchi_prep, filename, header, image, /calimg_off, /rotate_on,/color_on
 ;
 ;  Scale the image.
 ;
@@ -69,18 +69,20 @@ image = scc_bytscl(image, header)
 ;
 ;  Pass through the color table, and convert to greyscale.
 ;
-secchi_colors, 'euvi', header.wavelnth, red, green, blue
-image = round(0.3*red[image] + 0.59*green[image] + 0.11*blue[image]) 
-if header.wavelnth eq 171 then begin
-   secchi_prep, filename, header, image, /calimg_off, /rotate_on
-   image = hv_scc_bytscl(image, header)
-endif
-;
+; Try just passing the image
+; <<<< commented out June 6 2011
+;secchi_colors, 'euvi', header.wavelnth, red, green, blue
+;image = round(0.3*red[image] + 0.59*green[image] + 0.11*blue[image]) 
+;if header.wavelnth eq 171 then begin
+;   secchi_prep, filename, header, image, /calimg_off, /rotate_on
+;   image = hv_scc_bytscl(image, header)
+;endif
+; >>>>
 ;  Recalculate CRPIX* so that the CRVAL* values are zero.
 ;  This is a temporary fix so that STEREO images work with the current
 ;  image positioning algorithms of hv.org and JHV.
 ;
-print,header.crval1,header.crval2
+;print,header.crval1,header.crval2
   if keyword_set(recalculate_crpix) then begin
      if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
         wcs = fitshead2wcs(header)
