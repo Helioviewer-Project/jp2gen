@@ -88,13 +88,6 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
   sc = ['ahead', 'behind']
 ;
-; First time that a non-zero file is found
-;
-;  firsttimeflag = 1
-;  prepped = -1
-;
-;
-;
   for isc=0,1 do begin
 ;
 ;  Reload the STEREO SPICE files.  We do this to make sure we have the
@@ -103,11 +96,13 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;  to run through all the images from one spacecraft.
 ;
      load_stereo_spice,/reload
+     print,progname + ': examining STEREO-'+sc[isc]
 ;
 ;  Get the catalog of EUVI image files.
 ;
      cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='euvi', $
                            source='lz', type='img', /check)
+     print, progname + ': catalog datatype: ' + datatype(cat,1)
      if datatype(cat,1) eq 'Structure' then begin
 ;
 ;  Filter out beacon images, and optionally special event images.
@@ -128,12 +123,6 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
                  already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
                  if not(already_written) and file_exist(filename) then begin
                     hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
-                    ;if firsttimeflag then begin
-                    ;   prepped = [jp2_filename]
-                    ;   firsttimeflag = 0
-                    ;endif else begin
-                    ;   prepped = [prepped,jp2_filename]
-                    ;endelse
                     if keyword_set(copy2outgoing) then begin
                        HV_COPY2OUTGOING,[jp2_filename]
                     endif
@@ -144,9 +133,6 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
                  print,systime() + ': '+ progname +  ': File ' + cat[ifile].filename + ' not (yet) found.'
               endelse
            endfor
-           ;if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin
-           ;   HV_COPY2OUTGOING,prepped
-           ;endif
         endif
      endif
   endfor

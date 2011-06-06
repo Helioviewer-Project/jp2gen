@@ -100,6 +100,7 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;  to run through all the images from one spacecraft.
 ;
      load_stereo_spice,/reload
+     print,progname + ': examining STEREO-'+sc[isc]
 ;
 ;  Get the catalog of COR1 polarization sequence files.
 ;
@@ -110,19 +111,13 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
     if count gt 0 then begin
        for ifile = 0,count-1 do begin
           already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cat[*,ifile].filename)
-          if not(already_written) then begin
+          if not(already_written) and file_exist(filename) then begin
              hv_cor1_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
-             ;if firsttimeflag then begin
-             ;   prepped = [jp2_filename]
-             ;   firsttimeflag = 0
-             ;endif else begin
-             ;   prepped = [prepped,jp2_filename]
-             ;endelse
              if keyword_set(copy2outgoing) then begin
                 HV_COPY2OUTGOING,[jp2_filename]
              endif
           endif else begin
-             print,systime() + ': '+ progname + ': file already written, skipping processing of '+cat[*,ifile].filename
+             print,systime() + ': '+ progname + ': file already written, or file does not exist; skipping processing of '+cat[*,ifile].filename
           endelse
        endfor
     endif
