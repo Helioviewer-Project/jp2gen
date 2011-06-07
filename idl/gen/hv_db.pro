@@ -57,6 +57,7 @@ PRO HV_DB,hvs,check_fitsname_only = check_fitsname_only,$
 ; Message if a new database entry is being created
 ;
      if not(file_exist(dbloc + dbname)) then begin
+        already_written = 0
         print,'Starting new database file at '+ dbloc + dbname
         HV_WRT_ASCII,'This file first created ' + systime(0),dbloc + dbname,/append
         HV_WRT_ASCII,'fitsdir,fitsname,jp2dir,jp2name,time_of_writing,calling_program[optional],',dbloc + dbname,/append

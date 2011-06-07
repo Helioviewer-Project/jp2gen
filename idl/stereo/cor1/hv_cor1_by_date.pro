@@ -110,15 +110,23 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;
     if count gt 0 then begin
        for ifile = 0,count-1 do begin
-          already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cat[*,ifile].filename)
-          if not(already_written) and file_exist(filename) then begin
-             hv_cor1_prep2jp2, cat[*,ifile].filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
+          cor1Files = cat[*,ifile].filename
+          already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cor1Files)
+          nRequired = (size(cor1Files,/dim))[0]
+          cor1FilesExist = total( file_exist(cor1Files) ) eq nRequired
+          print,systime() + ': '+ progname + ': file '+trim(ifile+1) + ' out of '+trim(count)
+          if not(already_written) and cor1FilesExist then begin
+             hv_cor1_prep2jp2, cor1Files, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
              if keyword_set(copy2outgoing) then begin
                 HV_COPY2OUTGOING,[jp2_filename]
              endif
-          endif else begin
-             print,systime() + ': '+ progname + ': file already written, or file does not exist; skipping processing of '+cat[*,ifile].filename
-          endelse
+          endif
+          if already_written then begin
+             print,systime() + ': '+ progname + ': JP2 file already written; skipping further processing of '+cat[*,ifile].filename
+          endif
+          if not(already_written) and not(cor1FilesExist) then begin
+             print,systime() + ': '+ progname + ': JP2 file not written because source data does not (yet) exist; skipping processing of '+cor1Files
+          endif
        endfor
     endif
 ;
