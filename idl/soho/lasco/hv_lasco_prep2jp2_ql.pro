@@ -75,11 +75,12 @@ PRO HV_LASCO_PREP2JP2_QL,date_start = ds, $ ; date the automated processing star
 ; Get today's date in UT
 ;
      get_utc,utc,/ecs,/date_only
+     utc2date = anytim2cal( anytim2tai(utc)-2*24*60*60.0,form=11,/date )
      if (count eq 0) then begin
-        if not(keyword_set(ds)) then ds = utc
+        if not(keyword_set(ds)) then ds = utc2date
         if not(keyword_set(de)) then de = utc
      endif else begin
-        ds = utc
+        ds = utc2date
         de = utc
      endelse
      print,' '
