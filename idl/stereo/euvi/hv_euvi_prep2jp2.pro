@@ -43,16 +43,25 @@
 ; Prev. Hist. :	None.
 ;
 ; History     :	Version 1, 22-Dec-2010, William Thompson, GSFC
+;               08-Apr-2011, Jack Ireland, GSFC - commented out
+;                                                 Bill's code
+;                                                 to ensure CRVAL* are
+;                                                 all zero due to
+;                                                 changes in the
+;                                                 plotting code in the
+;                                                 Helioviewer Project
+;                                                 clients.
 ;
 ; Contact     :	WTHOMPSON
 ;-
 ;
 pro hv_euvi_prep2jp2, filename, jp2_filename=jp2_filename, $
-                      already_written=already_written, overwrite=overwrite
+                      already_written=already_written, overwrite=overwrite,$
+                      recalculate_crpix = recalculate_crpix
 ;
 ;  Call SECCHI_PREP to prepare the image for display.
 ;
-secchi_prep, filename, header, image, /calimg_off, /rotate_on
+secchi_prep, filename, header, image, /calimg_off, /rotate_on,/color_on
 ;
 ;  Scale the image.
 ;
@@ -60,19 +69,32 @@ image = scc_bytscl(image, header)
 ;
 ;  Pass through the color table, and convert to greyscale.
 ;
-secchi_colors, 'euvi', header.wavelnth, red, green, blue
-image = round(0.3*red[image] + 0.59*green[image] + 0.11*blue[image]) 
+; Try just passing the image
+; <<<< commented out June 6 2011
+;secchi_colors, 'euvi', header.wavelnth, red, green, blue
+;image = round(0.3*red[image] + 0.59*green[image] + 0.11*blue[image]) 
+;if header.wavelnth eq 171 then begin
+;   secchi_prep, filename, header, image, /calimg_off, /rotate_on
+;   image = hv_scc_bytscl(image, header)
+;endif
+; >>>>
+;  Recalculate CRPIX* so that the CRVAL* values are zero.
+;  This is a temporary fix so that STEREO images work with the current
+;  image positioning algorithms of hv.org and JHV.
 ;
-;  Make sure that the CRVAL* values are zero.
-;
-if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
-    wcs = fitshead2wcs(header)
-    center = wcs_get_pixel(wcs, [0,0])
-    header.crpix1 = center[0]
-    header.crpix2 = center[1]
-    header.crval1 = 0
-    header.crval2 = 0
-endif
+;print,header.crval1,header.crval2
+  if keyword_set(recalculate_crpix) then begin
+     if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
+        wcs = fitshead2wcs(header)
+        center = wcs_get_pixel(wcs, [0,0])
+        header.crpix1 = center[0]
+        header.crpix2 = center[1]
+        crvalOriginal = 'Original values: CRVAL1='+trim(header.crval1)+','+'CRVAL2='+trim(header.crval2)
+        header = add_tag(header,'Option recalculate_crpix was used to recalculate CRPIX* so that CRVAL* values are identically zero. '+crvalOriginal,'HV_SECCHI_COMMENT_CRVAL')
+        header.crval1 = 0
+        header.crval2 = 0
+     endif
+  endif
 ;
 ;  Determine the spacecraft, and get the details structure.
 ;

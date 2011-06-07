@@ -48,12 +48,21 @@
 ; Prev. Hist. :	None.
 ;
 ; History     :	Version 1, 22-Dec-2010, William Thompson, GSFC
+;               08-Apr-2011, Jack Ireland, GSFC - commented out
+;                                                 Bill's code
+;                                                 to ensure CRVAL* are
+;                                                 all zero due to
+;                                                 changes in the
+;                                                 plotting code in the
+;                                                 Helioviewer Project
+;                                                 clients.
 ;
 ; Contact     :	WTHOMPSON
 ;-
 ;
 pro hv_cor2_prep2jp2, filename, jp2_filename=jp2_filename, $
-                      already_written=already_written, overwrite=overwrite
+                      already_written=already_written, overwrite=overwrite,$
+                      recalculate_crpix = recalculate_crpix
 ;
 ;  g = HVS_GEN()
 ;
@@ -117,13 +126,21 @@ pro hv_cor2_prep2jp2, filename, jp2_filename=jp2_filename, $
      image = bytscl(image, min=amin, max=amax, /nan)
 ;
 ;  Recalculate CRPIX* so that the CRVAL* values are zero.
+;  This is a temporary fix so that STEREO images work with the current
+;  image positioning algorithms of hv.org and JHV.
 ;
-     wcs = fitshead2wcs(header)
-     center = wcs_get_pixel(wcs, [0,0])
-     header.crpix1 = center[0]
-     header.crpix2 = center[1]
-     header.crval1 = 0
-     header.crval2 = 0
+  if keyword_set(recalculate_crpix) then begin
+     if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
+        wcs = fitshead2wcs(header)
+        center = wcs_get_pixel(wcs, [0,0])
+        header.crpix1 = center[0]
+        header.crpix2 = center[1]
+        crvalOriginal = 'Original values: CRVAL1='+trim(header.crval1)+','+'CRVAL2='+trim(header.crval2)
+        header = add_tag(header,'Option recalculate_crpix was used to recalculate CRPIX* so that CRVAL* values are identically zero. '+crvalOriginal,'HV_SECCHI_COMMENT_CRVAL')
+        header.crval1 = 0
+        header.crval2 = 0
+     endif
+  endif
 ;
 ;  Create the HVS structure.  For polarization sequences, the filename used is
 ;  the first in the series.

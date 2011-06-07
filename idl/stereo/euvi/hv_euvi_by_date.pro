@@ -57,13 +57,24 @@
 ; Prev. Hist. :	None.
 ;
 ; History     :	Version 1, 22-Dec-2010, William Thompson, GSFC
+;               08-Apr-2011, Jack Ireland, GSFC, added a prepped data
+;               return function
 ;
 ; Contact     :	WTHOMPSON
 ;-
 ;
 pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
-                     copy2outgoing = copy2outgoing
+                     copy2outgoing = copy2outgoing,recalculate_crpix = recalculate_crpix
   on_error, 2
+;
+; General variables
+;
+  g = HVS_GEN()
+;
+; Prepped data - default is no prepped data
+;
+;  prepped = [g.MinusOneString]
+  progname = 'hv_euvi_by_date'
 ;
 ;  Check that the date is valid.
 ;
@@ -77,19 +88,21 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
   sc = ['ahead', 'behind']
 ;
-; First time that a non-zero file is found
-;
-  firsttimeflag = 1
-  prepped = -1
-;
-;
-;
   for isc=0,1 do begin
+;
+;  Reload the STEREO SPICE files.  We do this to make sure we have the
+;  very latest information that is relevant to the data we are looking
+;  at.  This is done once per spacecraft since it may take a long time
+;  to run through all the images from one spacecraft.
+;
+     load_stereo_spice,/reload
+     print,progname + ': examining STEREO-'+sc[isc]
 ;
 ;  Get the catalog of EUVI image files.
 ;
      cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='euvi', $
-                            source='lz', type='img', /check)
+                           source='lz', type='img', /check)
+     print, progname + ': catalog datatype: ' + datatype(cat,1)
      if datatype(cat,1) eq 'Structure' then begin
 ;
 ;  Filter out beacon images, and optionally special event images.
@@ -106,21 +119,20 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
            cat = cat[w]
            for ifile = 0,count-1 do begin
               filename = sccfindfits(cat[ifile].filename)
-              if filename ne '' then begin
-                 hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename
-                 if firsttimeflag then begin
-                    prepped = [jp2_filename]
-                    firsttimeflag = 0
+              if filename ne '' and file_exist(filename) then begin
+                 already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
+                 if not(already_written) and file_exist(filename) then begin
+                    hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
+                    if keyword_set(copy2outgoing) then begin
+                       HV_COPY2OUTGOING,[jp2_filename]
+                    endif
                  endif else begin
-                    prepped = [prepped,jp2_filename]
+                    print,systime() + ': '+ progname + ': file already written. Skipping processing of '+filename+'.'
                  endelse
               endif else begin
-                 print, 'File ' + cat[ifile].filename + ' not (yet) found'
+                 print,systime() + ': '+ progname +  ': File ' + cat[ifile].filename + ' not (yet) found.'
               endelse
            endfor
-           if NOT(firsttimeflag) AND keyword_set(copy2outgoing) then begin
-              HV_COPY2OUTGOING,prepped
-           endif
         endif
      endif
   endfor

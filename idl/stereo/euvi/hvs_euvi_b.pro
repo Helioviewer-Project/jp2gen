@@ -52,7 +52,7 @@ details.measurement = ['171','195','284','304']
 ;
 ;  Define the info structure.
 ;
-info = {observatory: 'STEREO_B', $
+info = {observatory: 'STEREO-B', $
         instrument: 'SECCHI', $
         detector: 'EUVI', $
         nickname: 'EUVI-B', $
