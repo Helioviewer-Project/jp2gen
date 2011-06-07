@@ -37,6 +37,7 @@ PRO HV_DB,hvs,check_fitsname_only = check_fitsname_only,$
         already_written = 0
      endelse
   ENDIF ELSE BEGIN
+     already_written = 0
      jp2loc = HV_WRITE_LIST_JP2_MKDIR(hvs,storage.jp2_location,/return_path_only)
      jp2name = HV_FILENAME_CONVENTION(hvs,/create)
 ;

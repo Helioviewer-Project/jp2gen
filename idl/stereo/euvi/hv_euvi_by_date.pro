@@ -120,6 +120,7 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
            for ifile = 0,count-1 do begin
               filename = sccfindfits(cat[ifile].filename)
               if filename ne '' and file_exist(filename) then begin
+                 print,systime() + ': '+ progname + ': file '+trim(ifile+1) + ' out of '+trim(count)
                  already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
                  if not(already_written) and file_exist(filename) then begin
                     hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
