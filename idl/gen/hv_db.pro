@@ -61,7 +61,9 @@ PRO HV_DB,hvs,check_fitsname_only = check_fitsname_only,$
         print,'Starting new database file at '+ dbloc + dbname
         HV_WRT_ASCII,'This file first created ' + systime(0),dbloc + dbname,/append
         HV_WRT_ASCII,'fitsdir,fitsname,jp2dir,jp2name,time_of_writing,calling_program[optional],',dbloc + dbname,/append
-     endif
+     endif else begin
+        HV_DB,hvs,/check_fitsname_only,already_written = already_written
+     endelse
 ;
 ; Update the database and the latest file
 ;

@@ -110,8 +110,11 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
            already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cor2Files)
            nRequired = (size(cor2Files,/dim))[0]
            cor2FilesExist = total( file_exist(cor2Files) ) eq nRequired
+           print, cor2FilesExist, nRequired
+           print,cor2Files
            print,systime() + ': '+ progname + ': file '+trim(ifile+1) + ' out of '+trim(count)
            if not(already_written) and cor2FilesExist then begin
+              print,systime() + ': '+ progname + ': Triple exposure image being written.'
               hv_cor2_prep2jp2, cor2Files, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
               if keyword_set(copy2outgoing) then begin
                  HV_COPY2OUTGOING, [jp2_filename]
@@ -169,6 +172,7 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
               if filename ne '' then begin
                  already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(filename)
                  if not(already_written) and file_exist(filename)  then begin
+                    print,systime() + ': '+ progname + ': Double exposure image being written.'
                     hv_cor2_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
                     if keyword_set(copy2outgoing) then begin
                        HV_COPY2OUTGOING, [jp2_filename]
