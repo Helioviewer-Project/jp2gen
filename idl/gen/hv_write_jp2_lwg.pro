@@ -108,9 +108,6 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
      nx = sz[0]
      ny = sz[1]
      obsdet = HV_OBSERVER_DETAILS('unknown_observer','unknown_measurement')
-;     IF KEYWORD_SET(bit_rate) eq 0 THEN bit_rate=[0.5,0.01]
-;     IF KEYWORD_SET(n_layers) eq 0 THEN n_layers=8
-;     IF KEYWORD_SET(n_levels) eq 0 THEN n_levels=8
   ENDIF ELSE BEGIN
      image_new=bytscl(image)
      sz = size(image_new,/dim)
@@ -133,35 +130,32 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
      if w[0] eq -1 then begin
         supported_yn = 0
         print,'Nickname = ' + details.nickname + ' with measurement = ' + $
-              'not explicitly supported. Stopping.'
-        stop
+              'not explicitly supported. Continuing.'
      endif else begin
         supported_yn = 1
         obsdet = details.details[w]
      endelse
 ;
+; Is this observer supported?
+;    
+     if not(supported_yn) then begin
+        print,'Unsupported observer.  Contining.'
+     endif else begin
+;
 ; Get contact details
 ;
-     wby = HV_WRITTENBY()
-;     wby = HV_WRITTENBY(fitsheader.hv_writtenby)
+        wby = HV_WRITTENBY()
 ;
 ; Set the JP2 compression details, override defaults if set from
 ; function call
 ;
-     IF KEYWORD_SET(bit_rate) eq 0 THEN bit_rate = obsdet.bit_rate
-     IF KEYWORD_SET(n_layers) eq 0 THEN n_layers = obsdet.n_layers
-     IF KEYWORD_SET(n_levels) eq 0 THEN n_levels = obsdet.n_levels
+        IF KEYWORD_SET(bit_rate) eq 0 THEN bit_rate = obsdet.bit_rate
+        IF KEYWORD_SET(n_layers) eq 0 THEN n_layers = obsdet.n_layers
+        IF KEYWORD_SET(n_levels) eq 0 THEN n_levels = obsdet.n_levels
 ;
 ; Set where the KDU library is, if required
 ;
-     IF KEYWORD_SET(kdu_lib_location) eq 0 THEN kdu_lib_location = wby.local.kdu_lib_location
-;
-; Is this observer supported?
-;    
-     if not(supported_yn) then begin
-        print,'Unsupported observer.  Stopping.'
-        stop
-     endif else begin
+        IF KEYWORD_SET(kdu_lib_location) eq 0 THEN kdu_lib_location = wby.local.kdu_lib_location
 ;
 ; Set one colour to be transparent
 ;
@@ -277,7 +271,7 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
                  xh+='<'+reduced+'>'+HV_XML_COMPLIANCE(strtrim(string(header.(j)),2))+'</'+reduced+'>'+lf
               endif
            endif
-       endfor
+        endfor
 ;
 ; Original rotation state
 ;
@@ -384,7 +378,8 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; it, then we need to use the KDU library.  If not, then we just use
 ; the inbuilt IDL methods for writing JP2
 ;
-  IF have_tag(header,'hva_alpha_transparency') THEN BEGIN
+  if supported_yn then begin
+     IF have_tag(header,'hva_alpha_transparency') THEN BEGIN
 ;
 ; Adjust the passed mask with the same processing that was done to the
 ; image data
@@ -398,22 +393,22 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;;                           nx_embed/2 + hv_xlen/2 + mlen-1,$
 ;;                           ny_embed/2 - hv_ylen/2 - mlen:$
 ;;                           ny_embed/2 + hv_ylen/2 + mlen-1)
-     mask_new = header.hva_alpha_transparency
+        mask_new = header.hva_alpha_transparency
 ;
 ; Create a mask indicating where the transparency is located, taking
 ; into account the previously passed mask, mask_new, and any embedding
 ; that may have been done above
 ;
-     tmask = float(image_new) - 1.0
-     tmask_index = where(tmask eq -1.0, count)
-     temp_alpha = 255 + bytarr(nx,ny)
-     IF (count gt 0) then begin
-        temp_alpha(tmask_index) = 0
-        mask_new_index = where(mask_new eq 0,count)
+        tmask = float(image_new) - 1.0
+        tmask_index = where(tmask eq -1.0, count)
+        temp_alpha = 255 + bytarr(nx,ny)
         IF (count gt 0) then begin
-           temp_alpha(mask_new_index) = 0
+           temp_alpha(tmask_index) = 0
+           mask_new_index = where(mask_new eq 0,count)
+           IF (count gt 0) then begin
+              temp_alpha(mask_new_index) = 0
+           ENDIF
         ENDIF
-     ENDIF
 ;
 ; REQUIRED BY KDU: Write the transparency locations as a temporary tiff file.
 ;
@@ -495,26 +490,26 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; 2009-05-12:  IDL can write images with an arbitrary number of
 ; components.  We put the alpha transparency in as the second component.
 ;
-     image_new_with_transparency = bytarr(2,nx,ny)
-     image_new_with_transparency(0,*,*) = image_new(*,*)
-     image_new_with_transparency(1,*,*) = temp_alpha(*,*)
+        image_new_with_transparency = bytarr(2,nx,ny)
+        image_new_with_transparency(0,*,*) = image_new(*,*)
+        image_new_with_transparency(1,*,*) = temp_alpha(*,*)
 
-     oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
-                    bit_rate=bit_rate,$
-                    n_layers=n_layers,$
-                    n_levels=n_levels,$
-                    PROGRESSION = 'RPCL',$
-                    xml=xh)
+        oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
+                       bit_rate=bit_rate,$
+                       n_layers=n_layers,$
+                       n_levels=n_levels,$
+                       PROGRESSION = 'RPCL',$
+                       xml=xh)
 ;
-     oJP2->SetData,image_new_with_transparency
-     OBJ_DESTROY, oJP2
-     print,' '
-     print,progname + ' created ' + file + '.jp2'
+        oJP2->SetData,image_new_with_transparency
+        OBJ_DESTROY, oJP2
+        print,' '
+        print,progname + ' created ' + file + '.jp2'
 ;
 ; Change the permissions on the file
 ;
 
-  ENDIF ELSE BEGIN
+     ENDIF ELSE BEGIN
 ;
 ; create JP2 file
 ; this is how it is done inside IDL.  Note that the current
@@ -522,16 +517,17 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; No transparencey mask was passed, so just use normal IDL routines.
 ;
 
-     oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
-                    bit_rate=bit_rate,$
-                    n_layers=n_layers,$
-                    n_levels=n_levels,$
-                    PROGRESSION = 'RPCL',$
-                    xml=xh)
+        oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
+                       bit_rate=bit_rate,$
+                       n_layers=n_layers,$
+                       n_levels=n_levels,$
+                       PROGRESSION = 'RPCL',$
+                       xml=xh)
 ;
-     oJP2->SetData,image_new
-     OBJ_DESTROY, oJP2
-     print,' '
-     print,progname + ' created ' + file + '.jp2'
-  ENDELSE
+        oJP2->SetData,image_new
+        OBJ_DESTROY, oJP2
+        print,' '
+        print,progname + ' created ' + file + '.jp2'
+     ENDELSE
+  ENDIF
 END
