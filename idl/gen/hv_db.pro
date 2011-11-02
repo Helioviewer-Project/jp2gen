@@ -10,6 +10,8 @@ PRO HV_DB,hvs,check_fitsname_only = check_fitsname_only,$
           already_written = already_written,$
           update = update
 ;
+  progname = 'HV_DB'
+;
 ; delimiter
 ;
   delim = ','
@@ -36,6 +38,8 @@ PRO HV_DB,hvs,check_fitsname_only = check_fitsname_only,$
      endif else begin
         already_written = 0
      endelse
+     print,progname + ': checked FITS filename only; '+ hvs.fitsname +' in db; '+ dbloc + dbname + '.'
+     print,progname + ': result = '+ trim(already_written)
   ENDIF ELSE BEGIN
      jp2loc = HV_WRITE_LIST_JP2_MKDIR(hvs,storage.jp2_location,/return_path_only)
      jp2name = HV_FILENAME_CONVENTION(hvs,/create)

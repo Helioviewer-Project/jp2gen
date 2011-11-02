@@ -18,6 +18,7 @@ PRO HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_
 ;
 ; Check if we have already written this JP2 file
 ;
+  already_written = 0
   HV_DB,hvs.hvsi,/check_fitsname_only,already_written = already_written
 ;
 ; if new, then write it and update the database for this day
