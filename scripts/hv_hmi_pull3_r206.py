@@ -300,10 +300,11 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                # Move the new files to the ingest directory
 	                for name in newlist:
 	                        newFile = name[:-1]
-	                        if newFile.endswith('.jp2'):
-	                                shutil.copy2(local_keep + newFile,moveTo + newFile)
-					print moveTo, newFile
-					doJPIPencoding.doJPIPencoding(moveTo + newFile,nickname)
+	                        if newFile.endswith('.jp2') and (newFile.find('tmp') == -1):
+                                        doJPIPencoding.doJPIPencoding(local_keep + newFile,nickname)
+                                        jprint('JPIP encoding ' + local_keep + newFile)
+                                        shutil.copy2(local_keep + newFile,moveTo + newFile)
+                                        jprint('Copying '+ local_keep + newFile +' to ' + moveTo + newFile)
 					change2hv(moveTo + newFile)
 		else:
                 	jprint('No new files found at ' + remote_location)
