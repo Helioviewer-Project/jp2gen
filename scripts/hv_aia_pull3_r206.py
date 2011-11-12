@@ -371,7 +371,7 @@ def GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLo
 #remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
 
 # AIA wavelength array - constant
-wavelength = ['94','131','171','193','211','304','335','1600','1700','4500']
+wavelength = ['304','171','193','94','131','211','335','1600','1700','4500']
 
 
 #

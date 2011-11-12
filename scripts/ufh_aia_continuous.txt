@@ -7,7 +7,7 @@ http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA
 AIA
 /home/ireland/www/aia.
 1000000
-True
+False
 900
 0
 2
