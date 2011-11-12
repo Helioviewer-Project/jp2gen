@@ -49,8 +49,13 @@ def jprint(z):
 
 # Element has the correct permissions and ownership
 def change2hv(z):
-        os.system('chmod -R 775 ' + z)
-        os.system('chown -R ireland:helioviewer ' + z)
+	command = 'chmod -R 775 ' + z
+	jprint('Running '+ command)
+        os.system(command)
+	command = 'chown -R ireland:helioviewer ' + z
+	jprint('Running '+ command)
+        os.system(command)
+
 
 # Create a HV - compliant subdirectory
 def hvCreateSubdir(x,out=True):
@@ -302,9 +307,9 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                        newFile = name[:-1]
 	                        if newFile.endswith('.jp2') and (newFile.find('tmp') == -1):
 					doJPIPencoding.doJPIPencoding(local_keep + newFile,nickname)
-					jprint('JPIP encoding ' + local_keep + newFile)
+					#jprint('JPIP encoding ' + local_keep + newFile)
 	                                shutil.copy2(local_keep + newFile,moveTo + newFile)
-					jprint('Copying '+ local_keep + newFile +' to ' + moveTo + newFile)
+					#jprint('Copying '+ local_keep + newFile +' to ' + moveTo + newFile)
 					change2hv(moveTo + newFile)
 		else:
                 	jprint('No new files found at ' + remote_location)
