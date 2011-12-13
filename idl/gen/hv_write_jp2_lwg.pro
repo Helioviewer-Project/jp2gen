@@ -82,7 +82,7 @@
 ;
 ;-
 
-PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,quiet=quiet,kdu_lib_location=kdu_lib_location,details = details,measurement = measurement,_extra = _extra
+PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,quiet=quiet,kdu_lib_location=kdu_lib_location,details = details,measurement = measurement,reversible = reversible,_extra = _extra
 ;
   progname = 'HV_WRITE_JP2_LWG'
 ;
@@ -97,7 +97,19 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; set keyword "quiet" to suppress kdu_compress output
 ;
   IF KEYWORD_SET(quiet) THEN quiet_flag=' -quiet' else quiet_flag=''
-
+;
+; check to see if lossless compression was requested.  This is
+; expressed by the REVERSIBLE property of the IDLffJPEG2000 object.
+; If reversible is set to 1 (true) in the IDLffJPEG2000 object then a
+; lossless compression is set.  See the IDL documentation for the
+; effect the reversible property has on the bit_rate property.  In IDL
+; IDL 7.1.1, the documentation states that
+;
+; "When the /REVERSIBLE switch is set the last rate will be
+; automatically set to -1 to ensure that the last layer contains the
+; bits needed to recreate the original image data."
+;
+  IF KEYWORD_SET(reversible) then reversible = 1 ELSE reversible = 0
 ;
 ; Get the header information
 ;
@@ -310,6 +322,10 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         ENDIF ELSE BEGIN
            xh+='<HV_SUPPORTED>FALSE</HV_SUPPORTED>'+lf           
         ENDELSE
+;
+; Explicitly show the reversible variable
+;
+        xh+='<HV_REVERSIBLE>'+trim(reversible)+'</HV_REVERSIBLE>'
 ;
 ; Is this a quicklook file or not?
 ;
