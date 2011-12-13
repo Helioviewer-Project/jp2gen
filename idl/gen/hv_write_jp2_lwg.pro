@@ -163,6 +163,13 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
      IF KEYWORD_SET(bit_rate) eq 0 THEN bit_rate = obsdet.bit_rate
      IF KEYWORD_SET(n_layers) eq 0 THEN n_layers = obsdet.n_layers
      IF KEYWORD_SET(n_levels) eq 0 THEN n_levels = obsdet.n_levels
+     IF KEYWORD_SET(reversible) eq 0 THEN BEGIN
+        if has_tag(obsdet,'reversible') then begin
+           reversible = obsdet.reversible
+        endif else begin
+           reversible = 0
+        endelse
+     ENDIF
 ;
 ; Set where the KDU library is, if required
 ;
