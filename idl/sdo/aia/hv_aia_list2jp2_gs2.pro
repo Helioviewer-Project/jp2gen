@@ -74,6 +74,10 @@ PRO hv_aia_list2jp2_gs2,list,$
 ;     hd = fitshead2struct(hd)
      read_sdo, fullname, hd, img, parent_out=parent_out, /uncomp_delete, /mixed   ; get image and data
 ;
+; Recalculate the FITS header CRPIX values if need be
+;
+     hd = HV_RECALCULATE_CRPIX(hd)
+;
 ; This string will describe what is done to the data
 ;
      hv_img_function = 'Two-dimensional image data IMG'
