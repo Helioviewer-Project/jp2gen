@@ -95,6 +95,15 @@ PRO hv_aia_list2jp2_gs2,list,$
 ; Construct an HVS
 ;
      tobs = HV_PARSE_CCSDS(hd.date_obs)
+;
+; Check to see if the reversible keyword is present
+;
+     if tag_exist(info,'reversible') then begin
+        reversible = info.reversible
+     endif else begin
+        reversible = 0
+     endelse
+;
 ;     hvs = {dir:'',$
 ;            fitsname:fitsname,$
 ;            img:,$
@@ -336,6 +345,10 @@ PRO hv_aia_list2jp2_gs2,list,$
 ;
      xh+='<HV_COMMENT>'+hv_comment+'</HV_COMMENT>'+lf
 ;
+; Explicitly show the reversible variable
+;
+     xh+='<HV_REVERSIBLE>'+trim(reversible)+'</HV_REVERSIBLE>'
+;
 ; Explicit support from the Helioviewer Project
 ;
      xh+='<HV_SUPPORTED>TRUE</HV_SUPPORTED>'+lf
@@ -362,6 +375,7 @@ PRO hv_aia_list2jp2_gs2,list,$
                        n_layers=info.details[this_wave].n_layers,$
                        n_levels=info.details[this_wave].n_levels,$
                        PROGRESSION = 'RPCL',$
+                       REVERSIBLE = reversible,$
                        xml=xh)
         oJP2->SetData,img
         OBJ_DESTROY, oJP2
