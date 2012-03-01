@@ -104,6 +104,7 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;
 ;  Get the catalog of COR1 polarization sequence files.
 ;
+     print, progname + ': getting the catalog of COR1 polarization sequence files.'
      cat = cor1_pbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
 ;
 ;  Process the sequences one-by-one.

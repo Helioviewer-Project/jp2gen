@@ -53,8 +53,8 @@ COMMON C3_BLOCK, pylonim, ctr, pylon
 
       model_all=0
       model_any_year=0		; ** set 3/15/99, NBR
-      LOADCT, 1
-      GAMMA_CT, 0.6
+      ;LOADCT, 1
+      ;GAMMA_CT, 0.6
       r_occ = 4.4
       r_occ_out = 31.5		;** set 12/7/99, NBR
       fillcol=80	;110	;128	; ** set 7/17/02, nbr

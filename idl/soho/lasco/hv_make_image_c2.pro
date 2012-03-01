@@ -37,7 +37,7 @@ FUNCTION HV_MAKE_IMAGE_C2, img, hdr, FIXGAPS=fixgaps, VIDEOIMG=videoimg, $
   IF m0 LT 1000 THEN return, -1
   model_all=0                   ; set 02/11/99, NBR	
   model_any_year=0		; set 12/18/00, NBR
-  LOADCT, 3
+  ;LOADCT, 3
   r_occ = 2.3                   ; 9/20/02, nbr ;2.2
   r_occ_out = 8.0
   fillcol=86
