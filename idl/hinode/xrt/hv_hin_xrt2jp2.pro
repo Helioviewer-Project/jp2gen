@@ -9,7 +9,7 @@
 ;          It uses the hv_make_jp2.pro file to create the JPEGs
 ;
 ; Input Parmeters:
-;   SOT_XRT2dfiles - list of one or more XRT 2D fitfiles  (x,y) 
+;   files - list of one or more XRT 2D fitfiles  (x,y) 
 ; 
 ; OPTIONAL Input Parameters:
 ;   DIR    - directory of the input fitsfile ; if not set current directory is assumed
@@ -24,8 +24,8 @@
 ; Calling Sequence:
 ; IDL> hv_hin_xrt2jp2,<files>,outdir=<save directory>
 ;
-; Calls :     replstr and hvs_hinode_fg included in this program, and 
-;             several IDL ASTRONOMY LIBRARY programs
+; Calls : hv_hin_instr2jp2 and (included in this program) hvs_hinode_xrt
+;         and HV_HIN_XRT2JP2_specific, and several IDL ASTRONOMY LIBRARY programs
 ; 
 ; 
 ; Side Effects:
@@ -33,19 +33,13 @@
 ; Restrictions:
 ;
 ; History: 22.08.2011 first version C.E.Fischer (cfischer@rssd.esa.int)
+;          08.12.2011 SDC version Terje Fredvik. Instead of a list of file
+;          names, HV_HIN_FG2JP2 now takes an image and a header structure as inputs, in addition to path and
+;          filename of file that was read in order to create image and
+;          header. The wrapper hv_hin_instr2jp2_obj or hv_hin_instr2jp2_files 
 
-FUNCTION replstr,tagname,ori,new  ;REPLACE THE STRING 'ORI' WITH 'NEW' IN THE GIVEN STRING TAGNAME 
-  for ind=0,strlen(tagname)-1 do begin
-    t_w=strpos(tagname,ori)
-    if t_w ne -1 then strput,tagname,new,t_w
-  endfor
-  return,tagname
-END
+FUNCTION hvs_hinode_xrt, struc_header         ;CREATE THE DETAILS STRUCTURE WITH INSTRUMENT INFORMATION
 
-
-
-FUNCTION hvs_hinode_xrt         ;CREATE THE DETAILS STRUCTURE WITH INSTRUMENT INFORMATION
-common inf_coms,struc_header
 d = {measurement: "", n_levels: 8, n_layers: 8, idl_bitdepth: 8, bit_rate: [0.5,0.01], dataScalingType: 0}
 
 ;
@@ -77,93 +71,26 @@ d = {measurement: "", n_levels: 8, n_layers: 8, idl_bitdepth: 8, bit_rate: [0.5,
  
 END
 
-pro HV_HIN_XRT2JP2,XRT_2dfiles,outdir=outdir,dir=dir
-common inf_coms,struc_header
 
-     if dir_exist(outdir) eq 0 then  box_message,'OUTDIRECTORY DOES NOT EXIST. WILL CREATE IT!'  ;CHECK IF DIRECTORY EXISTS
+PRO HV_HIN_XRT2JP2_specific,img, struc_header, dir, file, outdir=outdir, err=err
+  err = ''
+  IF struc_header.naxis ne 2 THEN BEGIN
+     err = 'NAXIS HAS TO BE 2!  SKIPPING FILE '+file+'. '
+     return
+  ENDIF
+  
+  hv_check_outdir, outdir=outdir 
+  
+  comment='HINODE XRT FILE'
+  measurement = strcompress('FW1_'+struc_header.EC_FW1_+'_FW2_'+struc_header.EC_FW2_,/remove_all) 
+  info = hvs_hinode_xrt(struc_header) ; CREATE DETAILS STRUCTURE WITH OBSERVER AND INSTRUMENTS INFORMATION
     
-     if strmid(outdir,strlen(outdir)-1) ne path_sep() then outdir=outdir+path_sep() ;MAKE SURE PATH SEPERATOR IS AT THE END OF STRING  
-       
-     if keyword_set(outdir) eq 1 then begin   ; CHECK IF OUTDIR IS SET. IF YES, FIND THE HV_WRRITTENBY FILE AND CHANGE THE DIRECTORY IN THE FILE.
-       
-        FindPro, 'hv_writtenby.pro', NoPrint=1, DirList=DirList;CHECK IF HV_WRITTENBY>PRO EXISTS
-        if dirlist eq '' then begin
-         box_message,'CAN NOT FIND HV_WRITTENBY. EXITING...'
-         goto,JUMP2
-        endif
-        
-             
-        if n_elements(dirlist) gt 1 then box_message,strcompress('YOU HAVE TWO HV_WRITTENBY IN YOUR PATH, SELECTING THE ONE IN '+dirlist(0))
-      
-        
-        wbfile=rd_tfile(dirlist(0)+path_sep()+'hv_writtenby.pro') ; READ IN STRING ARRAY
-        thisstr=strmatch(wbfile,'*jp2gen_write*:*')     ; FIND OUTDIR SPECIFICATION
-        wbfile(where(thisstr eq 1))=strcompress("jp2gen_write: '"+outdir+"' , $")
-        openw,wflun,dirlist(0)+'/hv_writtenby.pro',/get_lun
-           for i=0,n_elements(wbfile)-1 do begin
-              printf,wflun,wbfile(i)
-           endfor
-        free_lun,wflun
-        close,wflun
-     endif 
-
-
-;SET SOURCE DIRECTORY IF NOT GIVEN
-    
-     if keyword_set(dir) eq 0 then dir=''
-     if strmid(dir,strlen(dir)-1) ne path_sep() and dir ne '' then dir=dir+path_sep() ;MAKE SURE PATH SEPERATOR IS AT THE END OF STRING  
-     
-     if n_elements(XRT_2dfiles) lt 1 then box_message,'NO FILES GIVEN!'
-;;LOOP through files, creating a jp2000 for each file
-     for ff=0,n_elements(XRT_2dfiles)-1 do begin
-         
-         fitsname=dir+XRT_2dfiles(ff)
-       
-         if file_exist(fitsname) eq 0 then begin
-           box_message,'CAN NOT FIND FITSFILE '+XRT_2dfiles(ff)
-           goto,jump1
-         endif
-         img=readfits(fitsname,fitshead)
-         struc_header=FITSHEAD2STRUCT(fitshead);get file 
-
-
-        ;;CHECK IF 2D FILE
-        if struc_header.naxis ne 2 then begin 
-          box_message,strcompress('NAXIS HAS TO BE 2!  SKIPPING FILE '+fitsname)
-          goto, jump1
-        endif
-
-        comment='HINODE XRT FILE'
-
-
-        info=CALL_FUNCTION('hvs_hinode_xrt')       ; CREATE DETAILS STRUCTURE WITH OBSERVER AND INSTRUMENTS INFORMATION
-        
-        tobs = HV_PARSE_CCSDS(struc_header.date_obs)
-
-        hvsi = {  dir:dir, $ ; the directory where the source FITS file is stored,default is current dir
-          fitsname:fitsname, $ ; the name of the FITS file
-          header: struc_header, $ ; the ENTIRE FITS header as a structure - use FITSHEAD2STRUCT
-          comment: comment, $ ; a string that contains any further information 
-          measurement:strcompress('FW1_'+struc_header.EC_FW1_+'_FW2_'+struc_header.EC_FW2_,/remove_all),$ ; the particular measurement of this FITS file
-           yy:tobs.yy,$
-           mm:tobs.mm,$
-           dd:tobs.dd,$
-           hh:tobs.hh,$
-           mmm:tobs.mmm,$
-           ss:tobs.ss,$
-           milli:tobs.milli,$
-           details:info }
-
-        hvs = {img:img, $ ; a 2-d numerical array that is the image you want to write
-         hvsi:hvsi $ ; a structure containing the relevant information about img
-        }
-
-     
-       HV_MAKE_JP2,hvs    ; CONVERT IMAGES TO JP2000
-     
-     
-     JUMP1:         ;GO TO NEXT FILE
-   endfor  
- JUMP2:              ;EXIT PROGRAM
+  hv_hvs2jp2, img, struc_header, dir, file, comment, measurement, info
+  
+  
 END
- 
+
+
+PRO hv_hin_xrt2jp2, files, outdir=outdir, dir=dir
+  hv_hin_instr2jp2,'xrt',files,outdir=outdir,dir=dir
+END
