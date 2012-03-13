@@ -1,5 +1,13 @@
 PRO hv_hvs2jp2, img, struc_header, dir, fitsname, comment, measurement, info
-  
+  ;;+ 
+  ;; Purpose:
+  ;;     Create an hvs structure based on the input header information and 2D
+  ;;     image, call hv_make_jp2 to create a jpg2000 image.
+  ;;
+  ;; Modification History: 
+  ;;       2011.12.08 Terje Fredvik: Extracted from  C.E.Fischer's code. 
+  ;;-
+  ;;  
     
   tobs = HV_PARSE_CCSDS(struc_header.date_obs)
   
