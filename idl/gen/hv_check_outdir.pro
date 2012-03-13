@@ -1,4 +1,12 @@
 PRO hv_check_outdir, outdir=outdir, err=err
+  ;;+ 
+  ;; Purpose:
+  ;;    Check that outdir and hv_writtenby exsit
+  ;;
+  ;; Modification History: 
+  ;;       2011.12.08 Terje Fredvik: Extracted from  C.E.Fischer's code. 
+  ;;-
+  ;; 
   err = ''
   
   if keyword_set(outdir) eq 1 then begin ; CHECK IF OUTDIR IS SET. IF YES, FIND THE HV_WRRITTENBY FILE AND CHANGE THE DIRECTORY IN THE FILE.
