@@ -70,7 +70,7 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
 ;
 ; define the transfer script
 ;
-  transfer_details = ' -e ssh -l -t ' + $
+  transfer_details = ' -e ssh -l  ' + $
                      wby.transfer.remote.user + '@' + $
                      wby.transfer.remote.machine + ':' + $
                      wby.transfer.remote.incoming + $

@@ -73,6 +73,11 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
   g = HVS_GEN()
   progname = 'hv_cor2_by_date'
 ;
+; Define the directory where we log errors due to not being able to
+; find the SECCHI catalog
+;
+  cantFindCatalogDir = HV_SECCHI_CANTFINDCATALOG()
+;
 ;  Check that the date is valid.
 ;
   if (n_elements(date) eq 0) or (n_elements(date) gt 2) then message, $
@@ -104,35 +109,56 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
 ;  Process the sequences one-by-one.
 ;
-     if count gt 0 then begin
-        for ifile = 0,count-1 do begin
-           cor2Files = cat[*,ifile].filename
-           already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cor2Files)
-           nRequired = (size(cor2Files,/dim))[0]
-           cor2FilesExist = total( file_exist(cor2Files) ) eq nRequired
-           print,'***',cor2FilesExist
-           print,file_exist(cor2Files)
-           print,systime() + ': '+ progname + ': file '+trim(ifile+1) + ' out of '+trim(count)
-           if not(already_written) and cor2FilesExist then begin
-              hv_cor2_prep2jp2, cor2Files, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
-              if keyword_set(copy2outgoing) then begin
-                 HV_COPY2OUTGOING, [jp2_filename]
-              endif
-           endif
-           if already_written then begin
-              print,systime() + ': '+ progname + ': JP2 file already written; skipping further processing of '+cor2Files
-           endif
-           if not(already_written) and not(file_exist(filename)) then begin
-              print,systime() + ': '+ progname + ': JP2 file not written because source data does not (yet) exist; skipping processing of '+cor2Files
-           endif
-        endfor
-     endif
+     ;; if count gt 0 then begin
+     ;;    for ifile = 0,count-1 do begin
+     ;;       cor2Files = cat[*,ifile].filename
+     ;;       already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cor2Files)
+     ;;       nRequired = (size(cor2Files,/dim))[0]
+     ;;       cor2FilesExist = total( file_exist(cor2Files) ) eq nRequired
+     ;;       print,'***',cor2FilesExist
+     ;;       print,file_exist(cor2Files)
+     ;;       print,systime() + ': '+ progname + ': file '+trim(ifile+1) + ' out of '+trim(count)
+     ;;       if not(already_written) and cor2FilesExist then begin
+     ;;          hv_cor2_prep2jp2, cor2Files, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
+     ;;          if keyword_set(copy2outgoing) then begin
+     ;;             HV_COPY2OUTGOING, [jp2_filename]
+     ;;          endif
+     ;;       endif
+     ;;       if already_written then begin
+     ;;          print,systime() + ': '+ progname + ': JP2 file already written; skipping further processing of '+cor2Files
+     ;;       endif
+     ;;       if not(already_written) and not(file_exist(filename)) then begin
+     ;;          print,systime() + ': '+ progname + ': JP2 file not written because source data does not (yet) exist; skipping processing of '+cor2Files
+     ;;       endif
+     ;;    endfor
+     ;; endif
 ;
 ;  Get the catalog of COR2 double exposure files.
 ;
-     cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='cor2', $
-                            source='lz', type='img', /check)
-     if datatype(cat,1) eq 'Structure' then begin
+     nrepeat = 0
+     nrepeat_max = 24*60.0
+     repeat_time_in_seconds = 60.0
+     repeat begin
+        print,progname + ': looking at double exposure files.'
+        cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='cor2', $
+                               source='lz', type='img', /check)
+        print, progname + ': catalog datatype: ' + datatype(cat,1)
+        if datatype(cat,1) ne 'Structure' then begin
+           nrepeat = nrepeat + 1
+           print,progname + ': '+ji_systime()
+           print,progname + ': completed repeat number '+trim(nrepeat) + ' out of ' + trim(nrepeat_max)
+           print,progname + ': total repeat wait time is ' + trim(repeat_time_in_seconds*nrepeat_max/60.0)+' in minutes.'
+           HV_WAIT,progname,repeat_time_in_seconds,/seconds
+        endif
+     endrep until (datatype(cat,1) eq 'Structure') or (nrepeat ge nrepeat_max)
+     if (datatype(cat,1) ne 'Structure') then begin
+        print,progname + ': '+ji_systime()
+        print,progname + ': did not find any data for date ' + str(date)
+        save_filename = str(date) + '.' + JI_SYSTIME() + '.sav'
+        print,progname + ': saving date to ' + cantFindCatalogDir + '/' + save_filename
+        save,filename = cantFindCatalogDir + '/cor2.' + save_filename, date
+     endif else begin
+                                ;if datatype(cat,1) eq 'Structure' then begin
 ;
 ;  Filter out beacon images, and optionally special event images.
 ;
@@ -187,7 +213,7 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
               endelse
            endfor
         endif
-     endif                      ;CAT is structure
+     endelse                      ;CAT is structure
   endfor                        ;isc
 ;
 end
