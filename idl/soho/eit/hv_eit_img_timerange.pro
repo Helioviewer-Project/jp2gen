@@ -1,4 +1,5 @@
-PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_written = already_written, jp2_filename = jp2_filename
+PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_written = already_written, jp2_filename = jp2_filename,$
+                         venustransit = venustransit
 ;
 ; Turn the header into a structure
 ;
@@ -8,11 +9,23 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_writ
 ;
   if ffhr then b0 = rebin(b0,512,512)
 ;
+  if not(keyword_set(venustransit)) then venustransit = 0
+;
   header = fitshead2struct(h)
   sohoRotAngle = header.SC_ROLL ; get the roll angle
   header = add_tag(header,this_wave,'hv_measurement')
   header = add_tag(header, header.date_obs,'hv_date_obs')
   header = add_tag(header,sohoRotAngle,'hv_rotation')
+  if venustransit then begin
+     header = add_tag(header, 509.210,'CRPIX1')
+     header = add_tag(header, 519.220,'CRPIX2')
+     header = add_tag(header, 2.63, 'CDELT1')
+     header = add_tag(header, 2.63, 'CDELT2')
+     header = add_tag(header, 363.430, 'SOLAR_R')
+     header.NAXIS2 = 1024
+     ;header = add_tag(header,this_wave, 'wavelnth')
+     ;stop
+  endif
 ;
 ; HV - get the components to the observation time and date
 ;
@@ -31,10 +44,13 @@ PRO HV_EIT_IMG_TIMERANGE,h,b0,ffhr,s,this_wave,details,dir,fitsname,already_writ
      b0 = rotate(b0,2)
   endif else begin
      if (sohoRotAngle ne 0) then begin
-        b0[0:5,*] = 0.0 ; zero the edges in an attempt to cut out on artifacts at the edge that can appear after peforming a roll which is not a multiple of 90 degrees.
-        b0[1018:1023,*] = 0.0
-        b0[*,0:5] = 0.0
-        b0[*,1018:1023] = 0.0
+        b0_size = size(b0,/dim)
+        if b0_size[0] eq 1024 and b0_size[1] eq 1024 then begin
+           b0[0:5,*] = 0.0      ; zero the edges in an attempt to cut out on artifacts at the edge that can appear after peforming a roll which is not a multiple of 90 degrees.
+           b0[1018:1023,*] = 0.0
+           b0[*,0:5] = 0.0
+           b0[*,1018:1023] = 0.0
+        endif
         b0 = rot(b0,sohoRotAngle,1.0,header.crpix1,header.crpix2,/pivot,/interp,missing = 0.0)
         ;print,'********************',header.crpix1,header.crpix2
         ;pivotCenter = [header.crpix1,header.crpix2]

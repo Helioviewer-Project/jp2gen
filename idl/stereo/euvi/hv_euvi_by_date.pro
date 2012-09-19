@@ -105,8 +105,8 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;  Get the catalog of EUVI image files.
 ;
      nrepeat = 0
-     nrepeat_max = 24*60.0
-     repeat_time_in_seconds = 60.0
+     nrepeat_max = 2
+     repeat_time_in_seconds = 0.0
      repeat begin
         cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='euvi', $
                                source='lz', type='img', /check)
@@ -121,8 +121,8 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
      endrep until (datatype(cat,1) eq 'Structure') or (nrepeat ge nrepeat_max)
      if (datatype(cat,1) ne 'Structure') then begin
         print,progname + ': '+ji_systime()
-        print,progname + ': did not find any data for date ' + str(date)
-        save_filename = str(date) + '.' + JI_SYSTIME() + '.sav'
+        print,progname + ': did not find any data for date ' + ji_txtrep(date,'/','-')
+        save_filename = ji_txtrep(date,'/','-') + '.' + JI_SYSTIME() + '.sav'
         print,progname + ': saving date to ' + cantFindCatalogDir + '/' + save_filename
         save,filename = cantFindCatalogDir + '/' + save_filename, date
      endif else begin
