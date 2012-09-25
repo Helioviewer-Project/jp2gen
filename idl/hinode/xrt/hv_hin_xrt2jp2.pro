@@ -90,16 +90,18 @@ PRO hv_hin_xrt2jp2, files, outdir=outdir, dir=dir
 ;          now a wrapper to the instrument independent procedure
 ;          idl/hinode/hv_hin_instr2jp2. hv_hin_instr2jp2 runs hv_check_outdir
 ;          and edits the fits header before calling the SOT/FG specific
-;          routine hv_hin_fg2jp2_specific which is included in this file. The
-;          object oriented programs that create the Oslo SDC archive images
-;          call hv_hin_fg2jp2_specific directly. hv_hin_fg2jp2_specific calls
+;          routine hv_hin_fg2jp2_specific which is included in this
+;          file. 
+;          NOTE: the object oriented programs that create the Oslo SDC archive 
+;          images call hv_hin_fg2jp2_specific directly. hv_hin_fg2jp2_specific calls
 ;          the instrument independent procedure hv_hvs2jp2 which creates the
 ;          hvs structure that is passed to the instrument and mission
-;          independent hv_make_jp2 which is the routine that actually creates
-;          the jpg2000 images.
+;          independent hv_make_jp2, which is the routine that actually creates
+;          the jpg2000 images. Puh!
 ;
 ; Input Parmeters:
-;   files - list of one or more XRT 2D fitsfiles  (x,y) 
+;   files - list of one or more XRT 2D fitsfiles. Either full path plus file
+;   name, or just the filename if DIR keyword is set.
 ; 
 ; OPTIONAL Input Parameters:
 ;   DIR    - directory of the input fitsfile ; if not set current directory is 
