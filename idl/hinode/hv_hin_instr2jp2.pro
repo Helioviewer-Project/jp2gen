@@ -1,7 +1,7 @@
 ;PRO 
 ; 
 ;
-; Name: hv_hin_fg2jp2
+; Name: hv_hin_instr2jp2
 ;
 ; Purpose: Convert a Level1 Hinode SOT filtergram or Hinode XRT file 
 ;          into JPEG2000.
@@ -35,7 +35,8 @@
 ;          16.12.2011 Terje Fredvik, re-written, instrument
 ;          independent version. Contents of this file are mostly bits and pieces
 ;          extracted from Fisher's original code.
-;          05.03.2012 Terje Fredvik, put in Catherine's DSUN_OBS fix 
+;          05.03.2012 Terje Fredvik, put in Catherine's DSUN_OBS fix
+;          25.09.2012 Terje Fredvik, put in RSUN
 
 
 PRO HV_HIN_INSTR2JP2, instr, files,outdir=outdir,dir=dir,  img=img, struc_header=struc_header, $
@@ -45,6 +46,7 @@ PRO HV_HIN_INSTR2JP2, instr, files,outdir=outdir,dir=dir,  img=img, struc_header
   hv_check_outdir, outdir=outdir, err=err
   IF err NE '' THEN message, err
   
+  IF keyword_set(dir) THEN files = dir+path_sep()+files
   ;CHECK IF THERE ARE FILES
   IF n_elements(files) EQ 0 THEN message, 'No files given!'
   
@@ -54,8 +56,8 @@ PRO HV_HIN_INSTR2JP2, instr, files,outdir=outdir,dir=dir,  img=img, struc_header
         if keyword_set(dir) eq 0 then dir=''
         if strmid(dir,strlen(dir)-1) ne path_sep() and dir ne '' then dir=dir+path_sep() ;MAKE SURE PATH SEPERATOR IS AT THE END OF STRING 
           
-        fitsname = dir + files[i]
-        if file_test(fitsname) eq 0 then return
+        fitsname = files[i];dir + files[i]
+        ;if file_test(fitsname) eq 0 then return
         
         ;; The following is not a good idea: should use instrument specific 
         ;; read and calibration routines! Or call the mk_jpg2000 method of a
@@ -66,13 +68,19 @@ PRO HV_HIN_INSTR2JP2, instr, files,outdir=outdir,dir=dir,  img=img, struc_header
         obs_date=FXPAR(fitshead,'DATE_OBS')
         
         ;; get distance in AU
-        out=GET_SUN(obs_date,dist=dsun_obs)
+        out=GET_SUN(obs_date,dist=dsun_obs,sd=rsun_arcsec)
         
         ;; convert to meters
         dsun_obs=dsun_obs*149597870700
-        
+                
         ;; header dsun_obs is added
         FXADDPAR,fitshead,'DSUN_OBS',dsun_obs
+        
+        ;; We also need the radius of the sun in pixels
+        rsun = rsun_arcsec/fxpar(fitshead, 'PLATESCL')
+        
+        ;; header dsun_obs is added
+        FXADDPAR,fitshead,'RSUN',rsun
         
         struc_header=FITSHEAD2STRUCT(fitshead) ;get file 
         
