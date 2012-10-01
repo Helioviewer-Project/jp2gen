@@ -64,8 +64,9 @@ PRO HV_HIN_XRT2JP2_specific,img, struc_header, dir, file, outdir=outdir, err=err
      return
   ENDIF
   
-  hv_check_outdir, outdir=outdir 
-  
+  ;; hv_check_outdir is short circuited when the OSDCS environment varible is set:
+  hv_check_outdir, outdir=outdir
+   
   comment='HINODE XRT FILE'
   measurement = strcompress('FW1_'+struc_header.EC_FW1_+'_FW2_'+struc_header.EC_FW2_,/remove_all) 
   
