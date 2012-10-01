@@ -5,14 +5,22 @@ PRO hv_check_outdir, outdir=outdir, err=err
   ;;
   ;; Modification History: 
   ;;       2011.12.08 Terje Fredvik: Extracted from  C.E.Fischer's code. 
+  ;;       2012.10.01 Terje Fredvik: added check for OSDCS.
   ;;-
   ;; 
   err = ''
   
-  if keyword_set(outdir) eq 1 then begin ; CHECK IF OUTDIR IS SET. IF YES, FIND THE HV_WRRITTENBY FILE AND CHANGE THE DIRECTORY IN THE FILE.
+  ;; Jpg2000 image generation in Oslo is done by many processes, we don't want
+  ;; them all to write to hv_writtenby.pro to update the outdir. Instead we
+  ;; will in hv_storage.pro simply read the OSDCS variable and put the jpg2000
+  ;; images there.
+  if getenv('OSDCS') EQ '' AND keyword_set(outdir) eq 1 then begin ; CHECK IF OUTDIR IS SET. IF YES, FIND THE HV_WRRITTENBY FILE AND CHANGE THE DIRECTORY IN THE FILE.
      
      
-     IF file_test(outdir) eq 0 then  box_message,'OUTDIRECTORY DOES NOT EXIST. WILL CREATE IT!' ;CHECK IF DIRECTORY EXISTS
+     IF file_test(outdir) eq 0 then BEGIN
+        box_message,'OUTDIRECTORY DOES NOT EXIST. WILL CREATE IT!' ;CHECK IF DIRECTORY EXISTS
+        file_mkdir, outdir
+     END
      
      if strmid(outdir,strlen(outdir)-1) ne path_sep() then outdir=outdir+path_sep() ;MAKE SURE PATH SEPERATOR IS AT THE END OF STRING
      
