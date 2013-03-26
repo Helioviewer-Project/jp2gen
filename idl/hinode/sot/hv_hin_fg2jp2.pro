@@ -1,51 +1,53 @@
 
-;PRO 
-; 
-;
-; Name: hv_hin_fg2jp2
-;
-; Purpose: Convert Level1 Hinode SOT filtergrams into JPEG2000.
-;          The fits header is converted into a header structure.
-;          It uses the hv_make_jp2.pro file to create the JPEGs
-;
-; Input Parmeters:
-;   SOT_FG2dfiles - list of one or more SOT NFI or BF 2D fitfiles  (x,y)
-; 
-; OPTIONAL Input Parameters:
-;   DIR    - directory of the source file ; if not set will be current directory
-;   OUTDIR    - path to save the JPEG2000 files, otherwise the directory given in hv_writtenby is used
-;
-; 
-; Output Paramters:
-; JPEG2000 file for each NFI, BF image with metadata included
-;
-; Keyword Parameters:
-; 
-; Calling Sequence:
-; IDL> hv_hin_fg2jp2,<files>,outdir=<save directory>
-;
-; Calls :     replstr and hvs_hinode_fg included in this program, and 
-;             several IDL ASTRONOMY LIBRARY programs
-; 
-; 
-; Side Effects:
-;
-; Restrictions:
-;
-; History: 22.08.2011 first version C.E.Fischer (cfischer@rssd.esa.int)
+FUNCTION replstr,tagname,ori,new 
+  ;;+ 
+  ;; Purpose: 
+  ;;     Replace the string 'ori' with 'new' in the given string tagname 
+  ;;
+  ;; Modification History: 
+  ;;       2011.12.08 Terje Fredvik: Extracted from C.E.Fischer's code. 
+  ;;-
 
-
-FUNCTION replstr,tagname,ori,new  ;REPLACE THE STRING 'ORI' WITH 'NEW' IN THE GIVEN STRING TAGNAME 
   for ind=0,strlen(tagname)-1 do begin
-    t_w=strpos(tagname,ori)
-    if t_w ne -1 then strput,tagname,new,t_w
+     t_w=strpos(tagname,ori)
+     if t_w ne -1 then strput,tagname,new,t_w
   endfor
   return,tagname
 END
 
 
-FUNCTION hvs_hinode_fg          ;CREATE THE DETAILS STRUCTURE WITH INSTRUMENT INFORMATION
-common inf_coms,struc_header
+PRO hv_hin_fg_headerreplace, struc_header
+  ;;+ 
+  ;; Purpose: 
+  ;;       Replace some strings that otherwise cause problems in the
+  ;;       directory creation
+  ;;
+  ;; Modification History: 
+  ;;       2011.12.08 Terje Fredvik: Extracted from C.E.Fischer's code. 
+  ;;-
+  ;;  
+  IF size(struc_header,/tname) NE 'STRUCT' THEN message,'Input parameter must be an SOT header structure'
+     
+                                 
+  struc_header.wave=replstr(struc_header.wave,' ','_')
+  struc_header.instrume=replstr(struc_header.instrume,'/','_')
+  struc_header.obs_type=replstr(struc_header.obs_type,'(','_')
+  struc_header.obs_type=replstr(struc_header.obs_type,')','_')
+  struc_header.obs_type=strcompress(struc_header.obs_type,/remove_all)
+  
+END
+
+
+FUNCTION hvs_hinode_fg, struc_header       
+  ;;+ 
+  ;; Purpose:
+  ;;     Create the SOT/FG details structure with instrument information
+  ;;
+  ;; Modification History: 
+  ;;       2011.12.08 Terje Fredvik: Extracted from C.E.Fischer's code. 
+  ;;-
+  ;;    
+
   d = {measurement: "", n_levels: 8, n_layers: 8, idl_bitdepth: 8, bit_rate: [0.5,0.01], dataScalingType: 0}
  
 
@@ -75,115 +77,89 @@ common inf_coms,struc_header
  
 END
 
-PRO HV_HIN_FG2JP2,SOT_FG2dfiles,outdir=outdir,dir=dir
-common inf_coms,struc_header
-      
 
-     if keyword_set(outdir) eq 1 then begin   ; CHECK IF OUTDIR IS SET. IF YES, FIND THE HV_WRRITTENBY FILE AND CHANGE THE DIRECTORY IN THE FILE.
-     
-     
-        if dir_exist(outdir) eq 0 then  box_message,'OUTDIRECTORY DOES NOT EXIST. WILL CREATE IT!'  ;CHECK IF DIRECTORY EXISTS
-       
-        if strmid(outdir,strlen(outdir)-1) ne path_sep() then outdir=outdir+path_sep() ;MAKE SURE PATH SEPERATOR IS AT THE END OF STRING
-        
-      
-        FindPro, 'hv_writtenby.pro', NoPrint=1, DirList=DirList ;CHECK IF HV_WRITTENBY>PRO EXISTS
-        if dirlist[0] eq '' then begin
-         box_message,'CAN NOT FIND HV_WRITTENBY. EXITING...'
-         goto,JUMP2
-        endif
-        
-        
-        if n_elements(dirlist) gt 1 then box_message,strcompress('YOU HAVE TWO HV_WRITTENBY IN YOUR PATH, SELECTING THE ONE IN '+dirlist(0))
-      
-     
-        wbfile=rd_tfile(dirlist(0)+path_sep()+'hv_writtenby.pro') ; READ IN STRING ARRAY
-        thisstr=strmatch(wbfile,'*jp2gen_write*:*')     ; FIND OUTDIR SPECIFICATION
-        wbfile(where(thisstr eq 1))=strcompress("jp2gen_write: '"+outdir+"' , $")
-        openw,wflun,dirlist(0)+'/hv_writtenby.pro',/get_lun
-           for i=0,n_elements(wbfile)-1 do begin
-              printf,wflun,wbfile(i)
-           endfor
-        free_lun,wflun
-        close,wflun
-     endif 
-
-
-
-
-;SET SOURCE DIRECTORY IF NOT GIVEN
-   if keyword_set(dir) eq 0 then dir=''
-   if strmid(dir,strlen(dir)-1) ne path_sep() and dir ne '' then dir=dir+path_sep() ;MAKE SURE PATH SEPERATOR IS AT THE END OF STRING 
-
-
-
-
-;CHECK IF THERE ARE FILES
-   if n_elements(SOT_FG2dfiles) lt 1 then box_message,'NO FILES GIVEN!'
-;;LOOP through files, creating a jp2000 for each file
-   for ff=0,n_elements(SOT_FG2dfiles)-1 do begin
-     
-      fitsname=dir+SOT_FG2dfiles(ff)
-      if file_exist(fitsname) eq 0 then begin
-           box_message,'CAN NOT FIND FITSFILE '+SOT_FG2dfiles(ff)
-           goto,jump1
-      endif
-         
-     img=readfits(fitsname,fitshead)
-     struc_header=FITSHEAD2STRUCT(fitshead);get file 
-      
-      
-      ;CHECK IF FG SIMPLE
-      if struc_header.obs_type ne 'FG (simple)' then begin 
-        box_message,strcompress('NOT AN FG (SIMPLE) FILE! SKIPPING FILE '+fitsname)
-        goto, JUMP1
-      endif
-     ;CHECK IF 2D FILE
-      if struc_header.naxis ne 2 then begin 
-        box_message,strcompress('NAXIS HAS TO BE 2!  SKIPPING FILE '+fitsname)
-        goto, JUMP1
-      endif
-    
-      ;REPLACE SOME STRINGS THAT OTHERWISE CAUSE PROBLEMS IN THE DIRECTORY CREATION 
-      struc_header.wave=replstr(struc_header.wave,' ','_')
-      struc_header.instrume=replstr(struc_header.instrume,'/','_')
-      struc_header.obs_type=replstr(struc_header.obs_type,'(','_')
-      struc_header.obs_type=replstr(struc_header.obs_type,')','_')
-      struc_header.obs_type=strcompress(struc_header.obs_type,/remove_all)
-
-
-      comment='HINODE FG FILE'
-
-
-      info=CALL_FUNCTION('hvs_hinode_fg')    ; CREATE DETAILS STRUCTURE WITH OBSERVER AND INSTRUMENTS INFORMATION
-      
-      tobs = HV_PARSE_CCSDS(struc_header.date_obs)
-
-      hvsi = {  dir:dir, $ ; the directory where the source FITS file is stored,default is current dir
-          fitsname:fitsname, $ ; the name of the FITS file
-          header: struc_header, $ ; the ENTIRE FITS header as a structure - use FITSHEAD2STRUCT
-          comment: comment, $ ; a string that contains any further information 
-          measurement:struc_header.wave,$ ; the particular measurement of this FITS file
-           yy:tobs.yy,$
-           mm:tobs.mm,$
-           dd:tobs.dd,$
-           hh:tobs.hh,$
-           mmm:tobs.mmm,$
-           ss:tobs.ss,$
-           milli:tobs.milli,$
-           details:info }
-
-      hvs = {img:img, $ ; a 2-d numerical array that is the image you want to write
-         hvsi:hvsi $ ; a structure containing the relevant information about img
-        }
-
-
-
-      HV_MAKE_JP2,hvs    ; CONVERT IMAGES TO JP2000
-     
-     
-     JUMP1:         ;GO TO NEXT FILE
-   endfor  
- JUMP2:              ;EXIT PROGRAM
+PRO HV_HIN_FG2JP2_specific, img, struc_header, dir, file, outdir=outdir, err=err
+  ;;+ 
+  ;; Purpose:
+  ;;     Call hvs_hinode_fg to create SOT/FG specific details structure, then
+  ;;     call the instrument and mission indipendent hv_hvs2jpt to create jpg2000
+  ;;     images. Oslo SDC Archive routines call this procedure directly
+  ;;     without calling the wrapper routines first.
+  ;;
+  ;; Modification History: 
+  ;;       2011.12.08 Terje Fredvik: Extracted from C.E.Fischer's code. Minor
+  ;;                                 additions and changes to the code.  
+  ;; - 
+  
+  
+  err = ''
+  IF struc_header.naxis ne 2 THEN err = 'NAXIS HAS TO BE 2!  SKIPPING FILE '+file+'. '
+  IF struc_header.obs_type ne 'FG (simple)' THEN err += 'NOT AN FG (SIMPLE) FILE! SKIPPING FILE '+file
+  IF err NE '' THEN return
+  
+  hv_check_outdir, outdir=outdir
+  
+  hv_hin_fg_headerreplace, struc_header
+   
+  comment='HINODE FG FILE'  
+  measurement = struc_header.wave
+  info = hvs_hinode_fg(struc_header) ; CREATE DETAILS STRUCTURE WITH OBSERVER AND INSTRUMENTS INFORMATION
+  
+  hv_hvs2jp2, img, struc_header, dir, file, comment, struc_header.wave, info
+  
 END
- 
+
+
+PRO hv_hin_fg2jp2, files, outdir=outdir, dir=dir
+  ; +
+;PRO 
+; 
+;
+; Name: hv_hin_fg2jp2
+;
+; Purpose: Convert Level1 Hinode SOT/FG images into JPEG2000. hv_hin_fg2jp2 is
+;          now a wrapper to the instrument independent procedure
+;          idl/hinode/hv_hin_instr2jp2. hv_hin_instr2jp2 runs hv_check_outdir
+;          and edits the fits header before calling the SOT/FG specific
+;          routine hv_hin_fg2jp2_specific which is included in this file. The
+;          object oriented programs that create the Oslo SDC archive images
+;          call hv_hin_fg2jp2_specific directly. hv_hin_fg2jp2_specific calls
+;          the instrument independent procedure hv_hvs2jp2 which creates the
+;          hvs structure that is passed to the instrument and mission
+;          independent hv_make_jp2 which is the routine that actually creates
+;          the jpg2000 images.
+;
+; Input Parmeters:
+;   files - list of one or more SOT/FG 2D fitsfiles  (x,y) 
+; 
+; OPTIONAL Input Parameters:
+;   DIR    - directory of the input fitsfile ; if not set current directory is 
+;            assumed
+;   OUTDIR - path to save the JPEG2000 files, otherwise the directory given
+;            in hv_writtenby is used
+;
+; 
+; Output Paramters:
+; JPEG2000 file for each FG image with metadata included
+;
+; Keyword Parameters:
+; 
+; Calling Sequence:
+; IDL> hv_hin_fg2jp2,<files>,outdir=<save directory>
+;
+; Calls : idl/hinode/hv_hin_instr2jp2 and (included in this program) hvs_hinode_fg
+;         and HV_HIN_FG2JP2_specific, and several IDL ASTRONOMY LIBRARY programs
+; 
+; 
+; Side Effects:
+;
+; Restrictions:
+;
+; History: 22.08.2011 C.E.Fischer: First version (cfischer@rssd.esa.int) 
+;          2011.12.08 Terje Fredvik: Re-organized C.E.Fischer's code, see
+;                                    Purpose in the doc header for new code
+;                                    layout/workflow.
+;-
+;
+  hv_hin_instr2jp2,'fg',files,outdir=outdir,dir=dir
+END
