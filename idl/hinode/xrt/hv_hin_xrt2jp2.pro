@@ -1,51 +1,16 @@
 
-;PRO 
-; 
-;
-; Name: hv_hin_xrt2jp2
-;
-; Purpose: Convert Level1 Hinode XRT images into JPEG2000.
-;          The fits header is converted into a header structure.
-;          It uses the hv_make_jp2.pro file to create the JPEGs
-;
-; Input Parmeters:
-;   SOT_XRT2dfiles - list of one or more XRT 2D fitfiles  (x,y) 
-; 
-; OPTIONAL Input Parameters:
-;   DIR    - directory of the input fitsfile ; if not set current directory is assumed
-;   OUTDIR    - path to save the JPEG2000 files, otherwise the directory given in hv_writtenby is used
-;
-; 
-; Output Paramters:
-; JPEG2000 file for each XRT image with metadata included
-;
-; Keyword Parameters:
-; 
-; Calling Sequence:
-; IDL> hv_hin_xrt2jp2,<files>,outdir=<save directory>
-;
-; Calls :     replstr and hvs_hinode_fg included in this program, and 
-;             several IDL ASTRONOMY LIBRARY programs
-; 
-; 
-; Side Effects:
-;
-; Restrictions:
-;
-; History: 22.08.2011 first version C.E.Fischer (cfischer@rssd.esa.int)
 
-FUNCTION replstr,tagname,ori,new  ;REPLACE THE STRING 'ORI' WITH 'NEW' IN THE GIVEN STRING TAGNAME 
-  for ind=0,strlen(tagname)-1 do begin
-    t_w=strpos(tagname,ori)
-    if t_w ne -1 then strput,tagname,new,t_w
-  endfor
-  return,tagname
-END
+FUNCTION hvs_hinode_xrt, struc_header  
+  ;;+ 
+  ;; Purpose:
+  ;;     Create the XRT details structure with instrument information
+  ;;
+  ;; Modification History: 
+  ;;       2011.12.08 Terje Fredvik: Extracted from  C.E.Fischer's code. 
+  ;;-
+  ;;  
 
 
-
-FUNCTION hvs_hinode_xrt         ;CREATE THE DETAILS STRUCTURE WITH INSTRUMENT INFORMATION
-common inf_coms,struc_header
 d = {measurement: "", n_levels: 8, n_layers: 8, idl_bitdepth: 8, bit_rate: [0.5,0.01], dataScalingType: 0}
 
 ;
@@ -65,105 +30,103 @@ d = {measurement: "", n_levels: 8, n_layers: 8, idl_bitdepth: 8, bit_rate: [0.5,
   b.details[0].n_levels = 8 ; REQUIRED
   b.details[0].n_layers = 8 ; REQUIRED
   b.details[0].idl_bitdepth = 8 ; REQUIRED
-  b.details[0].bit_rate = [0.5,0.01] ; REQUIRED
- ; b.details[0].dataMin = 0.1;0.25;3.0
- ; b.details[0].dataMax = 30.0;250.0;50.0
- b.details[0].dataScalingType = 3; 0 - linear, 1 - sqrt, 3 - log10
- ; b.details[0].dataExptime = 
-  ;b.details[0].gamma = 1.0
- ; b.details[0].fixedImageValue = [0,500000]
+  b.details[0].bit_rate = [4.0,0.1] ; REQUIRED
+  b.details[0].dataScalingType = 3  ; 0 - linear, 1 - sqrt, 3 - log10
+
             
  RETURN,b
  
 END
 
-pro HV_HIN_XRT2JP2,XRT_2dfiles,outdir=outdir,dir=dir
-common inf_coms,struc_header
 
-     if dir_exist(outdir) eq 0 then  box_message,'OUTDIRECTORY DOES NOT EXIST. WILL CREATE IT!'  ;CHECK IF DIRECTORY EXISTS
-    
-     if strmid(outdir,strlen(outdir)-1) ne path_sep() then outdir=outdir+path_sep() ;MAKE SURE PATH SEPERATOR IS AT THE END OF STRING  
-       
-     if keyword_set(outdir) eq 1 then begin   ; CHECK IF OUTDIR IS SET. IF YES, FIND THE HV_WRRITTENBY FILE AND CHANGE THE DIRECTORY IN THE FILE.
-       
-        FindPro, 'hv_writtenby.pro', NoPrint=1, DirList=DirList;CHECK IF HV_WRITTENBY>PRO EXISTS
-        if dirlist eq '' then begin
-         box_message,'CAN NOT FIND HV_WRITTENBY. EXITING...'
-         goto,JUMP2
-        endif
-        
-             
-        if n_elements(dirlist) gt 1 then box_message,strcompress('YOU HAVE TWO HV_WRITTENBY IN YOUR PATH, SELECTING THE ONE IN '+dirlist(0))
-      
-        
-        wbfile=rd_tfile(dirlist(0)+path_sep()+'hv_writtenby.pro') ; READ IN STRING ARRAY
-        thisstr=strmatch(wbfile,'*jp2gen_write*:*')     ; FIND OUTDIR SPECIFICATION
-        wbfile(where(thisstr eq 1))=strcompress("jp2gen_write: '"+outdir+"' , $")
-        openw,wflun,dirlist(0)+'/hv_writtenby.pro',/get_lun
-           for i=0,n_elements(wbfile)-1 do begin
-              printf,wflun,wbfile(i)
-           endfor
-        free_lun,wflun
-        close,wflun
-     endif 
-
-
-;SET SOURCE DIRECTORY IF NOT GIVEN
-    
-     if keyword_set(dir) eq 0 then dir=''
-     if strmid(dir,strlen(dir)-1) ne path_sep() and dir ne '' then dir=dir+path_sep() ;MAKE SURE PATH SEPERATOR IS AT THE END OF STRING  
-     
-     if n_elements(XRT_2dfiles) lt 1 then box_message,'NO FILES GIVEN!'
-;;LOOP through files, creating a jp2000 for each file
-     for ff=0,n_elements(XRT_2dfiles)-1 do begin
-         
-         fitsname=dir+XRT_2dfiles(ff)
-       
-         if file_exist(fitsname) eq 0 then begin
-           box_message,'CAN NOT FIND FITSFILE '+XRT_2dfiles(ff)
-           goto,jump1
-         endif
-         img=readfits(fitsname,fitshead)
-         struc_header=FITSHEAD2STRUCT(fitshead);get file 
-
-
-        ;;CHECK IF 2D FILE
-        if struc_header.naxis ne 2 then begin 
-          box_message,strcompress('NAXIS HAS TO BE 2!  SKIPPING FILE '+fitsname)
-          goto, jump1
-        endif
-
-        comment='HINODE XRT FILE'
-
-
-        info=CALL_FUNCTION('hvs_hinode_xrt')       ; CREATE DETAILS STRUCTURE WITH OBSERVER AND INSTRUMENTS INFORMATION
-        
-        tobs = HV_PARSE_CCSDS(struc_header.date_obs)
-
-        hvsi = {  dir:dir, $ ; the directory where the source FITS file is stored,default is current dir
-          fitsname:fitsname, $ ; the name of the FITS file
-          header: struc_header, $ ; the ENTIRE FITS header as a structure - use FITSHEAD2STRUCT
-          comment: comment, $ ; a string that contains any further information 
-          measurement:strcompress('FW1_'+struc_header.EC_FW1_+'_FW2_'+struc_header.EC_FW2_,/remove_all),$ ; the particular measurement of this FITS file
-           yy:tobs.yy,$
-           mm:tobs.mm,$
-           dd:tobs.dd,$
-           hh:tobs.hh,$
-           mmm:tobs.mmm,$
-           ss:tobs.ss,$
-           milli:tobs.milli,$
-           details:info }
-
-        hvs = {img:img, $ ; a 2-d numerical array that is the image you want to write
-         hvsi:hvsi $ ; a structure containing the relevant information about img
-        }
-
-     
-       HV_MAKE_JP2,hvs    ; CONVERT IMAGES TO JP2000
-     
-     
-     JUMP1:         ;GO TO NEXT FILE
-   endfor  
- JUMP2:              ;EXIT PROGRAM
+PRO HV_HIN_XRT2JP2_specific,img, struc_header, dir, file, outdir=outdir, err=err
+  
+  ;;+ 
+  ;; Purpose:
+  ;;     Call hvs_hinode_xrt to create XRT specific details structure, then
+  ;;     call the instrument and mission indipendent hv_hvs2jpt to create jpg2000
+  ;;     images. Oslo SDC Archive routines call this procedure directly
+  ;;     without calling the wrapper routines first.
+  ;;
+  ;; Modification History: 
+  ;;       2011.12.08 Terje Fredvik: Extracted from C.E.Fischer's code. Minor
+  ;;                                 additions and changes to the code.
+  ;; - 
+  
+  err = ''
+  IF struc_header.naxis ne 2 THEN BEGIN
+     err = 'NAXIS HAS TO BE 2!  SKIPPING FILE '+file+'. '
+     return
+  ENDIF
+  
+  ;; hv_check_outdir is short circuited when the OSDCS environment varible is set:
+  hv_check_outdir, outdir=outdir
+   
+  comment='HINODE XRT FILE'
+  measurement = strcompress('FW1_'+struc_header.EC_FW1_+'_FW2_'+struc_header.EC_FW2_,/remove_all) 
+  
+  ; Create details structure with observer and instruments information
+  info = hvs_hinode_xrt(struc_header) 
+  
+  hv_hvs2jp2, img, struc_header, dir, file, comment, measurement, info
+  
+  
 END
- 
+
+
+PRO hv_hin_xrt2jp2, files, outdir=outdir, dir=dir
+  
+; +
+;PRO 
+; 
+;
+; Name: hv_hin_xrt2jp2
+;
+; Purpose: Convert Level1 Hinode XRT images into JPEG2000. hv_hin_xrt2jp2 is
+;          now a wrapper to the instrument independent procedure
+;          idl/hinode/hv_hin_instr2jp2. hv_hin_instr2jp2 runs hv_check_outdir
+;          and edits the fits header before calling the SOT/FG specific
+;          routine hv_hin_fg2jp2_specific which is included in this
+;          file. 
+;          NOTE: the object oriented programs that create the Oslo SDC archive 
+;          images call hv_hin_fg2jp2_specific directly. hv_hin_fg2jp2_specific calls
+;          the instrument independent procedure hv_hvs2jp2 which creates the
+;          hvs structure that is passed to the instrument and mission
+;          independent hv_make_jp2, which is the routine that actually creates
+;          the jpg2000 images. Puh!
+;
+; Input Parmeters:
+;   files - list of one or more XRT 2D fitsfiles. Either full path plus file
+;   name, or just the filename if DIR keyword is set.
+; 
+; OPTIONAL Input Parameters:
+;   DIR    - directory of the input fitsfile ; if not set current directory is 
+;            assumed
+;   OUTDIR - path to save the JPEG2000 files, otherwise the directory given
+;            in hv_writtenby is used
+;
+; 
+; Output Paramters:
+; JPEG2000 file for each XRT image with metadata included
+;
+; Keyword Parameters:
+; 
+; Calling Sequence:
+; IDL> hv_hin_xrt2jp2,<files>,outdir=<save directory>
+;
+; Calls : idl/hinode/hv_hin_instr2jp2 and (included in this program) hvs_hinode_xrt
+;         and HV_HIN_XRT2JP2_specific, and several IDL ASTRONOMY LIBRARY programs
+; 
+; 
+; Side Effects:
+;
+; Restrictions:
+;
+; History: 22.08.2011 C.E.Fischer: First version (cfischer@rssd.esa.int) 
+;          2011.12.08 Terje Fredvik: Re-organized C.E.Fischer's code, see
+;                                    Purpose in the doc header for new code
+;                                    layout/workflow. 
+;-
+;
+  hv_hin_instr2jp2,'xrt',files,outdir=outdir,dir=dir
+END

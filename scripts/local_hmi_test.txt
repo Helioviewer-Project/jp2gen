@@ -1,0 +1,14 @@
+http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/HMI
+/home/ireland/JP2Gen_downloadtest/staging/v0.8/
+/home/ireland/JP2Gen_downloadtest/v0.8/
+2010/12/05
+2010/12/05
+-1
+HMI
+/home/ireland/JP2Gen_downloadtest/pretendweb/
+1000000
+False
+900
+0
+2
+ireland

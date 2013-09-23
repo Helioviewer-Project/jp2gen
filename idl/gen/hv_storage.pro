@@ -2,6 +2,9 @@
 ; 2009/04/07 JI, original
 ; 2009/11/16 JI, added environment variables to describe where the
 ; programs and data are stored.
+; 2012/10/01 Terje Fredvik, if run by multiple processes in Oslo get the
+; hv_root directory from the OSLO_HV_ROOT environment variable instead of
+; getting this info from hv_writtenby. 
 ;
 ;
 ; See the wiki
@@ -20,7 +23,9 @@ FUNCTION HV_STORAGE,nickname = nickname, no_db = no_db, no_log = no_log, no_jp2 
 ;
 ; Where the output from the HV progs go.
 ;
-  hv_root = wby.local.jp2gen_write
+  ;; If run by multiple processes in Oslo the OSDCS environment variable is set
+  hv_root = getenv('OSLO_HV_ROOT')
+  IF hv_root EQ '' THEN hv_root = wby.local.jp2gen_write
 ;
 ; ----------- No user changes required below here ----------------
 ; The write subdirectory 
