@@ -46,7 +46,7 @@ details = {measurement: '', $
            n_levels: 8, $
            n_layers: 8, $
            idl_bitdepth: 8, $
-           bit_rate: [2, 0.01]}
+           bit_rate: [8, 0.01]}
 details = replicate(details, 8)
 details.measurement = ['171', '195', '284', '1216', '1550', '1600', '1700', 'continuum']
 ;

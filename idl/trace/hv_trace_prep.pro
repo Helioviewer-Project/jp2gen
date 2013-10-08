@@ -24,11 +24,10 @@ PRO HV_TRACE_PREP,filename, copy2outgoing=copy2outgoing
 
      ; prep the data, and add in the
      ; default processing to generate nice images
-     trace_prep,index,data,outindex,outdata,/wave2point,/unspike,/destreak,/deripple,/normalize
+     trace_prep,index,data,outindex,outdata,/wave2point,/unspike,/destreak,/deripple
 
      ; Use the default byte scaling to get nice images
-     sdata = trace_scale(outindex, outdata, /despike, /byte)
-
+     sdata = trace_scale(outindex, outdata, /byte)
      ; number of images
      nimage = n_elements(outindex)
 
