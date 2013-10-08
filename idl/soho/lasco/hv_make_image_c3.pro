@@ -1,6 +1,6 @@
 
 FUNCTION HV_MAKE_IMAGE_C3, img, hdr, FIXGAPS=fixgaps, VIDEOIMG=videoimg, PICT=pict, NOLABEL=nolabel, $
-	NOLOGO=nologo, BKG=bkg, RDIFF=rdiff
+	NOLOGO=nologo, BKG=bkg, RDIFF=rdiff, ANY_YEAR=any_year
 
 ; Keywords:
 ; FIXGAPS	Set to use previous image to replace missing data
@@ -40,21 +40,25 @@ FUNCTION HV_MAKE_IMAGE_C3, img, hdr, FIXGAPS=fixgaps, VIDEOIMG=videoimg, PICT=pi
 ;	030721	jake	moved roll checking for model to getbkgimg
 ;  2003.12.22, nbr - add RDIFF keyword; move FIXGAPS before ratio
 ;  Jan17,2008 -- Karl Battams -- switch to z-buffer instead of pixmaps -- much better for Linux
+; 2010/09/20, nbr   Add /ANY_YEAR
+; 2011/04/08, nbr   Workaround for tvcircle new behavior
+; 2011/11/21, nbr   Workaround for inverted images in Bogart mission
 ;
 ;
-; 01/17/08 @(#)make_image_c3.pro	1.19 :LASCO IDL LIBRARY
+; 11/21/11 @(#)make_image_c3.pro	1.21 :LASCO IDL LIBRARY
 
 ;
-COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304,box_avg_prev2,box_avg_prev3,prev3_exptime
+COMMON RTMVI_COMMON_IMG, prev2,prev3,prev195,prev171,prev284,prev304
 COMMON C3_BLOCK, pylonim, ctr, pylon
 
       ;IF hdr.exptime LT 15 THEN dbias = -7 ELSE dbias=-44	;**NBR,9/1/99
 	dbias=0			;**NBR, 27 Jan 2000
 
       model_all=0
+      IF keyword_set(ANY_YEAR) THEN model_any_year=1 ELSE $
       model_any_year=0		; ** set 3/15/99, NBR
-      LOADCT, 1
-      GAMMA_CT, 0.6
+      ;LOADCT, 1 ; JI commented out
+      ;GAMMA_CT, 0.6 ; JI commented out
       r_occ = 4.4
       r_occ_out = 31.5		;** set 12/7/99, NBR
       fillcol=80	;110	;128	; ** set 7/17/02, nbr
@@ -101,6 +105,7 @@ COMMON C3_BLOCK, pylonim, ctr, pylon
 	print,"box:",box
 
 
+
       ;imgm = imgm/mhdr.exptime
       ;bias = OFFSET_BIAS(hdr, /SUM) + dbias	; NBR, 8/30/99		;JAKE-030127-done in reduce_std_size
       ;cimg = FLOAT(img) - bias	;subtract detector bias from image	;JAKE-030127-done in reduce_std_size
@@ -128,18 +133,12 @@ COMMON C3_BLOCK, pylonim, ctr, pylon
       box_img = DOUBLE(cimg(box(0):box(1),box(2):box(3)))
       box_imgr = DOUBLE(img(box(0):box(1),box(2):box(3)))
       good = WHERE(box_imgr GT 0)
-      IF (good(0) GE 0) THEN BEGIN
-         box_avg=TOTAL(box_img(good))/N_ELEMENTS(good) 
-         box_avgr=TOTAL(box_imgr(good))/N_ELEMENTS(good) 
-      ENDIF ELSE BEGIN
-         good = where (cimg GT 0,n)
-         box_avg=TOTAL(cimg(good))/n
-         box_avgr=TOTAL(img(good))/n
+      IF (good(0) GE 0) THEN box_avg=TOTAL(box_img(good))/N_ELEMENTS(good) ELSE BEGIN
+	 good = where (cimg GT 0,n)
+	 box_avg=TOTAL(cimg(good))/n
       ENDELSE 
-      print,'^^^^^^^^^^^^^^^^^^^^^^^^^'
-      print,box_avg,box_avgr, hdr.exptime,mhdr.exptime
       cimg = TEMPORARY(cimg) * (box_ref/box_avg)        ;** normalize to counts in box
-      help,box_ref,box_avg
+help,box_ref,box_avg
 
       nonzero = WHERE(imgm NE 0)
       
@@ -147,9 +146,7 @@ COMMON C3_BLOCK, pylonim, ctr, pylon
          IF (ind00(0) NE -1) THEN BEGIN			;** gaps in this image
             IF (fixgaps EQ 1) or DATATYPE(prev3) EQ 'UND' THEN cimg(ind00) = fillcol $
             ELSE BEGIN
-               cimg(ind00) = prev3(ind00);*box_avg_prev3/box_avg;	* (hdr.exptime/prev3_exptime);** fill gaps in this img with prev image with the correct scale
-               print,'*********************************'
-               print, box_avg_prev3/box_avg
+               cimg(ind00) = prev3(ind00)	;** fill gaps in this img with prev image
             ENDELSE
          ENDIF
       ENDIF
@@ -157,14 +154,14 @@ COMMON C3_BLOCK, pylonim, ctr, pylon
 	set_plot,'z'
         device,set_resolution=[hsize,vsize] 
         IF datatype(prev3) NE 'UND' THEN BEGIN
-		IF ( hdr.crota1 eq 180. ) THEN rdiff = rotate(cimg-prev3,2) ELSE rdiff = cimg - prev3
+		;IF ( abs(hdr.crota1) GT 170. ) THEN rdiff = rotate(cimg-prev3,2) ELSE rdiff = cimg - prev3 ; JI commented out and returned to previous condition.  JP2Gen handles the rotation elsewhere
+                IF ( hdr.crota1 eq 180. ) THEN rdiff = rotate(cimg-prev3,2) ELSE rdiff = cimg - prev3
 		tvscl, rdiff<dmax>dmin
 		RTMVIXY, timestamp
 		rdiff = tvrd()
-             ENDIF
+	ENDIF
 	prev3 = cimg
-        box_avg_prev3 = box_avg
-        prev3_exptime = hdr.exptime
+
 
       cimg(nonzero) = TEMPORARY(cimg(nonzero)) / imgm(nonzero)   ;take ratio of image to model
 ;
@@ -186,7 +183,7 @@ help,m
       IF pylgtm(0) NE -1 THEN cimg(pylgtm)=m		
 
       TVLCT, r, g, b, /GET
-;stop
+
       cimg = BYTSCL(cimg, bmin, bmax)
 	nz = where(cimg GT 0)
 	;fillcol=median(cimg(nz))
@@ -203,10 +200,19 @@ help,m
 
       tmp_img = cimg & tmp_img(*) = 0 & TV,tmp_img
       HV_TVCIRCLE, r_occ_out*r_sun,sunc.xcen,sunc.ycen, /FILL, COLOR=1
-      tmp_img = TVRD()
-      ind1 = WHERE(tmp_img NE 1)
-      IF (ind1(0) NE -1) THEN cimg(ind1) = fillcol
- 
+
+    ;TVCIRCLE, r_occ_out*r_sun,sunc.xcen,sunc.ycen, /FILL, COLOR=2 ; JI commented out
+    ;TVCIRCLE, r_occ*r_sun, sunc.xcen, sunc.ycen, /FILL, COLOR=4 ; JI commented out
+
+    tmp_img = TVRD()
+    ind1 = WHERE(tmp_img NE 1)
+    IF (ind1(0) NE -1) THEN cimg(ind1) = fillcol
+    ;outermask = WHERE(tmp_img EQ min(tmp_img)) ; JI commented out
+    ;innermask = WHERE(tmp_img EQ max(tmp_img)) ; JI commented out
+    
+    ;IF (outermask[0] NE -1) THEN cimg(outermask) = fillcol ; JI commented out
+    ;IF (innermask[0] NE -1) THEN cimg(innermask) = fillcol ; JI commented out
+
       cimg(0:2,*)		= fillcol	; add border
       cimg(vsize-3:vsize-1,*)	= fillcol
       cimg(*,0:2)		= fillcol
@@ -217,9 +223,11 @@ help,m
       HV_TVCIRCLE, r_occ*r_sun, sunc.xcen, sunc.ycen, /FILL, COLOR=fillcol
 
       ;** draw limb
+      ;TVCIRCLE, r_sun, sunc.xcen, sunc.ycen, COLOR=255, THICK=4 ; JI commented out
       HV_TVCIRCLE, r_sun, sunc.xcen, sunc.ycen, COLOR=255, THICK=4
 
-	IF ( hdr.crota1 eq 180. ) THEN BEGIN	;       jake 030717
+	;IF (abs(hdr.crota1) GT 170. ) THEN BEGIN	;       jake 030717 ; JI commented out and returned to previous value.  JP2Gen handles the rotation
+        IF ( hdr.crota1 eq 180. ) THEN BEGIN	;       jake 030717
 		print, "Rotating image."			;       jake 030717
 		cimg = ROTATE ( TVRD(), 2 )			;       jake 030717
 		TV, cimg							;       jake 030717

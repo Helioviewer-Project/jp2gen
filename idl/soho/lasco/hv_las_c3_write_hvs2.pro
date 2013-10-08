@@ -51,8 +51,8 @@ FUNCTION HV_LAS_C3_WRITE_HVS2,dir,ld,details = details
      min_in = min(cimg,max = max_in)
      image_new = 0b * cimg
      image_new = byte( (cimg - min_in)/float(max_in-min_in)*(maxval-minval) + minval)
-     loadct,3
-     tvlct,r,g,b,/get
+     ;loadct,3
+     ;tvlct,r,g,b,/get
 ;
 ; remove the central coronagraph data and set it to zero so it is
 ; transparent

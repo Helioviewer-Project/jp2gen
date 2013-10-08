@@ -314,9 +314,11 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                # Copy the new files to the ingest directory, and then delete it
 	                for name in newlist:
 	                        newFile = name[:-1]
-	                        if newFile.endswith('.jp2'):
+	                        if newFile.endswith('.jp2') and (newFile.find('tmp') == -1):
+					doJPIPencoding.doJPIPencoding(local_keep + newFile,'SOHO')
+					jprint('JPIP encoding ' + local_keep + newFile)
 	                                shutil.copy2(local_keep + newFile,moveTo + newFile)
-					doJPIPencoding.doJPIPencoding(moveTo + newFile,'SOHO')
+					jprint('Copying '+ local_keep + newFile +' to ' + moveTo + newFile)
 					change2hv(moveTo + newFile)
 					#if os.path.exists(os.path.expanduser(local_keep + newFile)):
 					#	os.remove(local_keep + newFile)

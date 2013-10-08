@@ -58,7 +58,8 @@ FUNCTION HVS_VERSION6_AIA
        nickname:'AIA',$ ; REQUIRED
        hvs_details_filename:'hvs_version5.pro',$ ; REQUIRED
        hvs_details_filename_version:'5.0',$ ; REQUIRED
-       parent_out:'~/tmp/'}               ; REQUIRED
+       parent_out:'~/tmp/',$                ; REQUIRED
+       reversible:1}
 ;
 ; Scaling algorithm
 ;

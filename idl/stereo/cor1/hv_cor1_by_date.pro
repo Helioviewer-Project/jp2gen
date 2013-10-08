@@ -104,16 +104,23 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;
 ;  Get the catalog of COR1 polarization sequence files.
 ;
+     print, progname + ': getting the catalog of COR1 polarization sequence files.'
      cat = cor1_pbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
 ;
 ;  Process the sequences one-by-one.
 ;
     if count gt 0 then begin
        for ifile = 0,count-1 do begin
+          
+
           cor1Files = cat[*,ifile].filename
           already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cor1Files)
           nRequired = (size(cor1Files,/dim))[0]
+
+
           cor1FilesExist = total( file_exist(cor1Files) ) eq nRequired
+
+
           print,systime() + ': '+ progname + ': file '+trim(ifile+1) + ' out of '+trim(count)
           if not(already_written) and cor1FilesExist then begin
              hv_cor1_prep2jp2, cor1Files, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix

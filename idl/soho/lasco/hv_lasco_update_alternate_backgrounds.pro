@@ -65,7 +65,7 @@ PRO HV_LASCO_UPDATE_ALTERNATE_BACKGROUNDS,details_file = details_file
 ; Get the remote files
 ;
      remote_http = sock_find(server[i],'*.fts',path = path[i],err = err)
-     if err eq '' then begin
+     if err eq '' and isarray(remote_http) then begin
         n = n_elements(remote_http)
         remote_list = strarr(n)
         for j = 0,n-1 do begin
@@ -100,7 +100,8 @@ PRO HV_LASCO_UPDATE_ALTERNATE_BACKGROUNDS,details_file = details_file
            endif
         endfor
      endif else begin
-        print,'SOCK_FIND error: '+err
+        print,progname+': SOCK_FIND error: '+err
+        print,progname+': no array of results found.'
      endelse
   endfor
 return

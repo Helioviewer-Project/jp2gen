@@ -32,6 +32,10 @@ class URLLister(SGMLParser):
                         self.urls.extend(href)
 
 
+def checkFileSize(f,minsize):
+	stat = os.stat(f)
+	return stat.st_size > minsize
+
 # Create a time-stamp to be used by all log files
 def createTimeStamp():
 	TSyyyy = time.strftime('%Y',time.localtime())
@@ -314,10 +318,15 @@ def GetAIAWave(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monit
 	                # Copy the new files to the ingest directory, and then delete it
 					for name in newlist:
 						newFile = name[:-1]
-						if newFile.endswith('.jp2'):
-							shutil.copy2(local_keep + newFile,moveTo + newFile)
-							doJPIPencoding.doJPIPencoding(moveTo + newFile,'SOHO')
-							change2hv(moveTo + newFile)
+						if newFile.endswith('.jp2') and (newFile.find('tmp') == -1):
+							if checkFileSize(local_keep + newFile,minJP2SizeInBytes):
+								doJPIPencoding.doJPIPencoding(local_keep + newFile,'SOHO')
+								jprint('JPIP encoding ' + local_keep + newFile)
+								shutil.copy2(local_keep + newFile,moveTo + newFile)
+								jprint('Copying '+ local_keep + newFile +' to ' + moveTo + newFile)
+								change2hv(moveTo + newFile)
+							else:
+								jprint(local_keep + newFile+' is smaller than minimum allowed.')
 					#if os.path.exists(os.path.expanduser(local_keep + newFile)):
 					#	os.remove(local_keep + newFile)
 			else:
@@ -442,6 +451,7 @@ else:
 	daysBackMin = int(options[11][:-1])
 	daysBackMax = int(options[12][:-1])
 
+
 	# Re-direct stdout to a logfile?
 	if redirectTF == 'True':
 		redirect = True
@@ -461,8 +471,8 @@ else:
 		count = 0
 		while 1:
 			count = count + 1
-			print '********************'
-			print count
+			#print '********************'
+			#print count
 			gotNewData = False
 			for daysBack in range(daysBackMin,daysBackMax):
 

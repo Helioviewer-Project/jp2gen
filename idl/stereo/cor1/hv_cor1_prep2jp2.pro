@@ -80,16 +80,17 @@ pro hv_cor1_prep2jp2, filename, jp2_filename=jp2_filename, $
 ;  image positioning algorithms of hv.org and JHV.
 ;
   if keyword_set(recalculate_crpix) then begin
-     if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
-        wcs = fitshead2wcs(header)
-        center = wcs_get_pixel(wcs, [0,0])
-        header.crpix1 = center[0]
-        header.crpix2 = center[1]
-        crvalOriginal = 'Original values: CRVAL1='+trim(header.crval1)+','+'CRVAL2='+trim(header.crval2)
-        header = add_tag(header,'Option recalculate_crpix was used to recalculate CRPIX* so that CRVAL* values are identically zero. '+crvalOriginal,'HV_SECCHI_COMMENT_CRVAL')
-        header.crval1 = 0
-        header.crval2 = 0
-     endif
+     header = HV_RECALCULATE_CRPIX(header)
+     ;if (header.crval1 ne 0) or (header.crval2 ne 0) then begin
+     ;   wcs = fitshead2wcs(header)
+     ;   center = wcs_get_pixel(wcs, [0,0])
+     ;   header.crpix1 = center[0]
+     ;   header.crpix2 = center[1]
+     ;   crvalOriginal = 'Original values: CRVAL1='+trim(header.crval1)+','+'CRVAL2='+trim(header.crval2)
+     ;   header = add_tag(header,'Option recalculate_crpix was used to recalculate CRPIX* so that CRVAL* values are identically zero. '+crvalOriginal,'HV_SECCHI_COMMENT_CRVAL')
+     ;   header.crval1 = 0
+     ;   header.crval2 = 0
+     ;endif
   endif
 ;
 ;  Determine the spacecraft, and get the details structure.

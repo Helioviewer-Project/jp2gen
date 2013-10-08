@@ -74,7 +74,7 @@ FUNCTION HVS_GEN
   b.details[0].n_levels = 8 ; REQUIRED
   b.details[0].n_layers = 8 ; REQUIRED
   b.details[0].idl_bitdepth = 8 ; REQUIRED
-  b.details[0].bit_rate = [0.5,0.01] ; REQUIRED
+  b.details[0].bit_rate = [4.0,0.1] ; REQUIRED
 
   return,b
 end 

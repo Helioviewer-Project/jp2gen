@@ -79,10 +79,14 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;  Check that the date is valid.
 ;
   if (n_elements(date) eq 0) or (n_elements(date) gt 2) then message, $
-     'DATE must have 1 or 2 elements'
+     'DATE must have 2 elements'
   message = ''
   utc = anytim2utc(date, errmsg=message)
-  if message ne '' then message, message
+;
+; Define the directory where we log errors due to not being able to
+; find the SECCHI catalog
+;
+  cantFindCatalogDir = HV_SECCHI_CANTFINDCATALOG()
 ;
 ;  Step through the STEREO spacecraft
 ;
@@ -96,14 +100,33 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;  to run through all the images from one spacecraft.
 ;
      load_stereo_spice,/reload
-     print,progname + ': examining STEREO-'+sc[isc]
+     print,progname +': examining STEREO-'+sc[isc]
 ;
 ;  Get the catalog of EUVI image files.
 ;
-     cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='euvi', $
-                           source='lz', type='img', /check)
-     print, progname + ': catalog datatype: ' + datatype(cat,1)
-     if datatype(cat,1) eq 'Structure' then begin
+     nrepeat = 0
+     nrepeat_max = 2
+     repeat_time_in_seconds = 0.0
+     repeat begin
+        cat = scc_read_summary(date=utc, spacecraft=sc[isc], telescope='euvi', $
+                               source='lz', type='img', /check)
+        print, progname + ': catalog datatype: ' + datatype(cat,1)
+        if datatype(cat,1) ne 'Structure' then begin
+           nrepeat = nrepeat + 1
+           print,progname + ': '+ji_systime()
+           print,progname + ': completed repeat number '+trim(nrepeat) + ' out of ' + trim(nrepeat_max)
+           print,progname + ': total repeat wait time is ' + trim(repeat_time_in_seconds*nrepeat_max/60.0)+' in minutes.'
+           HV_WAIT,progname,repeat_time_in_seconds,/seconds
+        endif
+     endrep until (datatype(cat,1) eq 'Structure') or (nrepeat ge nrepeat_max)
+     if (datatype(cat,1) ne 'Structure') then begin
+        print,progname + ': '+ji_systime()
+        print,progname + ': did not find any data for date ' + ji_txtrep(date,'/','-')
+        save_filename = ji_txtrep(date,'/','-') + '.' + JI_SYSTIME() + '.sav'
+        print,progname + ': saving date to ' + cantFindCatalogDir + '/' + save_filename
+        save,filename = cantFindCatalogDir + '/' + save_filename, date
+     endif else begin
+     ;if datatype(cat,1) eq 'Structure' then begin
 ;
 ;  Filter out beacon images, and optionally special event images.
 ;
@@ -135,7 +158,7 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
               endelse
            endfor
         endif
-     endif
+     endelse
   endfor
 ;
 end

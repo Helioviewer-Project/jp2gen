@@ -43,11 +43,11 @@ PRO HV_SECCHI_AUTO,ndaysBack = ndaysBack, $                      ; date to end a
         endif
      endfor
 ;
-; Wait 15 minutes before looking for more data
+; Wait 6 hours before looking for more data
 ;
      count = count + 1
      HV_REPEAT_MESSAGE,progname,count,timestart, more = ['examined ' + date + '.',''],/web
-     HV_WAIT,progname,120,/minutes,/web
+     HV_WAIT,progname,6*60,/minutes,/web
 
   endrep until  1 eq keyword_set(once_only)
 

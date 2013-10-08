@@ -7,8 +7,8 @@
 SOHO
 /home/ireland/www/soho.
 1000
-False
+True
 900
 0
-2
+6
 

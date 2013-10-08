@@ -387,11 +387,11 @@ def GetJP2(nickname,yyyy,mm,dd,wave,remote_root,local_root,ingest_root,monitorLo
 #remote_root = "http://sdowww.lmsal.com/sdomedia/hv_jp2kwrite/v0.8/jp2/AIA"
 
 # SOHO instruments
-#instruments = ['EIT','MDI','LASCO-C2','LASCO-C3']
-instruments = ['MDI']
+instruments = ['EIT','MDI','LASCO-C2','LASCO-C3']
+#instruments = ['MDI']
 
-#measurements = {'EIT':['171','195','304','284'],'MDI':['continuum','magnetogram'],'LASCO-C2':['white-light'],'LASCO-C3':['white-light']}
-measurements = {'MDI':['continuum']}
+measurements = {'EIT':['171','195','304','284'],'MDI':['continuum','magnetogram'],'LASCO-C2':['white-light'],'LASCO-C3':['white-light']}
+#measurements = {'MDI':['continuum']}
 
 
 #
