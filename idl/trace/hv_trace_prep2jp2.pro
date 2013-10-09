@@ -21,6 +21,14 @@ PRO HV_TRACE_PREP2JP2, header, image, overwrite=overwrite, jp2_filename = jp2_fi
   endif
   ident_name = HV_TRACE_CREATE_FILE_IDENTIFIER(fitsroot, measurement, ext)
 
+  ; TRACE header contains the DP_HEADER integer array.  This must be
+  ; converted into a single string in order for it to be stored in
+  ; the JP2 header.
+  if have_tag(header, 'dp_header') then begin
+     string_dp_header = strjoin(header.dp_header, ',')
+     header = rep_tag_value(header, string_dp_header, 'dp_header')
+  endif
+
   ; HV information structure
   hvsi = {dir: '', $
           fitsname: ident_name, $

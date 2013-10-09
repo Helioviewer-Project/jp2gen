@@ -18,7 +18,7 @@ PRO HV_TRACE_WRITE_COLORTABLE_PNG,dir = dir
         r = reform(rgb_table[*, 0])
         g = reform(rgb_table[*, 1])
         b = reform(rgb_table[*, 2])
-        mname = 'continuum'
+        mname = 'WL'
      endelse
      write_png,dir + mname + '_colortable.png',a,r,g,b
   endfor

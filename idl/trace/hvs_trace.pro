@@ -48,7 +48,7 @@ details = {measurement: '', $
            idl_bitdepth: 8, $
            bit_rate: [8, 0.01]}
 details = replicate(details, 8)
-details.measurement = ['171', '195', '284', '1216', '1550', '1600', '1700', 'continuum']
+details.measurement = ['171', '195', '284', '1216', '1550', '1600', '1700', 'WL']
 ;
 ;  Define the info structure.
 ;
