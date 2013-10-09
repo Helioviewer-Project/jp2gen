@@ -38,7 +38,6 @@ PRO HV_TRACE_PREP,filename, copy2outgoing=copy2outgoing
 
         ; Use the default byte scaling to get nice images
         sdata = trace_scale(outindex, outdata, /byte)
-        stop
         ; number of images
         nimage = n_elements(outindex)
 
