@@ -3,7 +3,7 @@
 ;
 PRO HV_SECCHI_WRITE_COLORTABLE_PNG,dir = dir
 ;
-  if not keyword_set(dir) then dir = ''
+  if not keyword_set(dir) then dir = 'colortables/
   inst = ['COR1','COR2','EUVI']
   meas = {cor1:[0],cor2:[0],euvi:[171,195,284,304]}
 
