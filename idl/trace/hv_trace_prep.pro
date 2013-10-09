@@ -33,6 +33,10 @@ PRO HV_TRACE_PREP,filename, copy2outgoing=copy2outgoing
 
      ; for each image, call the JPEG2000 writing code
      for i = 0, nimage-1 do begin
+        print,minmax(sdata[*,*,i])
+        plot_image, image
+        print,minmax((sdata[*,*,i])
+        read, dummy
         hv_trace_prep2jp2, outindex[i], reform(sdata[*,*,i]), overwrite=overwrite, jp2_filename=jp2_filename, fitsroot=filename
         if keyword_set(copy2outgoing) then begin
            HV_COPY2OUTGOING,[jp2_filename]

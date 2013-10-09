@@ -567,5 +567,5 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         print,progname + ' created ' + file + '.jp2'
      ENDELSE
   ENDIF
-stop
+
 END
