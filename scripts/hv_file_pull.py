@@ -14,6 +14,36 @@
 #
 #
 """
+Pseudocode
+
+read options files
+
+start loop
+-  for this nickname, measurement , yyyy, mm, dd
+--    get file list from database
+--    get file list from staging directory
+---      if good files exist in the staging directory which are not in the database:
+----        move them into ingestion
+----        update database
+---      if bad files exist in the staging directory:
+----        move them into quarantine
+----        update database
+--    get file list from remote location
+---      if files exist at the remote location which are not in the database:
+----        download them into staging
+----        if good files exist in the staging directory which are not in the database:
+-----          move them into ingestion
+-----          update database
+----        if bad files exist in the staging directory:
+-----          move them into quarantine
+-----          update database
+
+end loop
+
+
+"""
+
+"""
 Reads a setup file, downloads files, and populates an SQLite
 database with the entries.
 The SQLite database is populated with the following entries
@@ -30,6 +60,8 @@ fileProblem int = identified problems with the quarantined file; 0 if there are 
 from urlparse import urlsplit
 from sgmllib import SGMLParser
 import shutil, urllib2, urllib, os, time, sys, calendar, sqlite3, datetime
+
+import hvfp
 
 # URLLister
 class URLLister(SGMLParser):
@@ -74,63 +106,10 @@ def hvGetFilesAtLocation(location):
 		fileLocationExtension = '.fromstaging.newfiles.txt'
 	return files, fileLocationExtension
 
-# isFileGood
-def isFileGood(fullPathAndFilename,minimumFileSize,endsWith=''):
-	""" Tests to see if a file meets the minimum requirements to be ingested into the database.
-	An entry of -1 means that the test was not performed, 0 means failure, 1 means pass.
-	"""
-	tests = {"fileExists":-1,"minimumFileSize":-1,"endsWith":-1}
-	isFileGoodDB = 1
-	fileProblem = 0
-
-	# Does the file exist?
-	if os.path.isfile(fullPathAndFilename):
-		tests["fileExists"] = 1
-		# test for file size
-		s = os.stat(fullPathAndFilename)
-		if s.st_size > minimumFileSize:
-			tests["minimumFileSize"] = 1
-		else:
-			fileProblem = fileProblem + 2
-			tests["minimumFileSize"] = 0
-		
-		# test that the file has the right extension
-		if endsWith != '':
-			if fullPathAndFilename.endswith(endsWith):
-				tests["endsWith"] = 1
-			else:
-				fileProblem = fileProblem + 4
-				tests["endsWith"] = 0
-	else:
-		fileProblem = fileProblem + 1
-		tests["fileExists"] = 0
-
-	# Has the file passed all the tests?
-	isFileGoodDB = 1
-	for i in tests.itervalues():
-		if i == 0:
-			isFileGoodDB = 0
-
-	return isFileGoodDB, fileProblem
-
-
-# createTimeStamp
-def createTimeStamp():
-	""" Creates a time-stamp to be used by all log files. """
-	timeStamp = time.strftime('%Y%m%d_%H%M%S', time.localtime())
-	return timeStamp
-
 # jprint
 def jprint(z):
 	""" Prints out a message with a time stamp """
         print createTimeStamp() + ' : ' + z
-
-# change2hv
-def change2hv(z):
-	""" Changes the file permissions, and ownership from a local user to the helioviewer identity """
-        os.system('chmod -R 775 ' + z)
-	#if localUser != '':
-	#	os.system('chown -R '+localUser+':helioviewer ' + z)
 
 # hvCreateSubdir
 def hvCreateSubdir(x,out=True, verbose=False):
@@ -150,18 +129,6 @@ def hvCreateSubdir(x,out=True, verbose=False):
 		#jprint('Directory already exists = '+x)
 	return x
 
-# hvSubdir
-def hvSubdir(measurement,yyyy,mm,dd):
-	"""Return the directory structure for helioviewer JPEG2000 files."""
-	# New Style
-	return [yyyy + '/', yyyy+'/'+mm+'/', yyyy+'/'+mm+'/'+dd+'/', yyyy+'/'+mm+'/'+dd+'/' + measurement + '/']
-	# Old Style
-	#return [measurement + '/', measurement + '/' + yyyy + '/', measurement + '/' + yyyy+'/'+mm+'/', measurement + '/' + yyyy+'/'+mm+'/'+dd+'/', measurement + '/' + yyyy+'/'+mm+'/'+dd+'/' ]
-
-# hvDateFilename
-def hvDateFilename(yyyy,mm,dd,nickname,measurement):
-	"""Creates a filename from the date, nickname and measurement"""
-	return yyyy + mm + dd + '__' + nickname + '__' + measurement
 
 # hvParseJP2Filename
 def hvParseJP2Filename(filename):
