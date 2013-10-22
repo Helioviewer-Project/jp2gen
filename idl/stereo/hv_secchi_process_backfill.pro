@@ -45,7 +45,7 @@ PRO HV_SECCHI_PROCESS_BACKFILL,date,cor1=cor1, cor2=cor2, euvi=euvi
 ;
      timestart = systime()
      print,' '
-     print,systime() + ': ' + progname + ': Processing all files on '+date
+     print,systime() + ': ' + progname + ': Processing all files on ' + this_date
 ;
 ; Pick an instrument
 ;

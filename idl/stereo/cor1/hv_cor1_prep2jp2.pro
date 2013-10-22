@@ -68,6 +68,8 @@ pro hv_cor1_prep2jp2, filename, jp2_filename=jp2_filename, $
 ;
   polariz_on = n_elements(filename) eq 3
 
+  print,filename
+
   secchi_prep, filename, header, image, /calimg_off, /calfac_off, /rotate_on, $
                /smask, polariz_on=polariz_on
 ;
