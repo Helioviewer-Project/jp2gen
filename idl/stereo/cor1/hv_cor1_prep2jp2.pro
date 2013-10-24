@@ -71,7 +71,7 @@ pro hv_cor1_prep2jp2, filename, jp2_filename=jp2_filename, $
   print,filename
 
   secchi_prep, filename, header, image, /calimg_off, /calfac_off, /rotate_on, $
-               /smask, polariz_on=polariz_on
+               /smask, polariz_on=polariz_on, /interp
 ;
 ;  Scale the image.
 ;

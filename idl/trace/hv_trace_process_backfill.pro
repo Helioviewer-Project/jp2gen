@@ -30,9 +30,9 @@ PRO HV_TRACE_PROCESS_BACKFILL,date
   hourlist = strarr(25)
   for i = 0, 24 do begin
      if i le 9 then begin
-        hr = '0' + str(i)
+        hr = '0' + trim(i)
      endif else begin
-        hr = str(i)
+        hr = trim(i)
      endelse
      hourlist[i] = hr + ':00:00'
   endfor
@@ -59,17 +59,17 @@ PRO HV_TRACE_PROCESS_BACKFILL,date
 ;
      timestart = systime()
      print,' '
-     print,systime() + ': ' + progname + ': Processing all files on '+date
+     print,systime() + ': ' + progname + ': Processing all files on '+this_date
 ;
 ; Get the data for this day
 ;
 ; Query the TRACE catalog on an hourly basis so we don't have
 ; too much data in memory at any one time
-     for i = 0, 22 do begin
+     for i = 0, 23 do begin
 
         ; Start and the end times
-        start_time = this_date + hourlist[i]
-        end_time = this_date + hourlist[i+1]
+        start_time = this_date + ' ' + hourlist[i]
+        end_time = this_date + ' ' + hourlist[i+1]
 
         ; Query the catalog
         trace_cat, start_time, end_time, catalog
@@ -79,9 +79,9 @@ PRO HV_TRACE_PROCESS_BACKFILL,date
 
         ; Send the files list, then prep the data and write a JP2 file for each of the files
         HV_TRACE_PREP,files, copy2outgoing=copy2outgoing
+     endfor
 
-
-  endrep until mjd gt mjd_end
+  endrep until mjd ge mjd_end
 
 
   return

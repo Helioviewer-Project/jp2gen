@@ -14,7 +14,6 @@ PRO HV_TRACE_PREP,filename, copy2outgoing=copy2outgoing
   ; HVS information
   info = HVS_TRACE()
   measurement = info.details[*].measurement
-  measurement = ['1700']
   nmeasurement = n_elements(measurement)
 
 

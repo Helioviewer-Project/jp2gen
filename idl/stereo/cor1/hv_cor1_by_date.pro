@@ -92,6 +92,7 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;  Step through the STEREO spacecraft
 ;
   sc = ['ahead', 'behind']
+  sc = ['behind', 'ahead']
   for isc=0,1 do begin
 ;
 ;  Reload the STEREO SPICE files.  We do this to make sure we have the
