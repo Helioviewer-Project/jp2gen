@@ -76,7 +76,7 @@ pro hv_cor2_prep2jp2, filename, jp2_filename=jp2_filename, $
 ;  endif else begin
      polariz_on = n_elements(filename) eq 3
      secchi_prep, filename, header, image, /calimg_off, /calfac_off, /smask, $
-                  polariz_on=polariz_on
+                  polariz_on=polariz_on, /interp
 ;
 ;  Determine the spacecraft, and get the details structure.
 ;

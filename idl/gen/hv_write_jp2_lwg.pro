@@ -202,6 +202,9 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
                                        ' and is available for download at ' + g.source.jp2gen_code + '.' + lf + $
                                        'Please contact the source code providers if you suspect an error in the source code.' + lf + $
                                        'Full source code for the entire Helioviewer Project can be found at ' + g.source.all_code + '.')
+;
+; Finish up the Helioviewer comment by adding in any existing comment
+;
         if tag_exist(header,'hv_comment') then begin
            hv_comment = HV_XML_COMPLIANCE(header.hv_comment) + lf + hv_comment
         endif
