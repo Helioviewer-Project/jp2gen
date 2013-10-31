@@ -259,7 +259,9 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         kmax = n_elements(header.(j))
         for k = 0, kmax-1 do begin
            value = HV_XML_COMPLIANCE((header.(j))[k])
-           xh+=value+lf
+           if value ne '' then begin
+              xh+=value+lf
+           endif
         endfor
         xh+='</history>'+lf
         ;while (header.(j))[k] ne '' and (k lt kmax) do begin
@@ -278,7 +280,9 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
            kmax = n_elements(header.(j))
            for k = 0, kmax-1 do begin
               value = HV_XML_COMPLIANCE((header.(j))[k])
-              xh+=value+lf
+              if value ne '' then begin
+                 xh+=value+lf
+              endif
            endfor
            xh+='</comment>'+lf
         endif
