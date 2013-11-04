@@ -2,7 +2,7 @@
 ; 9 October - WRITE out TRACE color tables
 ;
 ;
-PRO HV_TRACE_WRITE_COLORTABLE_PNG,dir = dir
+PRO HV_TRACE_WRITE_COLORTABLE_PNG,dir = dir, sunpy=sunpy
 ;
   if not keyword_set(dir) then dir = ''
   inst = ['TRACE']
@@ -18,6 +18,31 @@ PRO HV_TRACE_WRITE_COLORTABLE_PNG,dir = dir
         ; all wave bands except white light
         trace_colors,measurements[j],r,g,b
         mname = trim(measurements[j])
+
+     ; Write out the values of the RGB stream as numbers for SunPy"
+        if keyword_set(sunpy) then begin
+           tbl_name = strarr(3)
+           tbl_name[0] = 'r'
+           tbl_name[1] = 'g'
+           tbl_name[2] = 'b'
+           for i = 0,2 do begin
+              app = '['
+              if i eq 0 then tbl = r
+              if i eq 1 then tbl = g
+              if i eq 2 then tbl = b
+              for k = 0, 255 do begin
+                 if k ne 255 then begin
+                    app = app + trim(nint(tbl[k])) + ', '
+                 endif else begin
+                    app = app + trim(nint(tbl[k]))
+                 endelse
+              endfor
+              app = app + '], dtype=np.uint8)'
+              app = 'trace_' + mname + '_' + tbl_name[i] + ' = np.array(' + app
+              print, app
+           endfor
+           print,' '
+        endif
      endif else begin
         ; take care of the white light measurement
         loadct, 0, rgb_table=rgb_table
