@@ -43,3 +43,16 @@ Observatory specific subdirectories
 /stereo
 
 - Solar TErrestrial RElations Observatory (STEREO) dataset specific code.
+
+/trace
+
+- TRansition Region and Coronal Explorer dataset specific code.
+
+
+Notes
+-----
+
+When adding PNG color tables from IDL, make sure that element (0,0) has the
+"brightest color" (corresponding to color table index 255) and element (0,255)
+has the "darkest color" (corresponding to color table index 0).
+
