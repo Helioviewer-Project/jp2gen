@@ -52,7 +52,8 @@ PRO HV_TRACE_WRITE_COLORTABLE_PNG,dir = dir, sunpy=sunpy
         mname = 'WL'
      endelse
      ; write a color table for the given measurement name "mname"
-     write_png,dir + mname + '_colortable.png',a,r,g,b
+     write_png,dir + mname + '_colortable.png', a, $
+               reverse(r), reverse(g),reverse(b)
   endfor
   set_plot,'x'
 
