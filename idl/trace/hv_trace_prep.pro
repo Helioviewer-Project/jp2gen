@@ -13,9 +13,12 @@ PRO HV_TRACE_PREP,filename, copy2outgoing=copy2outgoing
 
   ; HVS information
   info = HVS_TRACE()
-  measurement = info.details[*].measurement
-  nmeasurement = n_elements(measurement)
 
+  ;
+  ; Get the measurements as defined in the FITS headers
+  ;
+  measurement = info.details[*].measurement_in_fits
+  nmeasurement = n_elements(measurement)
 
   ; read in index from file
   read_trace,filename,-1,index

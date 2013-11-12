@@ -43,12 +43,20 @@ function hvs_trace
 ;  Define the details structure.
 ;
 details = {measurement: '', $
+           measurement_in_fits: '', $
            n_levels: 8, $
            n_layers: 8, $
            idl_bitdepth: 8, $
            bit_rate: [8, 0.01]}
 details = replicate(details, 8)
-details.measurement = ['171', '195', '284', '1216', '1550', '1600', '1700', 'WL']
+;
+; The measurements used by Helioviewer
+;
+details.measurement = ['WL', '171', '195', '284', '1216', '1550', '1600', '1700']
+;
+; The measurements as used in the TRACE fits files
+;
+details.measurement_in_fits = ['WL', '171', '195', '284', '1216', '1550', '1600', '1700']
 ;
 ;  Define the info structure.
 ;

@@ -9,8 +9,10 @@ PRO HV_TRACE_PREP2JP2, header, image, overwrite=overwrite, jp2_filename = jp2_fi
   ; details file
   details = hvs_trace()
 
-  ; Get the measurement
-  measurement = header.wave_len
+  ;
+  ; Define the measurement name as used in Helioviewer
+  ;
+  measurement = trim(header.wave_len)
 
   ; Nice way to get the times out of the date
   ext = anytim2utc(header.date_obs, /ext)

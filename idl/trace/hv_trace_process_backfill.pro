@@ -4,7 +4,7 @@
 ; Pass in an array with dates [earlier_date, later_date]
 ;
 ;
-PRO HV_TRACE_PROCESS_BACKFILL,date
+PRO HV_TRACE_PROCESS_BACKFILL, date, copy2outgoing=copy2outgoing
   progname = 'hv_trace_process_backfill'
 ;
 ;  Check that the date is valid.
