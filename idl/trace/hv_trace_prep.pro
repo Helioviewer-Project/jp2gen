@@ -9,7 +9,7 @@
 ; http://www.mssl.ucl.ac.uk/surf/guides/tag/tag_top.html
 ;
 ;
-PRO HV_TRACE_PREP,filename, copy2outgoing=copy2outgoing
+PRO HV_TRACE_PREP,filename, copy2outgoing=copy2outgoing, delete_original=delete_original
 
   ; HVS information
   info = HVS_TRACE()
@@ -50,7 +50,7 @@ PRO HV_TRACE_PREP,filename, copy2outgoing=copy2outgoing
            ;read, dummy
            hv_trace_prep2jp2, outindex[i], reform(sdata[*,*,i]), overwrite=overwrite, jp2_filename=jp2_filename, fitsroot=filename
            if keyword_set(copy2outgoing) then begin
-              HV_COPY2OUTGOING,[jp2_filename]
+              HV_COPY2OUTGOING,[jp2_filename], delete_original=delete_original
            endif
         endfor
      endif

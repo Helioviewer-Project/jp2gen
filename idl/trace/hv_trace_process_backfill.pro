@@ -4,7 +4,7 @@
 ; Pass in an array with dates [earlier_date, later_date]
 ;
 ;
-PRO HV_TRACE_PROCESS_BACKFILL, date, copy2outgoing=copy2outgoing
+PRO HV_TRACE_PROCESS_BACKFILL, date, copy2outgoing=copy2outgoing, delete_original=delete_original
   progname = 'hv_trace_process_backfill'
 ;
 ;  Check that the date is valid.
@@ -78,7 +78,7 @@ PRO HV_TRACE_PROCESS_BACKFILL, date, copy2outgoing=copy2outgoing
         trace_cat2data,catalog,files,-1,/filedset
 
         ; Send the files list, then prep the data and write a JP2 file for each of the files
-        HV_TRACE_PREP,files, copy2outgoing=copy2outgoing
+        HV_TRACE_PREP,files, copy2outgoing=copy2outgoing, delete_original=delete_original
      endfor
 
   endrep until mjd ge mjd_end
