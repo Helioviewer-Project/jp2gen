@@ -2,14 +2,16 @@
 ; 9 October - WRITE out TRACE color tables
 ;
 ;
-PRO HV_TRACE_WRITE_COLORTABLE_PNG,dir = dir, sunpy=sunpy
+PRO HV_TRACE_WRITE_COLORTABLE_PNG,dir = dir, sunpy=sunpy, rgb=rgb, nowrite=nowrite, measurements=measurements
 ;
   if not keyword_set(dir) then dir = ''
   inst = ['TRACE']
 
 ; Measurement '-1000' is the whitelight measurement, noted as 'WL'
 ; in the FITS header
-  measurements = [171, 195, 284, 1216, 1550, 1600, 1700, -1000]
+  if not(keyword_set(measurements)) then begin
+     measurements = [171, 195, 284, 1216, 1550, 1600, 1700, -1000]
+  endif
 
 ;  set_plot,'z'
   for j = 0,n_elements(measurements)-1 do begin
@@ -52,8 +54,13 @@ PRO HV_TRACE_WRITE_COLORTABLE_PNG,dir = dir, sunpy=sunpy
         mname = 'WL'
      endelse
      ; write a color table for the given measurement name "mname"
-     write_png,dir + mname + '_colortable.png', a, $
-               reverse(r), reverse(g),reverse(b)
+     if not(keyword_set(nowrite)) then begin
+        write_png,dir + mname + '_colortable.png', a, reverse(r), reverse(g),reverse(b)
+     endif
+     rgb = intarr(3, 256)
+     rgb[0, *] = r[*]
+     rgb[1, *] = g[*]
+     rgb[2, *] = b[*]
   endfor
   set_plot,'x'
 

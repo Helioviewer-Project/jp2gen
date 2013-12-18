@@ -66,6 +66,26 @@ PRO HV_TRACE_PROCESS_BACKFILL, date, copy2outgoing=copy2outgoing, delete_origina
 ; Query the TRACE catalog on an hourly basis so we don't have
 ; too much data in memory at any one time
      for i = 0, 23 do begin
+        
+        print,'WARNING!'
+        print,'WARNING!'
+        print,'WARNING!'
+        print,'WARNING!'
+        print,'WARNING!'
+        print,'WARNING!'
+        print,'WARNING!'
+        print,' '
+        print,'You must run hv_trace_prep_adapted_from_sswidl.pro BEFORE running this program'
+        print,'in order to use the version of trace_prep.pro defined in there'
+        print,' '
+        print,'WARNING!'
+        print,'WARNING!'
+        print,'WARNING!'
+        print,'WARNING!'
+        print,'WARNING!'
+        print,'WARNING!'
+        print,'WARNING!'
+
 
         ; Start and the end times
         start_time = this_date + ' ' + hourlist[i]

@@ -47,12 +47,18 @@ details = {measurement: '', $
            n_levels: 8, $
            n_layers: 8, $
            idl_bitdepth: 8, $
-           bit_rate: [8, 0.01]}
+           bit_rate: [8, 0.01],$
+           palette: intarr(3, 256)}
 details = replicate(details, 8)
 ;
 ; The measurements used by Helioviewer
 ;
 details.measurement = ['WL', '171', '195', '284', '1216', '1550', '1600', '1700']
+colortable_measurement = [-1000, 171, 195, 284, 1216, 1550, 1600, 1700]
+for i = 0, 7 do begin
+   hv_trace_write_colortable_png, measurements=colortable_measurement[i], rgb = rgb, /nowrite
+   details[i].palette = rgb
+endfor
 ;
 ; The measurements as used in the TRACE fits files
 ;

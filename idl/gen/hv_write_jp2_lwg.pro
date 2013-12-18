@@ -417,6 +417,7 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 
 ; end of FITS header loop:
   ENDELSE 
+
 ;
 ; If the image has an alpha channel transparency mask supplied with
 ; it, then we need to use the KDU library.  If not, then we just use
@@ -538,12 +539,29 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
         image_new_with_transparency(0,*,*) = image_new(*,*)
         image_new_with_transparency(1,*,*) = temp_alpha(*,*)
 
-        oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
+        if have_tag(details.details,'palette') then begin
+           oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
                        bit_rate=bit_rate,$
                        n_layers=n_layers,$
                        n_levels=n_levels,$
                        PROGRESSION = 'RPCL',$
+                       palette = obsdet.palette,$
                        xml=xh)
+        endif else begin
+           oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
+                          bit_rate=bit_rate,$
+                          n_layers=n_layers,$
+                          n_levels=n_levels,$
+                          PROGRESSION = 'RPCL',$
+                          xml=xh)
+        endelse
+
+        ;oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
+        ;               bit_rate=bit_rate,$
+        ;               n_layers=n_layers,$
+        ;               n_levels=n_levels,$
+        ;               PROGRESSION = 'RPCL',$
+        ;               xml=xh)
 ;
         oJP2->SetData,image_new_with_transparency
         OBJ_DESTROY, oJP2
@@ -560,13 +578,22 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ; implementation of JPEG2000 in IDL 7.0 does not support alpha channel
 ; No transparencey mask was passed, so just use normal IDL routines.
 ;
-
-        oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
+        if have_tag(details.details,'palette') then begin
+           oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
                        bit_rate=bit_rate,$
                        n_layers=n_layers,$
                        n_levels=n_levels,$
                        PROGRESSION = 'RPCL',$
+                       palette = obsdet.palette,$
                        xml=xh)
+        endif else begin
+           oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
+                          bit_rate=bit_rate,$
+                          n_layers=n_layers,$
+                          n_levels=n_levels,$
+                          PROGRESSION = 'RPCL',$
+                          xml=xh)
+        endelse
 ;
         oJP2->SetData,image_new
         OBJ_DESTROY, oJP2
