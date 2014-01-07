@@ -64,7 +64,7 @@
 ;-
 ;
 pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
-                     copy2outgoing = copy2outgoing,recalculate_crpix = recalculate_crpix
+                     copy2outgoing = copy2outgoing,recalculate_crpix = recalculate_crpix, delete_original=delete_original
   on_error, 2
 ;
 ; General variables
@@ -148,7 +148,7 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
                  if not(already_written) and file_exist(filename) then begin
                     hv_euvi_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
                     if keyword_set(copy2outgoing) then begin
-                       HV_COPY2OUTGOING,[jp2_filename]
+                       HV_COPY2OUTGOING,[jp2_filename], delete_original=delete_original
                     endif
                  endif else begin
                     print,systime() + ': '+ progname + ': file already written. Skipping processing of '+filename+'.'

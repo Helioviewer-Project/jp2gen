@@ -20,7 +20,7 @@ PRO HV_SECCHI_PROCESS_BACKFILL,date,cor1=cor1, cor2=cor2, euvi=euvi
   mjd_start = date2mjd(nint(strmid(date[0],0,4)),nint(strmid(date[0],5,2)),nint(strmid(date[0],8,2)))
   mjd_end   = date2mjd(nint(strmid(date[1],0,4)),nint(strmid(date[1],5,2)),nint(strmid(date[1],8,2)))
   if mjd_start gt mjd_end then begin
-     print,progname + ': start date must be earlier than end date since this program works backwards from earlier times'
+     print,progname + ': start date must be earlier than end dates'
      print,progname + ': stopping.'
      stop
   endif
@@ -51,15 +51,15 @@ PRO HV_SECCHI_PROCESS_BACKFILL,date,cor1=cor1, cor2=cor2, euvi=euvi
 ;
      if keyword_set(cor1) then begin 
         print,systime() + ': ' + progname + ': COR1'
-        HV_COR1_BY_DATE, this_date, /copy2outgoing, /recalculate_crpix
+        HV_COR1_BY_DATE, this_date, /copy2outgoing, /recalculate_crpix, /delete_original
      endif
      if keyword_set(cor2) then begin
         print,systime() + ': ' + progname + ': COR2'
-        HV_COR2_BY_DATE, this_date, /copy2outgoing, /recalculate_crpix
+        HV_COR2_BY_DATE, this_date, /copy2outgoing, /recalculate_crpix, /delete_original
      endif
      if keyword_set(euvi) then begin
         print,systime() + ': ' + progname + ': EUVI'
-        HV_EUVI_BY_DATE, this_date, /copy2outgoing, /recalculate_crpix
+        HV_EUVI_BY_DATE, this_date, /copy2outgoing, /recalculate_crpix, /delete_original
      endif
 ;
 ; Transfer to the helioviewer server

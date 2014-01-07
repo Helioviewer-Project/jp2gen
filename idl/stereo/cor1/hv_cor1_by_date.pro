@@ -64,7 +64,7 @@
 ; Contact     :	WTHOMPSON
 ;-
 ;
-pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy2outgoing = copy2outgoing,recalculate_crpix = recalculate_crpix
+pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy2outgoing = copy2outgoing,recalculate_crpix = recalculate_crpix, delete_original=delete_original
   on_error, 2
   progname = 'hv_cor1_by_date'
 ;
@@ -125,7 +125,7 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
           if not(already_written) and cor1FilesExist then begin
              hv_cor1_prep2jp2, cor1Files, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
              if keyword_set(copy2outgoing) then begin
-                HV_COPY2OUTGOING,[jp2_filename]
+                HV_COPY2OUTGOING,[jp2_filename], delete_original=delete_original
              endif
           endif
           if already_written then begin

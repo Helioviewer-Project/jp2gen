@@ -65,7 +65,7 @@
 ;-
 ;
 pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
-                     copy2outgoing = copy2outgoing,recalculate_crpix = recalculate_crpix
+                     copy2outgoing = copy2outgoing,recalculate_crpix = recalculate_crpix, delete_original=delete_original
   on_error, 2
 ;
 ; General variables
@@ -227,7 +227,7 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
                     print,systime() + ': '+ progname + ': Double exposure image being written.'
                     hv_cor2_prep2jp2, filename, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
                     if keyword_set(copy2outgoing) then begin
-                       HV_COPY2OUTGOING, [jp2_filename]
+                       HV_COPY2OUTGOING, [jp2_filename], delete_original=delete_original
                     endif
                  endif
                  if already_written then begin

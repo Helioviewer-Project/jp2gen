@@ -41,10 +41,10 @@ PRO HV_TRACE_PROCESS_BACKFILL, date, copy2outgoing=copy2outgoing, delete_origina
 ;
 ; Main loop
 ;
-  mjd = mjd_start - 1
+  mjd = mjd_end + 1
   repeat begin
-     ; go forward one day
-     mjd = mjd + 1
+     ; go backwards one day
+     mjd = mjd - 1
 
      ; calculate the year / month / date
      mjd2date,mjd,y,m,d
@@ -101,7 +101,7 @@ PRO HV_TRACE_PROCESS_BACKFILL, date, copy2outgoing=copy2outgoing, delete_origina
         HV_TRACE_PREP,files, copy2outgoing=copy2outgoing, delete_original=delete_original
      endfor
 
-  endrep until mjd ge mjd_end
+  endrep until mjd lt mjd_start
 
 
   return
