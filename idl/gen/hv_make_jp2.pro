@@ -39,20 +39,24 @@ PRO HV_MAKE_JP2,hvs,jp2_filename = jp2_filename, already_written = already_writt
 ;
 ; Could also do some verification of the input here
 ;
-; HV_VERIFY_SUFFICIENT,hvs
+  is_compliant = HV_COMPLIANCE(hvs)
 ;
 ; Write the file and log file
 ;
-  HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written, overwrite = overwrite
-  if not(already_written) then begin
-     log_comment = 'directory = '+ hvs.hvsi.dir + $
-                   ' ; read ' + hvs.hvsi.fitsname + $
-                   ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
-                   ' ; at ' + systime(0) + $
-                   ' ; ' + hvs.hvsi.comment
-     HV_LOG_WRITE,hvs.hvsi,log_comment + ' ; wrote ' + jp2_filename
+  if is_compliant eq 1 then begin
+     HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename, already_written = already_written, overwrite = overwrite
+     if not(already_written) then begin
+        log_comment = 'directory = '+ hvs.hvsi.dir + $
+                      ' ; read ' + hvs.hvsi.fitsname + $
+                      ' ; ' +HV_JP2GEN_CURRENT(/verbose) + $
+                      ' ; at ' + systime(0) + $
+                      ' ; ' + hvs.hvsi.comment
+        HV_LOG_WRITE,hvs.hvsi,log_comment + ' ; wrote ' + jp2_filename
+     endif else begin
+        jp2_filename = ginfo.already_written
+     endelse
   endif else begin
-     jp2_filename = ginfo.already_written
+     jp2_filename = ginfo.not_compliant
   endelse
   return
 end

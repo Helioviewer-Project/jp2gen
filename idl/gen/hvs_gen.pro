@@ -60,6 +60,7 @@ FUNCTION HVS_GEN
        detector:notgiven,$
        web:'~/Desktop/',$
        already_written:'already_written',$
+       not_compliant:'not_compliant',$
        na:'not_applicable',$
        notgiven:notgiven,$
        minusonestring:'-1',$
