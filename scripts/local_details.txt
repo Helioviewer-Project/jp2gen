@@ -1,4 +1,0 @@
-~/JP2Gen_downloadtest/staging/v0.8/
-~/JP2Gen_downloadtest/v0.8/
-~/JP2Gen_downloadtest/pretendweb/
-dbTest2.sqlite
