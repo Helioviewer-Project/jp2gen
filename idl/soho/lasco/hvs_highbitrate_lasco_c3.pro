@@ -55,8 +55,8 @@ FUNCTION HVS_HIGHBITRATE_LASCO_C3
        gamma_correction:1.00,$ ; BF 0.380 image gamma correction used in HV_LAS_C3_WRITE_HVS2.pro
        minim:0.99,$ ; BF = 0.99, KS = 0.87
        maxim:1.30,$ ; BF = 1.30, KS = 1.40
-       local_quicklook:'/service/soho-archive/home/soho/private/data/lasco/quicklook/level_05/',$
-       alternate_backgrounds:'~/hv/dat/LASCO/alternate_backgrounds/'} ; OPTIONAL - this is an alternate location for the LASCO C3 background.
+       local_quicklook:'/home/ireland/service/soho-archive/home/soho/private/data/lasco/quicklook/level_05/',$
+       alternate_backgrounds:'~/Data/hvp/dat/LASCO/alternate_backgrounds/'} ; OPTIONAL - this is an alternate location for the LASCO C3 background.
 ;
 ; white-light
 ;

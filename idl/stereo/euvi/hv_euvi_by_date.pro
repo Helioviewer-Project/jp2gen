@@ -71,6 +71,10 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
   g = HVS_GEN()
 ;
+; Date when STEREO-B became unresponsive
+;
+  stereob_unresponsive_date = '2014-10-01'
+;
 ; Prepped data - default is no prepped data
 ;
 ;  prepped = [g.MinusOneString]
@@ -90,9 +94,12 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
 ;  Step through the STEREO spacecraft
 ;
-  sc = ['ahead', 'behind']
+  if anytim2tai(date[0]) le anytim2tai(stereob_unresponsive_date) then begin
+     sc = ['ahead', 'behind']
+  else begin
+     sc = ['ahead']
 ;
-  for isc=0,1 do begin
+  for isc=0, n_elements(sc) do begin
 ;
 ;  Reload the STEREO SPICE files.  We do this to make sure we have the
 ;  very latest information that is relevant to the data we are looking

@@ -56,8 +56,8 @@ FUNCTION HVS_HIGHBITRATE_LASCO_C2
        ql_gamma_correction:1.50,$ ; 
        minim:0.95,$ ; BF = 0.95, KS = 0.6
        maxim:2.00,$ ; BF = 2.00, KS = 2.4
-       local_quicklook:'/service/soho-archive/home/soho/private/data/lasco/quicklook/level_05/',$
-       alternate_backgrounds:'~/hv/dat/LASCO/alternate_backgrounds/'} ; OPTIONAL - this is an alternate location for the LASCO C2 background.
+       local_quicklook:'/home/ireland/service/soho-archive/home/soho/private/data/lasco/quicklook/level_05/',$
+       alternate_backgrounds:'~/Data/hvp/dat/LASCO/alternate_backgrounds/'} ; OPTIONAL - this is an alternate location for the LASCO C2 background.
 ;
 ; white-light
 ;
