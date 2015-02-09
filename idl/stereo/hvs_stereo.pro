@@ -7,5 +7,5 @@ FUNCTION HVS_STEREO
 ;
   answer = {stereob_unresponsive_date: '2014-10-01'}
 
-  return answer
+  return, answer
 END

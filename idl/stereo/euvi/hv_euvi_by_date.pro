@@ -97,8 +97,9 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
   if anytim2tai(date[0]) le anytim2tai(stereob_unresponsive_date) then begin
      sc = ['ahead', 'behind']
-  else begin
+  endif else begin
      sc = ['ahead']
+  endelse
 ;
   for isc=0, n_elements(sc)-1 do begin
 ;
@@ -138,9 +139,15 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
 ;  Filter out beacon images, and optionally special event images.
 ;
-        if keyword_set(only_synoptic) then $
-           w = where(cat.dest eq 'SSR1', count) else $
-              w = where(cat.dest ne 'SW', count)
+        if anytim2tai(date[0]) le anytim2tai(stereob_unresponsive_date) then begin
+           if keyword_set(only_synoptic) then $
+              w = where(cat.dest eq 'SSR1', count) else $
+                 w = where(cat.dest ne 'SW', count)
+        endif else begin
+           if keyword_set(only_synoptic) then $
+              w = where(cat.dest eq 'SSR1', count) else $
+                 w = where(cat.dest eq 'SW', count)
+        endelse
 ;
 ;  Process the files one by one.  If the file is not found, then print a
 ;  message.  This sometimes happens if the catalog file arrives before the FITS
