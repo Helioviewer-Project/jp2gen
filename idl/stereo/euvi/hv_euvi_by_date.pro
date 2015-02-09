@@ -71,9 +71,10 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
   g = HVS_GEN()
 ;
-; Date when STEREO-B became unresponsive
+; STEREO specific variables
 ;
-  stereob_unresponsive_date = '2014-10-01'
+  stereo_information = HVS_STEREO()
+  stereob_unresponsive_date = stereo_information.stereob_unresponsive_date
 ;
 ; Prepped data - default is no prepped data
 ;
@@ -99,7 +100,7 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
   else begin
      sc = ['ahead']
 ;
-  for isc=0, n_elements(sc) do begin
+  for isc=0, n_elements(sc)-1 do begin
 ;
 ;  Reload the STEREO SPICE files.  We do this to make sure we have the
 ;  very latest information that is relevant to the data we are looking
