@@ -37,7 +37,7 @@
 ;                                 file was already written or not
 ;
 ; Calls       :	SECCHI_PREP, FITSHEAD2WCS, WCS_GET_PIXEL, PARSE_STEREO_NAME,
-;               BREAK_FILE, ANYTIM2UTC, HV_MAKE_JP2
+;               BREAK_FILE, ANYTIM2UTC, HV_MAKE_JP2, COR1_TOTBPREP
 ;
 ; Common      :	None.
 ;
@@ -56,6 +56,8 @@
 ;                                                 plotting code in the
 ;                                                 Helioviewer Project
 ;                                                 clients.
+;               10-Feb-2015, William Thompson, GSFC, call COR1_TOTBPREP to
+;                       match use of COR1_TOTBSERIES in HV_COR1_BY_DATE.
 ;
 ; Contact     :	WTHOMPSON
 ;-
@@ -66,12 +68,13 @@ pro hv_cor1_prep2jp2, filename, jp2_filename=jp2_filename, $
 ;
 ;  Call SECCHI_PREP to prepare the image for display.
 ;
-  polariz_on = n_elements(filename) eq 3
-
   print,filename
 
-  secchi_prep, filename, header, image, /calimg_off, /calfac_off, /rotate_on, $
-               /smask, polariz_on=polariz_on, /interp
+  if n_elements(filename) eq 3 then $
+    cor1_totbprep, filename, header, image, /calimg_off, /calfac_off, $
+                   /rotate_on, /smask, /interp else $
+    secchi_prep, filename, header, image, /calimg_off, /calfac_off, $
+                 /rotate_on, /smask, /interp
 ;
 ;  Scale the image.
 ;

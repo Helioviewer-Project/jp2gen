@@ -60,6 +60,8 @@
 ; History     :	Version 1, 22-Dec-2010, William Thompson, GSFC
 ;               08-Apr-2011, Jack Ireland, GSFC, added a prepped data
 ;               return function
+;               10-Feb-2015, William Thompson, GSFC, use COR1_TOTBSERIES
+;                       instead of COR1_PBSERIES
 ;
 ; Contact     :	WTHOMPSON
 ;-
@@ -113,12 +115,8 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;
 ;  Get the catalog of COR1 polarization sequence files.
 ;
-     print, progname + ': getting the catalog of COR1 polarization sequence files.'
-     if anytim2tai(date[0]) le anytim2tai(stereob_unresponsive_date) then begin
-        cat = cor1_pbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
-     endif else begin
-        cat = cor1_totbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
-     endelse
+     print, progname + ': getting the catalog of COR1 total brightness files.'
+     cat = cor1_totbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
 
 ;
 ;  Process the sequences one-by-one.
