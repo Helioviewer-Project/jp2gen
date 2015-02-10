@@ -73,6 +73,11 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
   g = HVS_GEN()
   progname = 'hv_cor2_by_date'
 ;
+; STEREO specific variables
+;
+  stereo_information = HVS_STEREO()
+  stereob_unresponsive_date = stereo_information.stereob_unresponsive_date
+;
 ; Define the directory where we log errors due to not being able to
 ; find the SECCHI catalog
 ;
@@ -88,12 +93,16 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
 ;  Determine which buffer to process.
 ;
-  if keyword_set(only_synoptic) then ssr=1 else ssr=3 ;(3 = both 1 and 2)
+  if anytim2tai(date[0]) le anytim2tai(stereob_unresponsive_date) then begin
+     if keyword_set(only_synoptic) then ssr=1 else ssr=3 ;(3 = both 1 and 2)
+  endif else begin
+     ssr = 7
+  endelse
 ;
 ;  Step through the STEREO spacecraft
 ;
-  sc = ['ahead', 'behind']
-  for isc=0,1 do begin
+  sc = HV_STEREO_DETERMINE_OPERATIONAL_SPACECRAFT(date[0])
+  for isc=0, n_elements(sc)-1 do begin
 ;
 ;  Reload the STEREO SPICE files.  We do this to make sure we have the
 ;  very latest information that is relevant to the data we are looking

@@ -72,6 +72,11 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;
   g = HVS_GEN()
 ;
+; STEREO specific variables
+;
+  stereo_information = HVS_STEREO()
+  stereob_unresponsive_date = stereo_information.stereob_unresponsive_date
+;
 ; Prepped data - default is no prepped data
 ;
 ;  prepped = [g.MinusOneString]
@@ -87,12 +92,16 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;
 ;  Determine which buffer to process.
 ;
-  if keyword_set(only_synoptic) then ssr=1 else ssr=3 ;(3 = both 1 and 2)
+  if anytim2tai(date[0]) le anytim2tai(stereob_unresponsive_date) then begin
+     if keyword_set(only_synoptic) then ssr=1 else ssr=3 ;(3 = both 1 and 2)
+  endif else begin
+     ssr = 7
+  endelse
 ;
 ;  Step through the STEREO spacecraft
 ;
-  sc = ['ahead', 'behind']
-  for isc=0,1 do begin
+  sc = HV_STEREO_DETERMINE_OPERATIONAL_SPACECRAFT(date[0])
+  for isc=0, n_elements(sc)-1 do begin
 ;
 ;  Reload the STEREO SPICE files.  We do this to make sure we have the
 ;  very latest information that is relevant to the data we are looking
@@ -105,7 +114,12 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;  Get the catalog of COR1 polarization sequence files.
 ;
      print, progname + ': getting the catalog of COR1 polarization sequence files.'
-     cat = cor1_pbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
+     if anytim2tai(date[0]) le anytim2tai(stereob_unresponsive_date) then begin
+        cat = cor1_pbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
+     endif else begin
+        cat = cor1_totbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
+     endelse
+
 ;
 ;  Process the sequences one-by-one.
 ;
