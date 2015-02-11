@@ -74,11 +74,6 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;
   g = HVS_GEN()
 ;
-; STEREO specific variables
-;
-  stereo_information = HVS_STEREO()
-  stereob_unresponsive_date = stereo_information.stereob_unresponsive_date
-;
 ; Prepped data - default is no prepped data
 ;
 ;  prepped = [g.MinusOneString]
