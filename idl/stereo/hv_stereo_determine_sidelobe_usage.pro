@@ -15,7 +15,7 @@ FUNCTION _HV_FIND_STATUS, sd, ed, this_time, status
      endif
   endfor
   if n_elements(check_these) gt 1 then begin
-     check_these = check_these[1, :]
+     check_these = check_these[1: n_elements(check_these)-1]
      for i = 0, n_elements(check_these)-1 do begin
         tstart = anytim2tai(sd[check_these[i]])
         tend = anytim2tai(ed[check_these[i]])
@@ -36,7 +36,7 @@ FUNCTION HV_STEREO_DETERMINE_SIDELOBE_USAGE,spacecraft, date
 ;
 ; Determine which spacecraft
 ;
-  if spacecraft == 'a' then begin
+  if spacecraft eq 'ahead' then begin
      sc = info.a
   endif else begin
      sc = info.b
@@ -53,21 +53,25 @@ FUNCTION HV_STEREO_DETERMINE_SIDELOBE_USAGE,spacecraft, date
 ; Check the status
 ;
 
-  sd = sc.sidelobe1_dates.start_dates
-  ed = sc.sidelobe1_dates.end_dates
+  sd = sc.sidelobe1_dates.start_date
+  ed = sc.sidelobe1_dates.end_date
   sidelobe1_status = _HV_FIND_STATUS(sd, ed, this_time, 'sidelobe1')
 
-  sd = sc.sidelobe2_dates.start_dates
-  ed = sc.sidelobe2_dates.end_dates
+  sd = sc.sidelobe2_dates.start_date
+  ed = sc.sidelobe2_dates.end_date
   sidelobe2_status = _HV_FIND_STATUS(sd, ed, this_time, 'sidelobe2')
 
-  sd = sc.behind_sun_dates.start_dates
-  ed = sc.behind_sun_dates.end_dates
+  sd = sc.behind_sun_dates.start_date
+  ed = sc.behind_sun_dates.end_date
   behindsun_status = _HV_FIND_STATUS(sd, ed, this_time, 'behindsun')
 
-  possible_states = [sidelobe1_status, sidelobe2_status, behindsun_status]
+  sd = sc.nominal_dates.start_date
+  ed = sc.nominal_dates.end_date
+  nominal_status = _HV_FIND_STATUS(sd, ed, this_time, 'nominal')
+
+  possible_states = [sidelobe1_status, sidelobe2_status, behindsun_status, nominal_status]
 
   i = where(possible_states ne 'undecided')
 
-  return possible_states[i]
+  return, possible_states[i]
 END
