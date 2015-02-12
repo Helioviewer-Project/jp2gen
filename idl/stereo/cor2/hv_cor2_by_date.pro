@@ -121,7 +121,57 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
      cat = cor1_pbseries(utc, sc[isc], /cor2, ssr=ssr, /valid, count=count)
 ;
 ;  Process the sequences one-by-one.
-
+;
+;;<<<<<<< TREE
+     ;; if count gt 0 then begin
+     ;;    for ifile = 0,count-1 do begin
+     ;;       cor2Files = cat[*,ifile].filename
+     ;;       already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cor2Files)
+     ;;       nRequired = (size(cor2Files,/dim))[0]
+     ;;       cor2FilesExist = total( file_exist(cor2Files) ) eq nRequired
+     ;;       print,'***',cor2FilesExist
+     ;;       print,file_exist(cor2Files)
+     ;;       print,systime() + ': '+ progname + ': file '+trim(ifile+1) + ' out of '+trim(count)
+     ;;       if not(already_written) and cor2FilesExist then begin
+     ;;          hv_cor2_prep2jp2, cor2Files, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
+     ;;          if keyword_set(copy2outgoing) then begin
+     ;;             HV_COPY2OUTGOING, [jp2_filename]
+     ;;          endif
+     ;;       endif
+     ;;       if already_written then begin
+     ;;          print,systime() + ': '+ progname + ': JP2 file already written; skipping further processing of '+cor2Files
+     ;;       endif
+     ;;       if not(already_written) and not(file_exist(filename)) then begin
+     ;;          print,systime() + ': '+ progname + ': JP2 file not written because source data does not (yet) exist; skipping processing of '+cor2Files
+     ;;       endif
+     ;;    endfor
+     ;; endif
+;; =======
+;;      if count gt 0 then begin
+;;         for ifile = 0,count-1 do begin
+;;            cor2Files = cat[*,ifile].filename
+;;            already_written = HV_PARSE_SECCHI_NAME_TEST_IN_DB(cor2Files)
+;;            nRequired = (size(cor2Files,/dim))[0]
+;;            cor2FilesExist = total( file_exist(cor2Files) ) eq nRequired
+;;            print, cor2FilesExist, nRequired
+;;            print,cor2Files
+;;            print,systime() + ': '+ progname + ': file '+trim(ifile+1) + ' out of '+trim(count)
+;;            if not(already_written) and cor2FilesExist then begin
+;;               print,systime() + ': '+ progname + ': Triple exposure image being written.'
+;;               hv_cor2_prep2jp2, cor2Files, overwrite=overwrite, jp2_filename = jp2_filename,recalculate_crpix = recalculate_crpix
+;;               if keyword_set(copy2outgoing) then begin
+;;                  HV_COPY2OUTGOING, [jp2_filename]
+;;               endif
+;;            endif
+;;            if already_written then begin
+;;               print,systime() + ': '+ progname + ': JP2 file already written; skipping further processing of '+cor2Files
+;;            endif
+;;            if not(already_written) and not(file_exist(filename)) then begin
+;;               print,systime() + ': '+ progname + ': JP2 file not written because source data does not (yet) exist; skipping processing of '+cor2Files
+;;            endif
+;;         endfor
+;;      endif
+;; >>>>>>> MERGE-SOURCE
 ;
 ;  Get the catalog of COR2 double exposure files.
 ;
@@ -155,20 +205,22 @@ pro hv_cor2_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
         if (operations eq "sidelobe1") or (operations eq "sidelobe2") then begin
            print,operations +' operations'
            teststr = "(cat.dest eq 'SW')"
+           testsize = 256
         endif else begin
            if keyword_set(only_synoptic) then $
               teststr = "(cat.dest eq 'SSR1')" else $
                  teststr = "(cat.dest ne 'SW')"
+           testsize = 512
         endelse
 ;
 ;  Only process double exposure images.
 ;
         teststr = teststr + " AND (cat.prog eq 'Doub')"
 ;
-;  Image size must be at least 512x512.
+;  Image size must be at least 512x512 (or 256x256 for sidelobe operations)
 ;
         if (operations ne "sidelobe1") and (operations ne "sidelobe2") then begin
-           teststr = teststr + " AND (cat.xsize ge 512)"
+           teststr = teststr + " AND (cat.xsize ge testsize)"
         endif
 ;
 ;  Don't process COR2 images with exposure times longer than 20 seconds.  These
