@@ -56,6 +56,9 @@
 ;                                                 plotting code in the
 ;                                                 Helioviewer Project
 ;                                                 clients.
+;               12-Feb-2015, William Thompson, GSFC
+;                       Correct for binning.
+;                       Call SCC_GETBKGIMG with /DOUBLE_TOTALB keyword
 ;
 ; Contact     :	WTHOMPSON
 ;-
@@ -96,6 +99,13 @@ pro hv_cor2_prep2jp2, filename, jp2_filename=jp2_filename, $
         amax = 1.11250
      endif
 ;
+;  Take out the effect of binning.
+;
+     if header.ipsum ne 1 then begin
+         scl = 4^(header.ipsum-1)
+         image = image / scl
+     endif
+;
 ;  Correct double exposure images for the non-linearity effect.
 ;
      if ~polariz_on then begin
@@ -108,7 +118,7 @@ pro hv_cor2_prep2jp2, filename, jp2_filename=jp2_filename, $
 ;  Get the background image and divide it.  For Behind images before March 8,
 ;  2007, do a subtraction instead, and use a different range.
 ;
-     bkg = scc_getbkgimg(header, /totalb)
+     bkg = scc_getbkgimg(header, /totalb, /double_totalb)
      if n_elements(bkg) le 1 then return ;no background
      nmedian = 5
      if (sc eq 'b') and (header.date_obs lt '2007-03-08') then begin
