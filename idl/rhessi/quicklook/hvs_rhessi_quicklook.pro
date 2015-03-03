@@ -65,7 +65,7 @@ function hvs_rhessi_quicklook
 ;
 ; 3-6 keV
 ;
-  b.details[0].measurement = '3-6 keV'; REQUIRED
+  b.details[0].measurement = '3-6keV'; REQUIRED
   b.details[0].n_levels = 8 ; REQUIRED
   b.details[0].n_layers = 8 ; REQUIRED
   b.details[0].idl_bitdepth = 8 ; REQUIRED
@@ -74,7 +74,7 @@ function hvs_rhessi_quicklook
 ;
 ; 6-12 keV
 ;
-  b.details[1].measurement = '6-12 keV'
+  b.details[1].measurement = '6-12keV'
   b.details[1].n_levels = 8
   b.details[1].n_layers = 8
   b.details[1].idl_bitdepth = 8
@@ -84,7 +84,7 @@ function hvs_rhessi_quicklook
 ;
 ; 12-25 keV
 ;
-  b.details[2].measurement = '12-25 keV'
+  b.details[2].measurement = '12-25keV'
   b.details[2].n_levels = 8
   b.details[2].n_layers = 8
   b.details[2].idl_bitdepth = 8
@@ -94,7 +94,7 @@ function hvs_rhessi_quicklook
 ;
 ; 25-50 keV
 ;
-  b.details[3].measurement = '25-50 keV'
+  b.details[3].measurement = '25-50keV'
   b.details[3].n_levels = 8
   b.details[3].n_layers = 8
   b.details[3].idl_bitdepth = 8
@@ -104,7 +104,7 @@ function hvs_rhessi_quicklook
 ;
 ; 50-100 keV
 ;
-  b.details[4].measurement = '50-100 keV'
+  b.details[4].measurement = '50-100keV'
   b.details[4].n_levels = 8
   b.details[4].n_layers = 8
   b.details[4].idl_bitdepth = 8
@@ -114,7 +114,7 @@ function hvs_rhessi_quicklook
 ;
 ; 100-300 keV
 ;
-  b.details[5].measurement = '100-300 keV'
+  b.details[5].measurement = '100-300keV'
   b.details[5].n_levels = 8
   b.details[5].n_layers = 8
   b.details[5].idl_bitdepth = 8

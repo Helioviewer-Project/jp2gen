@@ -51,10 +51,6 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
      print, details.details[i].eband[*]
      eband[*, i] = details.details[i].eband[*]
   endfor
-;  eband = [ [3., 6.], [6., 12.], [12., 25.], [25., 50.], [50.,100.], [100., 300. ] ]
-
-  window, 2, xsize = 800., ysize = 800., retain = 2.
-  loadct, 4
 
 ; Search the RHESSI flare list for all events within specifed
 ; timerange. Returns an array of RHESSI flare IDs
@@ -72,7 +68,7 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
 
 ; Get metadata for each flare
      hsi_flare = hsi_getflare(hsi_flare_id[i])
-     print, eband
+
 ; Determine number of energy bands in which the flare was observed
      upper_eband = where(reform(eband[1, *]) eq hsi_flare.energy_hi[1])
 
@@ -87,35 +83,45 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
                                   energy_band=eband[*, j],$
                                   header_out=fits_header,$
                                   filename_out=filename_out)
-; Set the comment string
-        comment = ''
 
 ; Convert to a structure
         header = fitshead2struct(fits_header)
 
-; Break the filepath in to its constituent parts
-        break_file, filename_out, disk, dir, name, ext
+; Observation date
+        date_obs = header.date_obs
 
-; Calculate the radius of the Sun in image pixels and add it to the header
+; Set the comment string
+        comment = ''
+
+; Re-calculate CRPIX to ensure their values are zero
+        header = HV_RECALCULATE_CRPIX(header)
+        comment = comment + progname + ": ran HV_RECALCULATE_CRPIX. "
+
+; Calculate the radius of the Sun in image pixels and add it to the
+; header
+        complete_list = get_sun(date_obs, sd=semi_diameter_in_arcsec)
+        header = add_tag(header, semi_diameter_in_arcsec / header.cdelt1, 'RSUN')
         comment = comment + progname + ": added in RSUN FITS header tag. "
 
 ; Calculate the distance from the spacecraft to the Sun and add it to
 ; the header
-        comment = comment + progname + ": added in DSUN FITS header tag. "
+        complete_list = get_sun(date_obs, dist=sun_earth_distance_in_au)
+        header = add_tag(header, sun_earth_distance_in_au * !CONST.AU, 'DSUN')
+        comment = comment + progname + ": added in DSUN FITS header tag (units are meters). "
 
 ; Define the image
         image = bytscl(hsi_map.data, /nan)
 
-        dir = disk + dir
-        fitsname = name + ext
+; Get the date information
+        time = anytim2utc(date_obs, /ext)
 
-        ; Get the date information
-        time = anytim2utc(header.date_obs, /ext)
+; Break the filepath in to its constituent parts
+        break_file, filename_out, disk, dir, name, ext
 ;
 ;  Create the HVS structure.
 ;
-        hvsi = {dir: dir, $
-                fitsname: fitsname, $
+        hvsi = {dir: disk + dir, $
+                fitsname: name + ext, $
                 header: header, $
                 comment: '', $
                 measurement: details.details[j].measurement, $
