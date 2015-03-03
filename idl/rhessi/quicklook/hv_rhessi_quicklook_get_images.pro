@@ -29,7 +29,7 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
 ;
 ; Program name
 ;
-  progname = 'hv_rhessi_quicklook_get_images'
+  progname = 'HV_RHESSI_QUICKLOOK_GET_IMAGES'
 
 ; Find nearest RHESSI server from which to download QLIMG FITS files
   hsi_server
@@ -54,6 +54,7 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
 ; Search the RHESSI flare list for all events within specifed
 ; timerange. Returns an array of RHESSI flare IDs
   hsi_flare_id = hsi_whichflare(timerange, count=count)
+  print, progname + ': time range = ' + timerange[0] + ' to ' + timerange[1]
   print, progname + ': number of flares found = ', count
 
 ; If there are no flares in the time range, return
@@ -74,7 +75,7 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
 
 ; If the low energy band is the only one available, do not process
      if upper_eband eq 0 then begin
-        print, progname + ': no RHESSI flare in the flare listthis flare has lowest energy band only'
+        print, progname + ': this flare has lowest energy band only = ', flare_id
      endif else begin
 
 ; Go through all the energy bands up to the maximum
@@ -114,7 +115,11 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
            header = add_tag(header, sun_earth_distance_in_au * !CONST.AU, 'DSUN')
            comment = comment + progname + ": added in DSUN FITS header tag (units are meters). "
 
+; Push the helioviewer comment into the header - will be extracted later
            header = add_tag(header, comment, 'HV_COMMENT')
+
+; Add in the RHESSI flare ID
+           header = add_tag(header, flare_id, 'HV_RHESSI_QUICKLOOK_FLARE_ID')
 
 ; Define the image
            image = bytscl(hsi_map.data, /nan)
@@ -152,7 +157,8 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
 ; Create contour information
 ;
            if write_contour eq 1 then begin
-              hv_make_contours, hvs, details.contours, $
+              contour_levels = max(hvs.img) * details.contour_levels
+              hv_make_contours, hvs, contour_levels, $
                                 jp2_filename=jp2_filename, $
                                 already_written=already_written, $
                                 overwrite=overwrite

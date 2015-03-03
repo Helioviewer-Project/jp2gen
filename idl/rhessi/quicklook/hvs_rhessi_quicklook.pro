@@ -61,7 +61,9 @@ function hvs_rhessi_quicklook
        detector:'RHESSI',$ ; REQUIRED
        nickname:'RHESSI',$ ; REQUIRED
        hvs_details_filename:'hvs_rhessi_quicklook.pro',$ ; REQUIRED
-       hvs_details_filename_version:'1.0'} ; REQUIRED
+       hvs_details_filename_version:'1.0', $
+       fractional_contour_levels: [0.3, 0.5, 0.68, 0.95, 0.99], $
+       contour_level_names: ['30%', '50%', '68%', '95%', '99%']}
 ;
 ; 3-6 keV
 ;
