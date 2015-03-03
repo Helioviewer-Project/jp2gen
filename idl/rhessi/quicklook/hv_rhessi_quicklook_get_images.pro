@@ -48,14 +48,13 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
 ; get all the energy bands
   eband = fltarr(2, neband)
   for i = 0, neband-1 do begin
-     print, details.details[i].eband[*]
      eband[*, i] = details.details[i].eband[*]
   endfor
 
 ; Search the RHESSI flare list for all events within specifed
 ; timerange. Returns an array of RHESSI flare IDs
   hsi_flare_id = hsi_whichflare(timerange, count=count)
-  print, hsi_flare_id, count
+  print, progname + ': number of flares found = ', count
 
 ; If there are no flares in the time range, return
   if count eq 0 then begin
@@ -67,91 +66,100 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
   for i = 0, count-1 do begin
 
 ; Get metadata for each flare
-     hsi_flare = hsi_getflare(hsi_flare_id[i])
+     flare_id = hsi_flare_id[i]
+     hsi_flare = hsi_getflare(flare_id)
 
 ; Determine number of energy bands in which the flare was observed
      upper_eband = where(reform(eband[1, *]) eq hsi_flare.energy_hi[1])
 
+; If the low energy band is the only one available, do not process
+     if upper_eband eq 0 then begin
+        print, progname + ': no RHESSI flare in the flare listthis flare has lowest energy band only'
+     endif else begin
+
 ; Go through all the energy bands up to the maximum
-     for j = 0, upper_eband[0] do begin
+        for j = 0, upper_eband[0] do begin
 
 ; Create RHESSI map and corresponding FITS header for each energy
 ; band. Running this line downloads a QLIMG FITS file of the form
 ; hsi_qlimg_flareid.fits to the local $HESSI_DATA directory. 
-        hsi_map = hsi_qlook_image(flare_id=hsi_flare_id[i],$
-                                  /map,$
-                                  energy_band=eband[*, j],$
-                                  header_out=fits_header,$
-                                  filename_out=filename_out)
+           hsi_map = hsi_qlook_image(flare_id=flare_id,$
+                                     /map,$
+                                     energy_band=eband[*, j],$
+                                     header_out=fits_header,$
+                                     filename_out=filename_out)
 
 ; Convert to a structure
-        header = fitshead2struct(fits_header)
+           header = fitshead2struct(fits_header)
 
 ; Observation date
-        date_obs = header.date_obs
+           date_obs = header.date_obs
 
 ; Set the comment string
-        comment = ''
+           comment = ''
 
 ; Re-calculate CRPIX to ensure their values are zero
-        header = HV_RECALCULATE_CRPIX(header)
-        comment = comment + progname + ": ran HV_RECALCULATE_CRPIX. "
+           header = HV_RECALCULATE_CRPIX(header)
+           comment = comment + progname + ": ran HV_RECALCULATE_CRPIX. "
 
 ; Calculate the radius of the Sun in image pixels and add it to the
 ; header
-        complete_list = get_sun(date_obs, sd=semi_diameter_in_arcsec)
-        header = add_tag(header, semi_diameter_in_arcsec / header.cdelt1, 'RSUN')
-        comment = comment + progname + ": added in RSUN FITS header tag. "
+           complete_list = get_sun(date_obs, sd=semi_diameter_in_arcsec)
+           header = add_tag(header, semi_diameter_in_arcsec / header.cdelt1, 'RSUN')
+           comment = comment + progname + ": added in RSUN FITS header tag. "
 
 ; Calculate the distance from the spacecraft to the Sun and add it to
 ; the header
-        complete_list = get_sun(date_obs, dist=sun_earth_distance_in_au)
-        header = add_tag(header, sun_earth_distance_in_au * !CONST.AU, 'DSUN')
-        comment = comment + progname + ": added in DSUN FITS header tag (units are meters). "
+           complete_list = get_sun(date_obs, dist=sun_earth_distance_in_au)
+           header = add_tag(header, sun_earth_distance_in_au * !CONST.AU, 'DSUN')
+           comment = comment + progname + ": added in DSUN FITS header tag (units are meters). "
+
+           header = add_tag(header, comment, 'HV_COMMENT')
 
 ; Define the image
-        image = bytscl(hsi_map.data, /nan)
+           image = bytscl(hsi_map.data, /nan)
 
 ; Get the date information
-        time = anytim2utc(date_obs, /ext)
+           time = anytim2utc(date_obs, /ext)
 
 ; Break the filepath in to its constituent parts
-        break_file, filename_out, disk, dir, name, ext
+           break_file, filename_out, disk, dir, name, ext
 ;
 ;  Create the HVS structure.
 ;
-        hvsi = {dir: disk + dir, $
-                fitsname: name + ext, $
-                header: header, $
-                comment: '', $
-                measurement: details.details[j].measurement, $
-                yy: string(time.year, format='(I4.4)'), $
-                mm: string(time.month, format='(I2.2)'), $
-                dd: string(time.day, format='(I2.2)'), $
-                hh: string(time.hour, format='(I2.2)'), $
-                mmm: string(time.minute, format='(I2.2)'), $
-                ss: string(time.second, format='(I2.2)'), $
-                milli: string(time.millisecond, format='(I3.3)'), $
-                details: details}
-        hvs = {img: image, hvsi: hvsi}
+           hvsi = {dir: disk + dir, $
+                   fitsname: name + ext, $
+                   header: header, $
+                   comment: comment, $
+                   measurement: details.details[j].measurement, $
+                   yy: string(time.year, format='(I4.4)'), $
+                   mm: string(time.month, format='(I2.2)'), $
+                   dd: string(time.day, format='(I2.2)'), $
+                   hh: string(time.hour, format='(I2.2)'), $
+                   mmm: string(time.minute, format='(I2.2)'), $
+                   ss: string(time.second, format='(I2.2)'), $
+                   milli: string(time.millisecond, format='(I3.3)'), $
+                   details: details}
+           hvs = {img: image, hvsi: hvsi}
 ;
 ;  Create the JPEG2000 file.
 ;
-        hv_make_jp2, hvs, $
-                     jp2_filename=jp2_filename, $
-                     already_written=already_written, $
-                     overwrite=overwrite
+           hv_make_jp2, hvs, $
+                        jp2_filename=jp2_filename, $
+                        already_written=already_written, $
+                        overwrite=overwrite
 ;
 ; Create contour information
 ;
-        if write_contour eq 1 then begin
-           hv_make_contours, hvs, details.contours, $
-                             jp2_filename=jp2_filename, $
-                             already_written=already_written, $
-                             overwrite=overwrite
-        endif
+           if write_contour eq 1 then begin
+              hv_make_contours, hvs, details.contours, $
+                                jp2_filename=jp2_filename, $
+                                already_written=already_written, $
+                                overwrite=overwrite
+           endif
 
-    endfor 
+        endfor
+     endelse
   endfor
 
   return
