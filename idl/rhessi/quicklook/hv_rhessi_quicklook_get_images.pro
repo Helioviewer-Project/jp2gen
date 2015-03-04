@@ -157,8 +157,8 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
 ; Create contour information
 ;
            if write_contour eq 1 then begin
-              contour_levels = max(hvs.img) * details.contour_levels
-              hv_make_contours, hvs, contour_levels, $
+              contour_levels = max(hvs.img) * details.fractional_contour_levels
+              hv_make_contours, hvs, contour_levels, details.contour_level_names, $
                                 jp2_filename=jp2_filename, $
                                 already_written=already_written, $
                                 overwrite=overwrite
