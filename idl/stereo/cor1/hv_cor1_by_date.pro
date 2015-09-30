@@ -120,7 +120,6 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;
      print, progname + ': getting the catalog of COR1 total brightness files.'
      cat = cor1_totbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
-
 ;
 ;  Process the sequences one-by-one.
 ;
