@@ -60,10 +60,10 @@ PRO HV_JP2_TRANSFER_FROM_ARCHIVE,nickname,measurement,ds,de,$
 ;
         sdir = expand_tilde(directory) + $
                nickname + path_sep() + $
-               m[i] + path_sep() + $
                yyyy + path_sep() + $
                mm + path_sep() + $
-               dd + path_sep()
+               dd + path_sep() + $
+               m[i] + path_sep()
         HV_JP2_TRANSFER,sdir = sdir
 
         tai = tai + one_day

@@ -57,9 +57,9 @@ PRO HV_TRACE_PROCESS_BACKFILL, date, copy2outgoing=copy2outgoing, delete_origina
 ;
 ; Start
 ;
-     timestart = systime()
-     print,' '
-     print,systime() + ': ' + progname + ': Processing all files on '+this_date
+;     timestart = systime()
+;     print,' '
+;     print,systime() + ': ' + progname + ': Processing all files on '+this_date
 ;
 ; Get the data for this day
 ;
@@ -67,40 +67,43 @@ PRO HV_TRACE_PROCESS_BACKFILL, date, copy2outgoing=copy2outgoing, delete_origina
 ; too much data in memory at any one time
      for i = 0, 23 do begin
         
-        print,'WARNING!'
-        print,'WARNING!'
-        print,'WARNING!'
-        print,'WARNING!'
-        print,'WARNING!'
-        print,'WARNING!'
-        print,'WARNING!'
-        print,' '
-        print,'You must run hv_trace_prep_adapted_from_sswidl.pro BEFORE running this program'
-        print,'in order to use the version of trace_prep.pro defined in there'
-        print,' '
-        print,'WARNING!'
-        print,'WARNING!'
-        print,'WARNING!'
-        print,'WARNING!'
-        print,'WARNING!'
-        print,'WARNING!'
-        print,'WARNING!'
+;        print,'WARNING!'
+;        print,'WARNING!'
+;        print,'WARNING!'
+;        print,'WARNING!'
+;        print,'WARNING!'
+;        print,'WARNING!'
+;        print,'WARNING!'
+;        print,' '
+;        print,'You must run hv_trace_prep_adapted_from_sswidl.pro BEFORE running this program'
+;        print,'in order to use the version of trace_prep.pro defined in there'
+;        print,' '
+;        print,'WARNING!'
+;        print,'WARNING!'
+;        print,'WARNING!'
+;        print,'WARNING!'
+;        print,'WARNING!'
+;        print,'WARNING!'
+;        print,'WARNING!'
 
 
         ; Start and the end times
         start_time = this_date + ' ' + hourlist[i]
         end_time = this_date + ' ' + hourlist[i+1]
+	print, start_time,end_time
 
         ; Query the catalog
-        trace_cat, start_time, end_time, catalog
+        trace_cat, start_time, end_time, catalog, status=status
 
-        ; Convert the catalog entries to file names
-        trace_cat2data,catalog,files,-1,/filedset
+	; If there is data, make the JPEG2000 files
+	if status eq 1 then begin
+          ; Convert the catalog entries to file names
+          trace_cat2data,catalog,files,-1,/filedset
 
-        ; Send the files list, then prep the data and write a JP2 file for each of the files
-        HV_TRACE_PREP,files, copy2outgoing=copy2outgoing, delete_original=delete_original
+          ; Send the files list, then prep the data and write a JP2 file for each of the files
+          HV_TRACE_PREP,files, copy2outgoing=copy2outgoing, delete_original=delete_original
+        endif
      endfor
-
   endrep until mjd lt mjd_start
 
 

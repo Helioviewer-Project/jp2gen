@@ -60,6 +60,8 @@
 ; History     :	Version 1, 22-Dec-2010, William Thompson, GSFC
 ;               08-Apr-2011, Jack Ireland, GSFC, added a prepped data
 ;               return function
+;               10-Feb-2015, William Thompson, GSFC, use COR1_TOTBSERIES
+;                       instead of COR1_PBSERIES
 ;
 ; Contact     :	WTHOMPSON
 ;-
@@ -85,14 +87,26 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
   utc = anytim2utc(date, errmsg=message)
   if message ne '' then message, message
 ;
-;  Determine which buffer to process.
-;
-  if keyword_set(only_synoptic) then ssr=1 else ssr=3 ;(3 = both 1 and 2)
-;
 ;  Step through the STEREO spacecraft
 ;
-  sc = ['ahead', 'behind']
-  for isc=0,1 do begin
+;
+; Which spacecraft are operational?
+;
+  sc = HV_STEREO_DETERMINE_OPERATIONAL_SPACECRAFT(date[0])
+
+  for isc=0, n_elements(sc)-1 do begin
+;
+; what type of operations?
+;
+     operations = HV_STEREO_DETERMINE_SIDELOBE_USAGE(sc[isc], date[0])
+;
+; Determine which buffer to process.
+;
+     if (operations eq "sidelobe1") or (operations eq "sidelobe2") then begin
+        ssr = 7
+     endif else begin
+        if keyword_set(only_synoptic) then ssr=1 else ssr=3 ;(3 = both 1 and 2)
+     endelse
 ;
 ;  Reload the STEREO SPICE files.  We do this to make sure we have the
 ;  very latest information that is relevant to the data we are looking
@@ -104,8 +118,8 @@ pro hv_cor1_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,copy
 ;
 ;  Get the catalog of COR1 polarization sequence files.
 ;
-     print, progname + ': getting the catalog of COR1 polarization sequence files.'
-     cat = cor1_pbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
+     print, progname + ': getting the catalog of COR1 total brightness files.'
+     cat = cor1_totbseries(utc, sc[isc], ssr=ssr, /valid, count=count)
 ;
 ;  Process the sequences one-by-one.
 ;

@@ -88,11 +88,15 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
 ;
   cantFindCatalogDir = HV_SECCHI_CANTFINDCATALOG()
 ;
-;  Step through the STEREO spacecraft
+; Which spacecraft are operational?
 ;
-  sc = ['ahead', 'behind']
+  sc = HV_STEREO_DETERMINE_OPERATIONAL_SPACECRAFT(date[0])
+
+  for isc=0, n_elements(sc)-1 do begin
 ;
-  for isc=0,1 do begin
+; what type of operations?
+;
+     operations = HV_STEREO_DETERMINE_SIDELOBE_USAGE(sc[isc], date[0])
 ;
 ;  Reload the STEREO SPICE files.  We do this to make sure we have the
 ;  very latest information that is relevant to the data we are looking
@@ -128,11 +132,17 @@ pro hv_euvi_by_date, date, only_synoptic=only_synoptic, overwrite=overwrite,$
      endif else begin
      ;if datatype(cat,1) eq 'Structure' then begin
 ;
-;  Filter out beacon images, and optionally special event images.
+; Determine which buffer to process.
 ;
-        if keyword_set(only_synoptic) then $
-           w = where(cat.dest eq 'SSR1', count) else $
-              w = where(cat.dest ne 'SW', count)
+        if (operations eq "sidelobe1") or (operations eq "sidelobe2") then begin
+           if keyword_set(only_synoptic) then $
+              w = where(cat.dest eq 'SSR1', count) else $
+                 w = where(cat.dest eq 'SW', count)
+        endif else begin
+           if keyword_set(only_synoptic) then $
+              w = where(cat.dest eq 'SSR1', count) else $
+                 w = where(cat.dest ne 'SW', count)
+        endelse
 ;
 ;  Process the files one by one.  If the file is not found, then print a
 ;  message.  This sometimes happens if the catalog file arrives before the FITS

@@ -34,6 +34,10 @@ PRO HV_COPY2OUTGOING,files,search = search,delete_original = delete_original
         files = strarr(1)
         files[0] = g.MinusOneString
      endif else begin
+        nncind = where(files ne g.not_compliant,nnc) ; remove entries from the list that are not compliant
+        if nnc gt 0 then begin
+           files = files(nncind)
+        endif
         nawind = where(files ne g.already_written,naw) ; remove entries from the list that may have already been written
         if naw gt 0 then begin
            files = files(nawind)
