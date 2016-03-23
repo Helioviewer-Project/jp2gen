@@ -11,7 +11,7 @@ FUNCTION HVS_STEREO
 
   stereo_a_nominal_dates = {start_date:['2006-10-25'], end_date:['2014-08-13 23:59:59']}
   stereo_a_sidelobe1_dates = {start_date:['2014-08-14'], end_date:['2015-01-03 23:59:59']}
-  stereo_a_sidelobe2_dates = {start_date:['2015-01-04'], end_date:['2015-03-23 23:59:59']}
+  stereo_a_sidelobe2_dates = {start_date:['2015-01-04', '2015-07-11'], end_date:['2015-03-23 23:59:59', '2015-11-16 23:59:59']}
   stereo_a_behind_sun_dates = {start_date:['2015-03-24'], end_date:['2015-07-07 23:59:59']}
 
   stereo_b_nominal_dates = {start_date:['2006-10-25'], end_date:['2014-09-27 23:59:59']}
