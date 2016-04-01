@@ -37,3 +37,9 @@ Observatory specific subdirectories
 /stereo
 
 - Solar TErrestrial RElations Observatory (STEREO) dataset specific code.
+
+
+Known Missing and Malformed Data
+--------------------------------
+
+Send an email to contact@helioviewer.org to ask about missing or malformed data, or post an issue here.
