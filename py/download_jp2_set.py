@@ -7,7 +7,7 @@ import astropy.units as u
 from sunpy.time import parse_time
 from sunpy.net.helioviewer import HelioviewerClient
 
-cadence = 1 * u.year
+cadence = 28 * u.day
 start_time = parse_time('2010/10/01')
 end_time = parse_time('2017/02/01')
 
@@ -15,8 +15,8 @@ hv = HelioviewerClient()
 observatory = 'SDO'
 instrument = 'AIA'
 detector = 'AIA'
-measurements = ['94', '131', '171', '193', '211', '335', '1600', '1700', '4500']
-measurements = ['304']
+measurements = ['94', '131', '171', '193', '211', '304', '335', '1600', '1700', '4500']
+#measurements = ['193', '211', '335', '1600', '1700', '4500']
 
 storage = os.path.expanduser('~/Data/hvp/aia_color_correction')
 if not os.path.isdir(storage):
