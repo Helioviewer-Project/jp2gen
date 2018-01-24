@@ -63,6 +63,9 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
      return
   endif
 
+; Count of filenames
+all_jp2_filenames = ['aa']
+
 ; At least one flare in the timerange
   for i = 0, count-1 do begin
 
@@ -92,6 +95,9 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
 
 ; Convert to a structure
            header = fitshead2struct(fits_header)
+           ;print, eband[*, j]
+           ;print, fits_header
+           ;stop
 
 ; Observation date
            date_obs = header.date_obs
@@ -154,6 +160,11 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
                         already_written=already_written, $
                         overwrite=overwrite
 ;
+; Keep a running list of the filenames returned
+;
+           all_jp2_filenames = [all_jp2_filenames, jp2_filename]
+
+;
 ; Create contour information
 ;
            if write_contour eq 1 then begin
@@ -167,7 +178,15 @@ pro hv_rhessi_quicklook_get_images, timerange, jp2_filename=jp2_filename, alread
         endfor
      endelse
   endfor
-
+;
+; Create the filename return variable
+;
+  n_jp2_filenames = n_elements(all_jp2_filenames) - 1
+  if n_jp2_filenames eq 0 then begin
+     jp2_filename = 0
+  endif else begin
+     jp2_filename = all_jp2_filenames[1:n_jp2_filenames]
+  endelse
   return
 end
 
