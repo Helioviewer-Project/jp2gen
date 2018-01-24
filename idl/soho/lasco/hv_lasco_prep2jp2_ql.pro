@@ -24,6 +24,10 @@ PRO HV_LASCO_PREP2JP2_QL,date_start = ds, $ ; date the automated processing star
 ;
   progname = 'HV_LASCO_PREP2JP2_QL'
 ;
+;
+;
+ 
+;
 ; Make sure at least one of C2 or C3 is called
 ;
   if not(keyword_set(c2)) and not(keyword_set(c3)) then begin

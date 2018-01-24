@@ -41,7 +41,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
 ;
   g = HVS_GEN()
 ;
-  ldr = getenv('LZ_IMG') + '/' + 'level_05/' ; where the LASCO data is
+  ldr = getenv('LZ_IMG') ; + '/' + 'level_05/' ; where the LASCO data is
 ;
 ; If we are calling this program to get the quicklooks, change ldr
 ;
@@ -64,6 +64,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
   date2 = anytim2utc(t2)
   image_list = [g.MinusOneString]
 
+  print, 'Looking for files in ', ldr
   FOR mjd=date1.mjd,date2.mjd DO BEGIN
      newday = {mjd:mjd,time:0.0}
      nds = utc2str(newday,/date_only)
@@ -72,7 +73,8 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
 ;         sourcefile    = dir.data+day+'/'+detector+'/'+'img_hdr.txt'
      sdir = ldr + day + path_sep() + detector + path_sep()
      sourcefile    = sdir +'img_hdr.txt'
-
+     print, 'Looking for files in ', sdir
+     print, 'Looking for sourcefile ', sourcefile
      hvs = {img:-1,header:-1,measurement: info.details[0].measurement,$
             yy:STRMID(nds,0,4),mm:STRMID(nds,5,2),dd:STRMID(nds,8,2),$
             hh:'log', mmm:'log', ss:'log', milli:'log',$
