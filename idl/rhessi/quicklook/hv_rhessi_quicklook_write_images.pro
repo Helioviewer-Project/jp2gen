@@ -45,6 +45,13 @@ PRO HV_RHESSI_QUICKLOOK_WRITE_IMAGES,date_start = ds, $ ; date the automated pro
 ;
 ; Get today's date in UT
 ;
+; Number of days back to search.  This should be enough in most
+; circumstances.  According to the RHESSI team, the lag for some
+; flares can be on the order of weeks.  In addition, the entire
+; quicklook archive can, and has been reprocessed.  This means that
+; the images available on helioviewer at any given time may not be an
+; accurate representation of the current state of the quicklook
+; archive.
      ndays = 7
      get_utc,utc,/ecs,/date_only
      utc2date = anytim2cal( anytim2tai(utc)-ndays*24*60*60.0,form=11,/date )
