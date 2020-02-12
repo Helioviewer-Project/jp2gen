@@ -1,7 +1,7 @@
 ;
+; unfinished and a basic copy of hv_cor1_auto.pro
 ;
-;
-PRO HV_COR2_AUTO,date_start = ds, $ ; date the automated processing starts
+PRO HV_COR1_AUTO,date_start = ds, $ ; date the automated processing starts
                  ndaysBack = ndaysBack, $   ; date to end automated processing starts
                  details_file = details_file,$                           ; call to an explicit details file
                  alternate_backgrounds = alternate_backgrounds,$         ; location of the alternate backgrounds
@@ -9,7 +9,7 @@ PRO HV_COR2_AUTO,date_start = ds, $ ; date the automated processing starts
                  once_only = once_only,$                                 ;  if set, the time range is passed through once only
                  writtenby = writtenby
 ;
-  progname = 'hv_cor2_auto'
+  progname = 'hv_cor1_auto'
   count = 0
 ;
   repeat begin
@@ -29,7 +29,7 @@ PRO HV_COR2_AUTO,date_start = ds, $ ; date the automated processing starts
         print,' '
         print,progname + ': Processing all files on ' + date
 
-        HV_COR2_BY_DATE,date, copy2outgoing = copy2outgoing
+        HV_COR1_BY_DATE,date, copy2outgoing = copy2outgoing
 
      endfor
 ;
