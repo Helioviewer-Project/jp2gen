@@ -13,9 +13,9 @@
 ; 
 ; for more information on setting up JPGen
 ;
-FUNCTION HV_STORAGE,nickname = nickname, no_db = no_db, no_log = no_log, no_jp2 = no_jp2
+FUNCTION HV_STORAGE,write_this,nickname = nickname, no_db = no_db, no_log = no_log, no_jp2 = no_jp2
 ;
-  wby = HV_WRITTENBY()
+  wby = HV_WRITTENBY(write_this)
 ;
 ; Where the HV programs are kept
 ;

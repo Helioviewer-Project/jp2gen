@@ -48,7 +48,8 @@
 ; those files from the outgoing directory.
 ;
 ;
-PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
+PRO HV_JP2_TRANSFER,write_this,
+                    ntransfer = n,$                                             ; number of files transferred
                     web = web, $ ; wrote the details of the transfer toa text file that can be picked up by HV_JP2GEN_MONITOR
                     delete_transferred = delete_transferred,$ ; delete the transferred files from the outgoing directory
                     force_delete = force_delete,$ ; force the delete of the JP2 file
@@ -57,10 +58,10 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
 ;
 ; Get various details about the setup
 ;
-  wby = HV_WRITTENBY()
+  wby = HV_WRITTENBY(write_this)
   g = HVS_GEN()
   storage = HV_STORAGE()
-  storage2 = HV_STORAGE(nickname = 'HV_TRANSFER_LOGS',/no_db,/no_jp2)
+  storage2 = HV_STORAGE(write_this,nickname = 'HV_TRANSFER_LOGS',/no_db,/no_jp2)
 ;
 ; Transfer start-time
 ;
