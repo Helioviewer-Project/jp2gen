@@ -82,7 +82,7 @@
 ;
 ;-
 
-PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,quiet=quiet,kdu_lib_location=kdu_lib_location,details = details,measurement = measurement,reversible = reversible,_extra = _extra
+PRO HV_WRITE_JP2_LWG,file,image,write_this,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_levels,fitsheader=fitsheader,quiet=quiet,kdu_lib_location=kdu_lib_location,details = details,measurement = measurement,reversible = reversible,_extra = _extra
 ;
   progname = 'HV_WRITE_JP2_LWG'
 ;
@@ -156,7 +156,7 @@ PRO HV_WRITE_JP2_LWG,file,image,bit_rate=bit_rate,n_layers=n_layers,n_levels=n_l
 ;
 ; Get contact details
 ;
-        wby = HV_WRITTENBY()
+        wby = HV_WRITTENBY(write_this)
 ;
 ; Set the JP2 compression details, override defaults if set from
 ; function call
