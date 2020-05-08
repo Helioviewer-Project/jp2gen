@@ -174,7 +174,8 @@ pro hv_cor2_prep2jp2, filename, jp2_filename=jp2_filename, $
              mmm: string(ext.minute, format='(I2.2)'), $
              ss: string(ext.second, format='(I2.2)'), $
              milli: string(ext.millisecond, format='(I3.3)'), $
-             details: details}
+             details: details, $
+             write_this: 'stereo'}
      hvs = {img: image, hvsi: hvsi}
 ;
 ;  Create the JPEG2000 file.
