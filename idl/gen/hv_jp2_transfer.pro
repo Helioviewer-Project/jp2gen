@@ -48,9 +48,9 @@
 ; those files from the outgoing directory.
 ;
 ;
-PRO HV_JP2_TRANSFER,write_this, ; a permitted project - see HV_WRITTENBY for a LIST of permitted projects
+PRO HV_JP2_TRANSFER,write_this,$ ; a permitted project - see HV_WRITTENBY for a LIST of permitted projects
                     ntransfer = n,$ ; number of files transferred
-                    web = web, $ ; wrote the details of the transfer toa text file that can be picked up by HV_JP2GEN_MONITOR
+                    web = web,$ ; wrote the details of the transfer toa text file that can be picked up by HV_JP2GEN_MONITOR
                     delete_transferred = delete_transferred,$ ; delete the transferred files from the outgoing directory
                     force_delete = force_delete,$ ; force the delete of the JP2 file
                     sdir = sdir ; directory where the JP2 files are stored
