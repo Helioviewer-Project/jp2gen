@@ -22,48 +22,40 @@
 ; webpage: the location of the JP2Gen monitoring webpage.  
 ;          This webpage will allow you to monitor file creation and transfer services of your JP2 installtion
 ;
-FUNCTION HV_WRITTENBY;,name = name
+FUNCTION HV_WRITTENBY,write_this
 
-  answer = {local:{institute:'NASA-GSFC',$
-                    contact:'Helioviewer Project (webmaster@helioviewer.org)',$
-                    kdu_lib_location:'~/KDU/Kakadu/v6_1_1-00781N/bin/Mac-x86-64-gcc/',$
-                    jp2gen_write:'/home/ireland/hv_latest/',$
-                    jp2gen:'/home/ireland/hv/jp2gen-jack/'},$
-             transfer:{local:{group:'ireland',$
-                              tcmd_linux:'rsync',$
-                              tcmd_osx:'/usr/local/bin/rsync'},$
-                       remote:{user:'ireland',$
-                               machine:'helioviewer.nascom.nasa.gov',$
-                               incoming:'/home/ireland/incoming/',$
-                               group:'helioviewer'}},$
-             webpage:'/service/www/',$
-             manual_revision_number:'97 [2011/03/25, https://launchpad.net/jp2gen]'}
+  ;
+  supported = LIST('soho', 'stereo')
+  if supported.Where(write_this) eq !NULL then begin
+     print,'Instrument ' + write_this + ' is not supported.'
+     answer = 0
+     stop
+  endif else begin
+   ; Remote machine
+    remote_machine = 'the_remote_machine
 
-;;   if name eq 'default' then begin
-;;      answer = default
-;;   endif
-;; ;
-;; ; Add in other choices as approprate
-;; ;
-;;   if name eq 'helioviewer-production' then begin
-;;      answer = default
-;;      answer.local.jp2gen_write = '/home/ireland/JP2Gen_helioviewer/'
-;;      answer.transfer.remote.incoming = '/home/ireland/incoming/'
-;;   endif
-;;   if name eq 'helioviewer-test' then begin
-;;      answer = default
-;;      answer.local.jp2gen_write = '/home/ireland/JP2Gen_helioviewer/'
-;;      answer.transfer.remote.incoming = '/home/ireland/test/'
-;;   endif
+  ; Local root
+    local_root = '/my/local/machine/'
+    
+  ; Remote root where all the 
+    remote_root = '/where/the/data/goes/to/'
 
-;;   if name eq 'delphi-test' then begin
-;;      answer = default
-;;      answer.local.jp2gen_write = '/home/ireland/JP2Gen_delphi_test/'
-;;      answer.transfer.remote.machine = 'delphi.nascom.nasa.gov'
-;;      answer.transfer.remote.incoming = '/home/ireland/test/'
-;;   endif
-
-
+  ; Locations required
+    answer = {local:{institute:'NASA-GSFC',$
+                     contact:'Helioviewer Project (webmaster@helioviewer.org)',$
+                     kdu_lib_location:'~/KDU/Kakadu/v6_1_1-00781N/bin/Mac-x86-64-gcc/',$
+                     jp2gen_write: local_root + write_this + '/', $
+                     jp2gen:'/home/ireland/hvp/jp2gen/jp2gen/'},$
+              transfer:{local:{group:'ireland',$
+                               tcmd_linux:'rsync',$
+                               tcmd_osx:'/usr/local/bin/rsync'},$
+                        remote:{user:'jireland',$
+                                machine: remote_machine,$
+                                incoming: remote_root + write_this + '_incoming/',$
+                                group:'helioviewer'}},$
+              webpage:'/service/www/',$
+              manual_revision_number:'see github.com/Helioviewer-Project/jp2gen'}
+  endelse
   return,answer
 END
 
