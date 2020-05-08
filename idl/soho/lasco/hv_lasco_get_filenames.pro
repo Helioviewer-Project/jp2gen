@@ -103,7 +103,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
            if (n_elements(words) lt 12) then begin
               log_comment = progname + ': img_hdr.txt malformed for this file: '+sourcefile
               print, log_comment
-              HV_LOG_WRITE,hvs,log_comment
+              HV_LOG_WRITE,hvs.hvsi,log_comment
            endif else begin
               file=strsplit(words[0],'.',/extract)
               newfile = sdir + words[0]
@@ -135,7 +135,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
            endelse
         endfor
      ENDIF ELSE BEGIN 
-        HV_LOG_WRITE,hvs,progname + ': Could not open '+sourcefile
+        HV_LOG_WRITE,hvs.hvsi,progname + ': Could not open '+sourcefile
      ENDELSE
   ENDFOR                        ; juldays
 
@@ -143,7 +143,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
      print,' NO IMAGES ARE FOUND: CHECK YOUR INPUT DATES'
   endif else begin
      image_list=image_list[1:*]
-     HV_LOG_WRITE,hvs,image_list
+     HV_LOG_WRITE,hvs.hvsi,image_list
 
 ;     printf, log, ' Number of images that will be downloaded: ',n_elements(image_list) 
 ;     save, filename=dir.work+detector+'_image_list.sav', image_list
