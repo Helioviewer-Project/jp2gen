@@ -51,14 +51,15 @@ FUNCTION HV_PARSE_SECCHI_NAME_TEST_IN_DB,filename
      endif
   endif
 
-  hvsi = {yy:yy,$
-          mm:mm,$
-          dd:dd,$
-          dir:dir,$
-          fitsname:name+ext,$
-          measurement:measurement,$
-          details:details,$
-          header:header}
+  hvsi = {yy: yy,$
+          mm: mm,$
+          dd: dd,$
+          dir: dir,$
+          fitsname: name+ext,$
+          measurement: measurement,$
+          details: details,$
+          header: header,$
+          write_this: 'stereo'}
 
   HV_DB,hvsi,already_written = already_written
   return,already_written
