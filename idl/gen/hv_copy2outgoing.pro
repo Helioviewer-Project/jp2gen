@@ -2,14 +2,14 @@
 ; Copy a set of given list of files to the outgoing directory
 ;
 ;
-PRO HV_COPY2OUTGOING,files,search = search,delete_original = delete_original
+PRO HV_COPY2OUTGOING,files,write_this,search = search,delete_original = delete_original
   progname = 'hv_copy2outgoing'
 ;
   g = HVS_GEN()
 ;
 ; get the outgoing directory for this nickname
 ;
-  storage = HV_STORAGE(nickname = 'dummy')
+  storage = HV_STORAGE(write_this, nickname = 'dummy')
   outgoing_root = storage.outgoing
 ;
 ; Operating system

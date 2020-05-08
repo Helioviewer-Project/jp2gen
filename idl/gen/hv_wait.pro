@@ -38,17 +38,17 @@ PRO HV_WAIT, progname,t,seconds = seconds, minutes = minutes, hours = hours, day
 ;
 ;
   print,wait_message
-  if keyword_Set(web) then begin
-     filename = 'latest.' + progname + '.txt'
-     storage = HV_STORAGE()
-     dir = storage.web
-     nb = 3
-     b = strarr(nb)
-     b[0] = '<P>'
-     b[1] = wait_message + '<BR>'
-     b[nb-1] = '</P>'
-     HV_WRT_ASCII,b,dir + filename,/append
-  endif
+;  if keyword_Set(web) then begin
+;     filename = 'latest.' + progname + '.txt'
+;     storage = HV_STORAGE()
+;     dir = storage.web
+;     nb = 3
+;     b = strarr(nb)
+;     b[0] = '<P>'
+;     b[1] = wait_message + '<BR>'
+;     b[nb-1] = '</P>'
+;     HV_WRT_ASCII,b,dir + filename,/append
+;  endif
 
   wait,t*f
   return

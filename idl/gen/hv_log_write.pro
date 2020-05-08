@@ -4,11 +4,11 @@
 ;
 ;-
 PRO HV_LOG_WRITE,hvs, log_comment, log_filename = log_filename,$
-                 transfer = transfer
+                 transfer = transfer, write_this=write_this
   if is_struct(hvs) then begin
-     storage = HV_STORAGE(nickname = hvs.details.nickname)
-     filename = HV_FILENAME_CONVENTION(hvs,/create)
-     log = HV_WRITE_LIST_JP2_MKDIR(hvs,storage.log_location)
+     storage = HV_STORAGE(hvs.hvsi.write_this, nickname=hvs.hvsi.details.nickname)
+     filename = HV_FILENAME_CONVENTION(hvs.hvsi,/create)
+     log = HV_WRITE_LIST_JP2_MKDIR(hvs.hvsi, storage.log_location)
      log_filename = log + filename + '.' + systime(0) + '.log'
      HV_WRT_ASCII,log_comment,log_filename
   endif else begin
@@ -19,7 +19,7 @@ PRO HV_LOG_WRITE,hvs, log_comment, log_filename = log_filename,$
 ;
 ; Get the storage
 ;
-        storage = HV_STORAGE(nickname = 'HV_TRANSFER_LOGS',/no_db,/no_jp2)
+        storage = HV_STORAGE(write_this, nickname = 'HV_TRANSFER_LOGS',/no_db,/no_jp2)
 ;
 ; Get today's date
 ;

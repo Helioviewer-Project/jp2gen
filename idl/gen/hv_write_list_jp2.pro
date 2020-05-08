@@ -25,7 +25,7 @@ PRO HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_
 ;
   if (NOT(already_written) or overwrite) then begin
      details = hvs.hvsi.details
-     storage = HV_STORAGE(nickname = details.nickname)
+     storage = HV_STORAGE(hvs.hvsi.write_this, nickname = details.nickname)
      loc = HV_WRITE_LIST_JP2_MKDIR(hvs.hvsi,storage.jp2_location)
      filename = HV_FILENAME_CONVENTION(hvs.hvsi,/create)
      jp2_filename = loc + filename

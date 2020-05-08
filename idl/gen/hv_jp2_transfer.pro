@@ -60,8 +60,7 @@ PRO HV_JP2_TRANSFER,write_this,$ ; a permitted project - see HV_WRITTENBY for a 
 ;
   wby = HV_WRITTENBY(write_this)
   g = HVS_GEN()
-  storage = HV_STORAGE()
-  storage2 = HV_STORAGE(write_this,nickname = 'HV_TRANSFER_LOGS',/no_db,/no_jp2)
+  storage = HV_STORAGE(write_this)
 ;
 ; Transfer start-time
 ;
@@ -244,12 +243,12 @@ PRO HV_JP2_TRANSFER,write_this,$ ; a permitted project - see HV_WRITTENBY for a 
 ;
 ; Write a logfile describing what was transferred
 ;
-  HV_LOG_WRITE,'transfer_log',transfer_results,transfer = transfer_start_time + '_'
+  HV_LOG_WRITE,'transfer_log',transfer_results,transfer = transfer_start_time + '_', write_this=write_this
 ;
 ; Write a file for the web, if required
 ;
-  IF keyword_set(web) then begin
-     HV_WEB_TXTNOTE,progname,transfer_results,/details
-  ENDIF
+;  IF keyword_set(web) then begin
+;     HV_WEB_TXTNOTE,progname,transfer_results,/details
+;  ENDIF
   return
 end
