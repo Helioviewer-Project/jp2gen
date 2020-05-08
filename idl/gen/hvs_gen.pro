@@ -38,7 +38,7 @@ FUNCTION HVS_GEN
             all_code:'https://launchpad.net/helioviewer',$
             jp2gen_code:'https://launchpad.net/jp2gen',$
             jp2gen_version:'0.8',$
-            jp2gen_branch_revision:0}
+            jp2gen_branch_revision:'See github.com/Helioviewer-Project/jp2gen'}
 ;
 ; Set up default values for JP2 compression
 ;
