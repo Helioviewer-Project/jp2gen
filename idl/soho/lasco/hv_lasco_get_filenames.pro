@@ -75,10 +75,14 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
      sourcefile    = sdir +'img_hdr.txt'
      print, 'Looking for files in ', sdir
      print, 'Looking for sourcefile ', sourcefile
-     hvs = {img:-1,header:-1,measurement: info.details[0].measurement,$
+                                ; Define a hvsi structure here to
+                                ; carry the write_this variable in the
+                                ; expected place
+     hvsi = {header:-1,measurement: info.details[0].measurement,$
             yy:STRMID(nds,0,4),mm:STRMID(nds,5,2),dd:STRMID(nds,8,2),$
             hh:'log', mmm:'log', ss:'log', milli:'log',$
-            details:info}
+            details:info, write_this:'soho'}
+     hvs = {img:-1, hvsi:hvsi}
 
      IF file_test(sourcefile) THEN BEGIN
                                 ; read img_hdr.txt
