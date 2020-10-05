@@ -48,8 +48,9 @@
 ; those files from the outgoing directory.
 ;
 ;
-PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
-                    web = web, $ ; wrote the details of the transfer toa text file that can be picked up by HV_JP2GEN_MONITOR
+PRO HV_JP2_TRANSFER,write_this,$ ; a permitted project - see HV_WRITTENBY for a LIST of permitted projects
+                    ntransfer = n,$ ; number of files transferred
+                    web = web,$ ; wrote the details of the transfer toa text file that can be picked up by HV_JP2GEN_MONITOR
                     delete_transferred = delete_transferred,$ ; delete the transferred files from the outgoing directory
                     force_delete = force_delete,$ ; force the delete of the JP2 file
                     sdir = sdir ; directory where the JP2 files are stored
@@ -57,10 +58,9 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
 ;
 ; Get various details about the setup
 ;
-  wby = HV_WRITTENBY()
+  wby = HV_WRITTENBY(write_this)
   g = HVS_GEN()
-  storage = HV_STORAGE()
-  storage2 = HV_STORAGE(nickname = 'HV_TRANSFER_LOGS',/no_db,/no_jp2)
+  storage = HV_STORAGE(write_this)
 ;
 ; Transfer start-time
 ;
@@ -243,12 +243,12 @@ PRO HV_JP2_TRANSFER,ntransfer = n,$ ; number of files transferred
 ;
 ; Write a logfile describing what was transferred
 ;
-  HV_LOG_WRITE,'transfer_log',transfer_results,transfer = transfer_start_time + '_'
+  HV_LOG_WRITE,'transfer_log',transfer_results,transfer = transfer_start_time + '_', write_this=write_this
 ;
 ; Write a file for the web, if required
 ;
-  IF keyword_set(web) then begin
-     HV_WEB_TXTNOTE,progname,transfer_results,/details
-  ENDIF
+;  IF keyword_set(web) then begin
+;     HV_WEB_TXTNOTE,progname,transfer_results,/details
+;  ENDIF
   return
 end

@@ -68,7 +68,7 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
 ;
 ; Call details of storage locations
 ;
-     storage = HV_STORAGE(nickname = nickname)
+     storage = HV_STORAGE('soho', nickname = nickname)
 ;
 ; Write direct to JP2 from FITS
 ;
@@ -86,7 +86,7 @@ PRO HV_LASCO_C2_PREP2JP2,ds,de,details_file = details_file,called_by = called_by
 ; Copy2outgoing
 ;
      if keyword_set(copy2outgoing) then begin
-        HV_COPY2OUTGOING,prepped
+        HV_COPY2OUTGOING,prepped, 'soho'
      endif
   endelse
 

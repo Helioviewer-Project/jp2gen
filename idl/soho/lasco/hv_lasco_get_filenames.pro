@@ -41,7 +41,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
 ;
   g = HVS_GEN()
 ;
-  ldr = getenv('LZ_IMG') + '/' + 'level_05/' ; where the LASCO data is
+  ldr = getenv('LZ_IMG') ; + '/' + 'level_05/' ; where the LASCO data is
 ;
 ; If we are calling this program to get the quicklooks, change ldr
 ;
@@ -64,6 +64,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
   date2 = anytim2utc(t2)
   image_list = [g.MinusOneString]
 
+  print, 'Looking for files in ', ldr
   FOR mjd=date1.mjd,date2.mjd DO BEGIN
      newday = {mjd:mjd,time:0.0}
      nds = utc2str(newday,/date_only)
@@ -72,11 +73,16 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
 ;         sourcefile    = dir.data+day+'/'+detector+'/'+'img_hdr.txt'
      sdir = ldr + day + path_sep() + detector + path_sep()
      sourcefile    = sdir +'img_hdr.txt'
-
-     hvs = {img:-1,header:-1,measurement: info.details[0].measurement,$
+     print, 'Looking for files in ', sdir
+     print, 'Looking for sourcefile ', sourcefile
+                                ; Define a hvsi structure here to
+                                ; carry the write_this variable in the
+                                ; expected place
+     hvsi = {header:-1,measurement: info.details[0].measurement,$
             yy:STRMID(nds,0,4),mm:STRMID(nds,5,2),dd:STRMID(nds,8,2),$
             hh:'log', mmm:'log', ss:'log', milli:'log',$
-            details:info}
+            details:info, write_this:'soho'}
+     hvs = {img:-1, hvsi:hvsi}
 
      IF file_test(sourcefile) THEN BEGIN
                                 ; read img_hdr.txt
@@ -97,7 +103,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
            if (n_elements(words) lt 12) then begin
               log_comment = progname + ': img_hdr.txt malformed for this file: '+sourcefile
               print, log_comment
-              HV_LOG_WRITE,hvs,log_comment
+              HV_LOG_WRITE,hvs.hvsi,log_comment
            endif else begin
               file=strsplit(words[0],'.',/extract)
               newfile = sdir + words[0]
@@ -129,7 +135,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
            endelse
         endfor
      ENDIF ELSE BEGIN 
-        HV_LOG_WRITE,hvs,progname + ': Could not open '+sourcefile
+        HV_LOG_WRITE,hvs.hvsi,progname + ': Could not open '+sourcefile
      ENDELSE
   ENDFOR                        ; juldays
 
@@ -137,7 +143,7 @@ FUNCTION HV_LASCO_GET_FILENAMES, t1,t2, nickname,info
      print,' NO IMAGES ARE FOUND: CHECK YOUR INPUT DATES'
   endif else begin
      image_list=image_list[1:*]
-     HV_LOG_WRITE,hvs,image_list
+     HV_LOG_WRITE,hvs.hvsi,image_list
 
 ;     printf, log, ' Number of images that will be downloaded: ',n_elements(image_list) 
 ;     save, filename=dir.work+detector+'_image_list.sav', image_list

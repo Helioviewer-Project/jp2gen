@@ -2,13 +2,15 @@
 ;+
 ; Do the log file
 ;
+; The input to this function is an hvsi structure ONLY.
+;
 ;-
-PRO HV_LOG_WRITE,hvs, log_comment, log_filename = log_filename,$
-                 transfer = transfer
-  if is_struct(hvs) then begin
-     storage = HV_STORAGE(nickname = hvs.details.nickname)
-     filename = HV_FILENAME_CONVENTION(hvs,/create)
-     log = HV_WRITE_LIST_JP2_MKDIR(hvs,storage.log_location)
+PRO HV_LOG_WRITE,hvsi, log_comment, log_filename = log_filename,$
+                 transfer = transfer, write_this=write_this
+  if is_struct(hvsi) then begin
+     storage = HV_STORAGE(hvsi.write_this, nickname=hvsi.details.nickname)
+     filename = HV_FILENAME_CONVENTION(hvsi,/create)
+     log = HV_WRITE_LIST_JP2_MKDIR(hvsi, storage.log_location)
      log_filename = log + filename + '.' + systime(0) + '.log'
      HV_WRT_ASCII,log_comment,log_filename
   endif else begin
@@ -19,7 +21,7 @@ PRO HV_LOG_WRITE,hvs, log_comment, log_filename = log_filename,$
 ;
 ; Get the storage
 ;
-        storage = HV_STORAGE(nickname = 'HV_TRANSFER_LOGS',/no_db,/no_jp2)
+        storage = HV_STORAGE(write_this, nickname = 'HV_TRANSFER_LOGS',/no_db,/no_jp2)
 ;
 ; Get today's date
 ;

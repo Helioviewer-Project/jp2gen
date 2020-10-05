@@ -10,7 +10,7 @@ FUNCTION HV_SECCHI_CANTFINDCATALOG
 ;
 ;
 ;
-  wby = HV_WRITTENBY()
+  wby = HV_WRITTENBY('stereo')
   cantFindCatalogDir = wby.local.jp2gen_write + 'write/v0.8/log/cantfindcatalog/'
   spawn,'mkdir '+ cantFindCatalogDir
   return,cantFindCatalogDir

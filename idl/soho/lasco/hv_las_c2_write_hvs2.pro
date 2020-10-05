@@ -207,7 +207,8 @@ FUNCTION HV_LAS_C2_WRITE_HVS2,dir,ld,details = details
              hh:hh,$
              mmm:mmm,$
              ss:ss,$
-             milli:milli}
+             milli:milli,$
+             write_this:'soho'}
      hvs = {img:image_new,hvsi:hvsi}
 
      HV_MAKE_JP2,hvs,jp2_filename = jp2_filename,already_written = already_written

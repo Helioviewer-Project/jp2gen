@@ -31,17 +31,17 @@ PRO HV_REPEAT_MESSAGE, progname,n,t, more = more, web = web
 ; picked up by another script to create a web page showing the latest
 ; creation details
 ;
-  if keyword_set(web) then begin
-     storage = HV_STORAGE()
-     filename = 'latest.' + progname + '.txt'
-     dir = storage.web
-     nb = n_elements(a) + 2
-     b = strarr(nb)
-     b[0] = '<P>'
-     b[1:n_elements(a)] = a[*] + '<BR>'
-     b[nb-1] = '</P>'
-     HV_WRT_ASCII,b,dir + filename
-  endif
+;  if keyword_set(web) then begin
+;     storage = HV_STORAGE()
+;     filename = 'latest.' + progname + '.txt'
+;     dir = storage.web
+;     nb = n_elements(a) + 2
+;     b = strarr(nb)
+;     b[0] = '<P>'
+;     b[1:n_elements(a)] = a[*] + '<BR>'
+;     b[nb-1] = '</P>'
+;     HV_WRT_ASCII,b,dir + filename
+;  endif
   return
 end
 

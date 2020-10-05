@@ -33,15 +33,12 @@ FUNCTION HVS_GEN
 ;
 ; Get the source details
 ;
-  wby = HV_WRITTENBY()
-  loc = wby.local.jp2gen
-  bzr_revno = HV_BZR_REVNO_HANDLER(loc)
   source = {institute:'NASA-GSFC',$
             contact:'ESA/NASA Helioviewer Project [contact the Helioviewer Project at webmaster@helioviewer.org]',$
             all_code:'https://launchpad.net/helioviewer',$
             jp2gen_code:'https://launchpad.net/jp2gen',$
             jp2gen_version:'0.8',$
-            jp2gen_branch_revision:bzr_revno}
+            jp2gen_branch_revision:'See github.com/Helioviewer-Project/jp2gen'}
 ;
 ; Set up default values for JP2 compression
 ;

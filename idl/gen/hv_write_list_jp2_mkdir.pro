@@ -2,9 +2,9 @@
 ; Create the subdirectory structure as required
 ;
 ;
-FUNCTION HV_WRITE_LIST_JP2_MKDIR,hvs,dir,return_path_only = return_path_only
+FUNCTION HV_WRITE_LIST_JP2_MKDIR,hvsi, dir, return_path_only=return_path_only
 
-  dirCon = HV_DIRECTORY_CONVENTION(hvs.yy,hvs.mm,hvs.dd,hvs.measurement)
+  dirCon = HV_DIRECTORY_CONVENTION(hvsi.yy, hvsi.mm, hvsi.dd, hvsi.measurement)
   n = n_elements(dirCon)
 
   for i = 0,n-1 do begin
