@@ -6,7 +6,9 @@ Helioviewer Project.
 
 For questions/comments, please contact Jack.Ireland@nasa.gov .
 
-Many more details on using the code available at http://www.helioviewer.org/wiki/JP2Gen .
+Many more details on using the code will be forthcoming in an updated
+guide. In the meantime please use the Wayback Machine to search for
+wiki.helioviewer.org. 
 
 
 General purpose
