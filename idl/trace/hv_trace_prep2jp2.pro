@@ -44,7 +44,8 @@ PRO HV_TRACE_PREP2JP2, header, image, overwrite=overwrite, jp2_filename = jp2_fi
           mmm: string(ext.minute, format='(I2.2)'), $
           ss: string(ext.second, format='(I2.2)'), $
           milli: string(ext.millisecond, format='(I3.3)'), $
-          details: details}
+          details: details, $
+          write_this: 'trace'}
 
   ; HV structure
   hvs = {img: image, hvsi: hvsi}
