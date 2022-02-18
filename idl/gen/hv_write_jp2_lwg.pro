@@ -566,7 +566,7 @@ PRO HV_WRITE_JP2_LWG,file,image,write_this,bit_rate=bit_rate,n_layers=n_layers,n
         oJP2->SetData,image_new_with_transparency
         OBJ_DESTROY, oJP2
         print,' '
-        print,progname + ' created ' + file + '.jp2'
+        print,progname + ' created image with transparency: ' + file + '.jp2'
 ;
 ; Change the permissions on the file
 ;
@@ -579,6 +579,7 @@ PRO HV_WRITE_JP2_LWG,file,image,write_this,bit_rate=bit_rate,n_layers=n_layers,n
 ; No transparencey mask was passed, so just use normal IDL routines.
 ;
         if have_tag(details.details,'palette') then begin
+           print, 'Palette has been passed '
            oJP2 = OBJ_NEW('IDLffJPEG2000',file + '.jp2',/WRITE,$
                        bit_rate=bit_rate,$
                        n_layers=n_layers,$
