@@ -31,22 +31,26 @@ FUNCTION HV_STORAGE,write_this,nickname = nickname, no_db = no_db, no_log = no_l
 ; The write subdirectory 
 ;
   hv_write = hv_root + 'write' + path_sep() 
-  if not(is_dir(hv_write)) then spawn,'mkdir -p '+ hv_write
-;
+  ;if not(is_dir(hv_write)) then spawn,'mkdir -p '+ hv_write
+  if not(is_dir(hv_write)) then file_mkdir ,hv_write
 ; Outgoing
 ;
   outgoing = hv_write + 'outgoing' + path_sep()
-  if not(is_dir(outgoing)) then spawn,'mkdir -p '+ outgoing
+  ;if not(is_dir(outgoing)) then spawn,'mkdir -p '+ outgoing
+  if not(is_dir(outgoing)) then file_mkdir, outgoing
+
 ;
 ; Web - notices from JP2Gen that are made available via the web.
 ;
   web = hv_write + 'web' + path_sep()
-  if not(is_dir(web)) then spawn,'mkdir -p '+ web
+  ;if not(is_dir(web)) then spawn,'mkdir -p '+ web
+  if not(is_dir(web)) then file_mkdir,web
 ;
 ; Update the root for the version number and device nickname
 ;
   hvr = hv_write + 'v' + trim((HVS_GEN()).source.jp2gen_version) + path_sep()
-  if not(is_dir(hvr)) then spawn,'mkdir -p '+ hvr
+ ; if not(is_dir(hvr)) then spawn,'mkdir -p '+ hvr
+  if not(is_dir(hvr)) then file_mkdir, hvr
 ;
 ; Create the necessary subdirectory locations
 ;
@@ -63,7 +67,8 @@ FUNCTION HV_STORAGE,write_this,nickname = nickname, no_db = no_db, no_log = no_l
      jp2_location = hvr_jp2 + nickname + path_sep()
      if not(is_dir(jp2_location)) then begin
         if not(keyword_set(no_jp2)) then begin
-           spawn,'mkdir -p '+ jp2_location
+           ;spawn,'mkdir -p '+ jp2_location
+           file_mkdir, jp2_location
         endif
      endif
 ;
@@ -72,7 +77,8 @@ FUNCTION HV_STORAGE,write_this,nickname = nickname, no_db = no_db, no_log = no_l
      log_location = hvr + 'log' + path_sep() + nickname + path_sep()
      if not(is_dir(log_location)) then begin
         if not(keyword_set(no_log)) then begin
-           spawn,'mkdir -p '+ log_location
+           ;spawn,'mkdir -p '+ log_location
+           file_mkdir,log_location
         endif
      endif
 ;
@@ -81,7 +87,8 @@ FUNCTION HV_STORAGE,write_this,nickname = nickname, no_db = no_db, no_log = no_l
      db_location = hvr + 'db' + path_sep() + nickname + path_sep()
      if not(is_dir(db_location)) then begin
         if not(keyword_set(no_db)) then begin
-           spawn,'mkdir -p '+ db_location
+           ;spawn,'mkdir -p '+ db_location
+           file_mkdir,db_location
         endif
      endif
      

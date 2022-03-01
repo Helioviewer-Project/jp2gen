@@ -29,7 +29,8 @@ PRO HV_WEBPAGE,search = search,filename = filename,link = link,title = title
 ; Move the existing file if it already exists
 ;
   IF file_exist(webpage + filename) then begin
-     spawn,'mv ' + webpage + filename + ' ' + webpage + filename + '.previous'
+     ;spawn,'mv ' + webpage + filename + ' ' + webpage + filename + '.previous'
+     file_move,webpage + filename,webpage + filename + '.previous'
   ENDIF
 ;
   header = strarr(8)

@@ -81,7 +81,8 @@ PRO HV_COPY2OUTGOING,files,write_this,search = search,delete_original = delete_o
                  outd = outd + z[nz-j] 
                  print,outd
                  if not(is_dir(outd)) then begin
-                    spawn,'mkdir ' + outd
+                    ;spawn,'mkdir ' + outd
+                    file_mkdir,outd
                  endif
                  outd = outd + path_sep()
               endfor
@@ -90,10 +91,13 @@ PRO HV_COPY2OUTGOING,files,write_this,search = search,delete_original = delete_o
               cpcmd = 'cp --parents '
               outd = outgoing_root
            endelse
-           spawn,cpcmd + s + ' ' + outd
+           ;spawn,cpcmd + s + ' ' + outd
+           file_copy,s,outd
            print,progname + ': transferred ' + files[i] + ' to ' + outgoing_root
            if keyword_set(delete_original) then begin
-              spawn,'rm ' + s
+              ;spawn,'rm ' + s
+              ;I think taking the ssw out of path will allow idl to only run the built-in routine
+              FILE_DELETE,s
               print,progname + ': deleted original file ' + files[i]
            endif
            cd,old_dir

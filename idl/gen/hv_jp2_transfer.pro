@@ -178,7 +178,9 @@ PRO HV_JP2_TRANSFER,write_this,$ ; a permitted project - see HV_WRITTENBY for a 
               endif else begin
                  modifier = ' -i '
               endelse
-              spawn,'rm' + modifier + b[i] ; delete the originals - three layers of protection included.
+              ;spawn,'rm' + modifier + b[i] ; delete the originals - three layers of protection included.
+              orig = modifier + b[i]
+              file_delete,orig
               print,' '
               print,filenumber + ' out of ' + filetotal
               print,progname + ': no error reported on transfer of ' + sdir_full + b[i] + ' to ' + $
@@ -234,7 +236,9 @@ PRO HV_JP2_TRANSFER,write_this,$ ; a permitted project - see HV_WRITTENBY for a 
               
               if (diff ge (2.0*month)) then begin
                  print, progname + ': removing '+ d[z[j]] + '(' +trim(diff) + ' seconds).'
-                 spawn,'rmdir ' + d[z[j]]
+                 ;spawn,'rmdir ' + d[z[j]]
+                 orig= 'rmdir ' + d[z[j]]
+                 file_delete,orig
               endif
            endfor
         endfor

@@ -10,7 +10,8 @@ FUNCTION HV_WRITE_LIST_JP2_MKDIR,hvsi, dir, return_path_only=return_path_only
   for i = 0,n-1 do begin
      nextDir = dir + dirCon[i]
      if NOT(KEYWORD_SET(return_path_only)) THEN BEGIN
-        if not(is_dir(nextDir)) then spawn,'mkdir '+ nextDir
+        ;if not(is_dir(nextDir)) then spawn,'mkdir '+ nextDir
+        if not(is_dir(nextDir)) then file_mkdir,nextDir
      endif
   endfor
 
