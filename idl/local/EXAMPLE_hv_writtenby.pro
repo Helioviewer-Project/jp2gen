@@ -19,42 +19,58 @@
 ;               incoming: the incoming directory where the files will be stored
 ;               group: the remote group name required by the rest of the Helioviewer Project
 ;
-; webpage: the location of the JP2Gen monitoring webpage.  
+; webpage: the location of the JP2Gen monitoring webpage.
 ;          This webpage will allow you to monitor file creation and transfer services of your JP2 installtion
 ;
 FUNCTION HV_WRITTENBY,write_this
 
   ;
-  supported = LIST('soho', 'stereo')
+  supported = LIST('soho', 'stereo','trace')
   if supported.Where(write_this) eq !NULL then begin
-     print,'Instrument ' + write_this + ' is not supported.'
-     answer = 0
-     stop
+    print,'Instrument ' + write_this + ' is not supported.'
+    answer = 0
+    stop
   endif else begin
-   ; Remote machine
-    remote_machine = 'the_remote_machine
 
-  ; Local root
-    local_root = '/my/local/machine/'
-    
-  ; Remote root where all the 
-    remote_root = '/where/the/data/goes/to/'
+    ;remote elements are now in arrays
 
-  ; Locations required
+    ;Remote users
+    remote_users=['jireland1','jireland2']
+
+    ; Remote machine
+    remote_machines = ['mac1','mac2']
+    nrm=n_elements(remote_machines)
+
+    ; Local root
+    local_root = 'C:\Users\jltsang\storage\trace\'
+
+    ; Remote root where all the
+    remote_root = ['rm1/user1','rm2/user2']
+    inc_combined=strarr(nrm)
+    inc_combined=remote_root + path_sep() + write_this + '_incoming/'
+
+    ;Remote Groups
+    remote_groups=['HV_group1','HV_group2']
+
+    ; Locations required
     answer = {local:{institute:'NASA-GSFC',$
-                     contact:'Helioviewer Project (webmaster@helioviewer.org)',$
-                     kdu_lib_location:'~/KDU/Kakadu/v6_1_1-00781N/bin/Mac-x86-64-gcc/',$
-                     jp2gen_write: local_root + write_this + '/', $
-                     jp2gen:'/home/ireland/hvp/jp2gen/jp2gen/'},$
-              transfer:{local:{group:'ireland',$
-                               tcmd_linux:'rsync',$
-                               tcmd_osx:'/usr/local/bin/rsync'},$
-                        remote:{user:'jireland',$
-                                machine: remote_machine,$
-                                incoming: remote_root + write_this + '_incoming/',$
-                                group:'helioviewer'}},$
-              webpage:'/service/www/',$
-              manual_revision_number:'see github.com/Helioviewer-Project/jp2gen'}
+      contact:'Helioviewer Project (webmaster@helioviewer.org)',$
+      kdu_lib_location:'~/KDU/Kakadu/v6_1_1-00781N/bin/Mac-x86-64-gcc/',$
+      jp2gen_write: local_root + write_this + path_sep(), $
+      jp2gen:'/home/ireland/hvp/jp2gen/jp2gen/'},$
+      transfer:{local:{group:'ireland',$
+      tcmd_linux:'rsync',$
+      tcmd_osx:'/usr/local/bin/rsync'},$
+      ;                        remote:{user:'jireland',$
+      ;                                machine: remote_machine,$
+      ;                                incoming: remote_root + write_this + '_incoming/',$
+      ;                                group:'helioviewer'}},$
+      remote:{user:remote_users,$
+      machine: remote_machines,$
+      incoming:inc_combined ,$
+      group:remote_groups}},$
+      webpage:'/service/www/',$
+      manual_revision_number:'see github.com/Helioviewer-Project/jp2gen'}
   endelse
   return,answer
 END
