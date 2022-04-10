@@ -225,7 +225,7 @@ PRO HV_JP2_TRANSFER,write_this,$ ; a permitted project - see HV_WRITTENBY for a 
 
      
      if (keyword_set(delete_transferred) and (sdir eq expand_tilde(storage.outgoing)))then begin
-         hv_jp2_tr_file_del,exit_status,files,transfer_results=transfer_results
+         hv_jp2_transfer_file_delete,exit_status,files,transfer_results=transfer_results
      endif
      
 ;
@@ -235,7 +235,7 @@ PRO HV_JP2_TRANSFER,write_this,$ ; a permitted project - see HV_WRITTENBY for a 
      file_del_results = transfer_results[nrm,*]
      
      if keyword_set(delete_transferred) then begin
-         hv_jp2_tr_dir_del, sdir,file_del_results
+         hv_jp2_transfer_directory_delete, sdir,file_del_results
      endif
      
 ;  endelse corresponds to line 116
