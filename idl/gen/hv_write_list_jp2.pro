@@ -7,6 +7,7 @@
 ;
 ; 2009/08/07 - change to call ji_write_jp2_lwg.pro (which does no
 ;              rescaling or recentering)
+; 2021/08/12, Kim Tolbert.  If overwrite is set, even if already_written is true, set already_written to 0 since we're writing again.
 ;
 ;-
 PRO HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_written, overwrite = overwrite
@@ -24,6 +25,7 @@ PRO HV_WRITE_LIST_JP2,hvs,jp2_filename = jp2_filename,already_written = already_
 ; if new, then write it and update the database for this day
 ;
   if (NOT(already_written) or overwrite) then begin
+     already_written = 0
      details = hvs.hvsi.details
      storage = HV_STORAGE(hvs.hvsi.write_this, nickname = details.nickname)
      loc = HV_WRITE_LIST_JP2_MKDIR(hvs.hvsi,storage.jp2_location)

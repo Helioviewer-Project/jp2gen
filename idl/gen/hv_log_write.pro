@@ -3,6 +3,10 @@
 ; Do the log file
 ;
 ; The input to this function is an hvsi structure ONLY.
+; 2020/11/03 - Kim Tolbert. Changed log_filename. Previously looked 
+;             like: filenamewhatever.Tue Nov 03 14:23:45 2020.log
+;             now: filenamewhatever_20201103_1423.log
+;             Spaces, colons, and two periods in previous form were problematic.
 ;
 ;-
 PRO HV_LOG_WRITE,hvsi, log_comment, log_filename = log_filename,$
@@ -11,7 +15,10 @@ PRO HV_LOG_WRITE,hvsi, log_comment, log_filename = log_filename,$
      storage = HV_STORAGE(hvsi.write_this, nickname=hvsi.details.nickname)
      filename = HV_FILENAME_CONVENTION(hvsi,/create)
      log = HV_WRITE_LIST_JP2_MKDIR(hvsi, storage.log_location)
-     log_filename = log + filename + '.' + systime(0) + '.log'
+     ;Kim changed file name to have _yyyymmdd_hhmm instead of date with spaces, colons, and
+     ;two periods in name (!)
+     ;log_filename = log + filename + '.' + systime(0) + '.log'
+     log_filename = log + filename + '_'+time2file(!stime) + '.log'
      HV_WRT_ASCII,log_comment,log_filename
   endif else begin
 ;

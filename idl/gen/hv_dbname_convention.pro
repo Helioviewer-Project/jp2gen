@@ -3,12 +3,14 @@
 ;
 ; Function to create a JP2 file name from its source HVS file, and to
 ; split up an input filename into its component parts
+; 
+; 11-Aug-2021, Kim Tolbert. Don't print output of hv_storage.  Too much.
 ;
 FUNCTION HV_DBNAME_CONVENTION, hvsi, create = create
 ;
 ; Take the HVS header and create a db filename
 ;
-  print, HV_STORAGE(hvsi.write_this, nickname = hvsi.details.nickname)
+;  print, HV_STORAGE(hvsi.write_this, nickname = hvsi.details.nickname)
   NotGiven = (HV_STORAGE(hvsi.write_this, nickname = hvsi.details.nickname)).NotGiven
   if keyword_set(create) then begin
      if not(is_struct(hvsi)) then begin
